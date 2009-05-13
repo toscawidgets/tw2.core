@@ -1,0 +1,253 @@
+Changelog
+=========
+
+0.9.5 (unreleased)
+----------------------
+
+0.9.4 (Dec 8, 2008)
+----------------------
+
+* Fix to :func:`tw.core.util.unflatten_args` by Philip Charlesworth from #28
+* Bumped up Simplejson requirement to > 2.x and updated TWEncoder for 
+  compatibility with it.
+
+0.9.3 (Aug 17, 2008)
+----------------------
+
+* Added support for TurboGears?-1.5/CherryPy-3.1, thanks to Dag Brattli.
+* :func:`tw.api.make_middleware` no longer stacks the RegistryManager by default
+  since ususally TW is stacked above a RegistryManager in a larger app.
+
+  .. warning::
+
+     This might break your app if you're not using a RegistryManager in your
+     wsgi pipeline. If this is the case you'll notice because TW will complain
+     from a 'paste.registry' missing key from environ, if this is the case you
+     can fix it by passing `stack_registry = True` as a keyword argument to
+     :func:`tw.api.make_middleware` when configuring TW's middleware.
+
+* Fixed a big which caused resources to be injected twice when calling
+  :func:`tw.api.inject_resources` twice.
+* Greatly simplified :func:`tw.core.resource_injector.injector_middleware`
+  thanks to `WebOb`_.
+* Optimized :meth:`tw.api.Widget.update_params` logic.
+
+  .. warning::
+
+     There's a slight change in behaviour but it will probably not
+     affect anyone: callable parameters passed to :meth:`Widget.display` are no
+     longer called automatically since it makes no sense to do so and incurrs in
+     a performance penalty.
+
+* Added a ``headbottom`` location where :class:`tw.api.Resource` instances can
+  be injected.
+
+0.9.2 (Jun 8, 2008)
+----------------------
+
+* Template engine plugins are now loaded lazily.
+* The v=modfied_time query string argument is no longer appended to resources
+  since this method is not reliable with zipped eggs and causes some trouble.
+  As a plus requests should now be faster since there are no disk hits for this
+  reason.
+* The CP filter in mods.tg now handles staic file serving instead of registering
+  directories with CP's static filter so resources from zipped eggs work
+  properly.
+* Implemented a setuptools commands to copy all static reosurces from
+  a series of distributions into a direcory where a fast web-server
+  can serve them. Optionally, if YUICompressor is installed, it can
+  compress CSS and JS in the destination directory.
+* Removed dependency from Paste, changed to lighter WebOb.
+* TW's middleware can now serve static resources from zipped eggs.
+* feeder.py is no longer included.
+* js_function arguments can now include other js_calls and js_callbacks at
+  any level of nesting.
+* repetitions and template caches are now LRUCaches to set an upper limit on
+  memory usage.
+
+0.9.1 (Jun, 1 2008)
+----------------------
+
+* made ``inject_resources`` default in middleware since else dynamic js calls
+  wont be included
+
+0.9 (Jun, 1 2008)
+----------------------
+
+* retrieve_css and retrieve_javascript have been deprecated and now return
+  empty lists so resources are not included twice in TG1.
+* tw.mods.tg now injects resources with resource injector
+* JSLink and CSSLink now allow to override link to specify external resources.
+  (Closes #7)
+* Removed hard dependency from PasteScript.
+* ToscaWidgets no longer has any external dependency with C extensions since
+  dependencies on RuleDispatch and PyProtocols have been dropped
+* ``display``, ``render``, ``adapt_value`` and ``retrieve_resources`` are no
+  longer generic functions but are still exported so they can be easily extended
+  with PEAK-Rules if neccesary
+* Removed un-needed dependency from decorator module.
+
+0.8.7 (unreleased)
+----------------------
+
+* WidgetRepeaters don't have a max_repetitions limitiation anymore since
+  repetitions are now generated dynamically. Thanks to Paul Johnston.
+
+0.8.6.1 (May, 29 2008)
+----------------------
+
+* Fixed a bug introduced in display machinery rewrite which caused render to
+  return Streams and ElementStreams on some circumstances.
+
+0.8.6 (May, 29 2008)
+----------------------
+
+* Removed use of RuleDispatch but left the requirement in order not to break
+  backwards compatibility. Use of TW's generic functions will issue
+  DeprecationWarnings. Please fix your code ASAP (use peak.rules if absolutely
+  need gfs) since deprecated code will be removed in 0.9.
+* fixed memory leak caused by function closures passed to the template context
+  when using genshi.
+* injector_middleware now properly handles wrapped apps that use the write
+  func returned by start_response
+* Docs are finally hitting the repository!
+* :func:`tw.core.resource_injector.inject_resources` has changed it's
+  signature making ``resources`` an optional parameter and switched places
+  with ``html``.
+
+0.8.5 (Apr, 25 2008)
+----------------------
+
+* PylonsHostFramework no longer adds the extra_vars_func by default which
+  made available Pylons's SOPs in every widget template namespace since some
+  widgets are rendered outside the Pylons' app context (ie: resources).
+  The best practice to make thsi symbols available on a per-widget base is
+  to pass them as parameters when rendering or make use of callables to provide
+  params at request time.
+
+0.8.[1,2,3,4] (Apr, 19 2008)
+-------------------------------
+
+* Fixed various import bugs introduced in 0.8
+
+0.8 (Apr. 19 2008)
+----------------------
+
+* Changed the name of the "toscawidgets" namespace to "tw" and moved all the
+  core stuff to tw.core. Now external widget eggs packages get grafted (via
+  namespace packages) in the "tw" namespace. Example:
+  "from toscawidgets.widgets import forms" now becomes "from tw import forms"
+
+0.3 (Apr. 19 2008)
+----------------------
+
+* Removed lxml dependency for resource injection. Now using simple
+  regular expressions.
+
+0.2 (Jan. 25 2008)
+----------------------
+
+* Configured apydia to generate API docs.
+* Links now add a v=%(mtime)d parameter to the URL to help against IEs 
+  aggresive cacheing
+
+0.2rc2 (Nov. 19 2007)
+----------------------
+
+* Reworded docs/index.txt
+
+0.2rc1 (Nov. 19 2007)
+----------------------
+
+* Added a Trove classifier to the PasteScript template.
+* Various bugs and rough edges have been polished.
+* Upated Pylons utilities to play well with version >= 0.9.6.
+* Better support for Mako in Pylons projects.
+* Changed the interface of the HostFramework (please read
+  http://wiki.pylonshq.com/x/1YGq to see how it is initialized now).
+* Added a switch to TGWidgetsMiddleware to use lxml to inject resources in the
+  page.
+* Removed use of ``DecoratorTools`` in favor of ``decorator`` since it handles
+  signature preservation already (no need to reinvent its wheel)
+* Refactored rendering behavior of ``Widget`` into ``Renderable`` base class. 
+* Changed signature of ``EngineManager.render`` and ``EngineManager.display``.
+  WARNING: Custom display rules should be adapted.
+* ``EngineManager._initialize_engine`` is now deprecated.
+* TG apps can now be mounted at different paths than / and TW's static resources
+  will be served properly. Thanks to Noah Gift for reporting the problem.
+* Removed DeprecationWarnings thrown by latest RuleDispatch. Patch from 
+  Florent Aide.
+* In mod.tg: widgets included at ``tg.include_widgets`` are now preloaded on
+  first display so their directories get registered with CherryPy. Thanks to
+  Dennis Muhlestein for the report and a test app.
+* Widgets now support children with ids beginning with an underscore.
+* Widgets now allow a callable to provide default values.
+* ``js_function`` now allows now properly generates attribute accesses. Thanks
+  to patch from Claudio S. Martinez.
+* PriorityDisambiguated generic function calls are now logged to aid in tracing
+  their execution paths if they're not properly bundled in the same class/module.
+* Widgets now support i18n. The translating function is provided by the 
+  ``HostFramework`` object at the ``translator`` attribute. To translate
+  strings declared at import or initialization time (when translator might not
+  be initialized yet), the ``lazystring`` function (adapted form TG) is
+  provided.
+* ``EngineManager.load_engine`` now accepts a ``distribution`` parameter
+  to load an engine from a specific setuptools distribution. 
+  WARNING: Former ``load_engine_from_distribution`` is deprecated.
+* ``link`` is now a property of ``Link`` which returns it's computed
+  url. Note that, ATM, it can only be queried precisely during a request.
+* ``displays_on`` and ``engine_name`` can now be passed as arguments to
+  ``display``.
+* ``pre_init`` and ``post_init`` are no longer generic functions. 
+  Pre-initialization is now done in ``__new__`` and post-initialization 
+  in ``post_init``, a special method called by a wrapper around 
+  ``__init__`` after all cooperative inits have ran.
+* Using DecoratorTools to create 2.3 compatible decorators that preserve
+  decorated function's signature and docstrings.
+* ``WidgetRepeater`` now adjusts it's repetititions automatically based on the
+  length of value up to a maximun of ``max_repetitions``.
+* ``js_callback`` now accepts a called ``js_function`` as an argument and will
+  create a js function that will make the call passed as argument when invoked.
+* **python-cjson** no longer required. Substituted by **simplejson** in order
+  to avoid dependence on another C extension module. If **python-cjson** is
+  installed it will be used instead for performance.
+* New IECSSLink and IECSSSource to conditionally include source/links to trick
+  dumb IE.
+* Links now allow a ``pkg_resources.Requirement`` instance as ``modname`` to 
+  point to the root of an egg distribution. Thanks to Robin Bryce.
+
+0.1a1 (Jan. 19 2007)
+----------------------
+
+* ToscaWidgets now requires **python-cjson** for encoding of ``js_function`` 
+  args.
+* ``toscawidgets.js.js_function`` has changed semantics. It's no longer a 
+  decorator and no longer lets you adapt values from python to JS manually. 
+  It uses ``cjson.encode`` to encode given parameters so more "JS-like" 
+  parameters must be passed explicitly.
+* The ``tgsample`` sample app now shows rendering on both kid and genshi
+  templates. The ``tgsample-genshi`` sample app has been removed.
+* Widget templates now have a ``display_child`` function to reduce boiler-plate
+  when displaying childs. It takes care of passing the value and args to child
+  widgets allowing overrides in the template.
+* The engine name of the page root widgets are displayed on can now be 
+  overriden for a request by setting the ``toscawidgets.framework.default_view``
+  attribute. Frameworks which only instantiate their HostFramework object once
+  for the lifetime of the process should take special care (turbogears).
+* Widget now has a "displays_on" read-only property that returns the engine
+  name of the widget/page the widget should display on. This simplifies much
+  display rules.
+* ``toscawidgets.resources.Link`` no longer accepts ``modname`` and ``filename``
+  as positional arguments. Should pass them as kw. args.
+* ``toscawidgets.js_interface`` has moved to ``toscawidgets.js``.
+* MochiKit no longer included in core distribution. Now distributed separately
+  as twMochiKit.
+* Fixed dependencies and requirements and setting 
+  http://toscawidgets.org/download/ as the main download location for neccesary
+  pre-built binaries. easy_install should be able to do it's magic properly now.
+* Form widgets no longer included in core distribution. Now distributed
+  separately as twForms (former ToscaWidgetsForms)
+* First ToscaWidgets public release.
+
+.. _WebOb: http://pythonpaste.org/webob/
+

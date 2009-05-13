@@ -1,0 +1,23 @@
+Contributors
+============
+
+* James Gardner has provided invaluable help on designing the HostFramework 
+  interface to make ToscaWidgets play nice with WSGI apps/frameworks/Pylons. 
+  The wsgi_app.py sample app is largely based on a script of his. He has also 
+  provided the RuleDispatch's Win32 egg that lives at "downloads". 
+* Matthew Scott has provided a PylonsHostFramework class and very interesting
+  feedback from a user-with-no-docs perspective ;)
+* Elvelind Grandin has provided good tips on integration with TurboGears, the
+  TG extension is his brain-child.
+* David Smith has much helped to make unicode support more robust.
+* Claudio S. Martinez has contributed some improvements to js.py.
+* Florent Aide has fixed some DeprecationWarnings.
+* Ian Charnas made widget ids w3c compliant.
+* Roger Demetrescu has contributed some developer-friendliness enhancements.
+* Paul Johnston has contributed documentation, removed the need for 
+  WidgetRepeater.max_repetitions, and provided a number of minor enhancements.
+
+ToscaWidgets is modeled after TurboGears widgets which was initially designed
+by Kevin Dangoor and Michele Cella (with a little help from Alberto). Many
+people have contributed code, bugfixes and ideas to TG widgets and ToscaWidgets
+owes much to them.
