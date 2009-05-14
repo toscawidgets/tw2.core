@@ -1,22 +1,9 @@
-loose ends done
-    fix failing unit tests - ok
-    test generated links - ok
-    test mimetype - ok
-    test resource injector - ok
-        inject2 - unrelated bug now appears fixed
-    unit test displayonlywidget - ok
-    middleware - ok
-    thread local - ok
-    remove core.started
-    locked ut - ok
-    2 failing unit tests - ok
-    tests for .validate - cw, rw, dow - ok
+Tidy up repositories
+    create tw2.devtools
+    remove .pyc, egg-info, etc.
 
 
-overall plan
-    fix loose ends - ok
-    basic widget browser - ok
-    make tw.forms look good in wb - ok
+
 
     switch to instance-per-request
     design documentation
@@ -565,3 +552,26 @@ Allow hints on the model class (but don't overdo it)
 And allow per-field hints on the form
 
 
+
+Done
+----
+
+loose ends done
+    fix failing unit tests - ok
+    test generated links - ok
+    test mimetype - ok
+    test resource injector - ok
+        inject2 - unrelated bug now appears fixed
+    unit test displayonlywidget - ok
+    middleware - ok
+    thread local - ok
+    remove core.started
+    locked ut - ok
+    2 failing unit tests - ok
+    tests for .validate - cw, rw, dow - ok
+
+
+overall plan
+    fix loose ends - ok
+    basic widget browser - ok
+    make tw.forms look good in wb - ok

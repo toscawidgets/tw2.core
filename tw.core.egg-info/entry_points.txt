@@ -1,8 +1,0 @@
-
-    [toscawidgets.widgets]
-    tw.core = tw.core
-
-    [turbogears.extensions]
-    toscawidgets=tw.core.framework:tg
-
-    
