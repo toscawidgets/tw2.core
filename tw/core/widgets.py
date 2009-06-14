@@ -87,7 +87,6 @@ TBD: change this to explaining HOW you use a widget...
     value = pm.Param("The value for the widget.", default=None)
     resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a :class:`Resource` subclass.", default=[], request_local=False)
 
-    orig_value = pm.Variable("Original value before validation.")
     error_msg = pm.Variable("Validation error message.")
     parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
 
@@ -96,14 +95,13 @@ TBD: change this to explaining HOW you use a widget...
     _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
 
     @classmethod
-    def post_define(cls, zzz=None):
+    def post_define(cls, cls2=None):
         """
         Define the widget:
           * Set attrs['id'] to the compound id
           * Get any defaults from the parent
         """
-        if zzz:
-            cls = zzz # TBD: remove this hack!
+        cls = cls2 or cls
         id = getattr(cls, 'id', None)
         if id:
             if not cls._valid_id_re.match(id):
@@ -415,7 +413,8 @@ class DisplayOnlyWidget(Widget):
         if not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
         cls._sub_compound = cls.child._sub_compound
-        cls.resources = set(cls.resources).update(cls.child.resources)
+        if cls.child.resources:
+            cls.resources = set(cls.resources).update(cls.child.resources)
         cls.id = cls.child.id
         cls.id_elem = None
         cls.child = cls.child(parent=cls, resources=[])

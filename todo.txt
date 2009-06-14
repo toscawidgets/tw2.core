@@ -1,11 +1,13 @@
 widget instance per request
-    new tests for this stuff
-    make old, instantiative behaviour work, tweak __new__
-    post_define - fe validator
+    make old, instantiative behaviour work - ok
 
+    new tests for this stuff
+    post_define - fe validator
     labels for grid layout
     re-enable attr clash detection
     display as a class or instance method
+    remove need for .req() on resources
+    remove "cls2 or cls" hack
 
 design documentation
 error reporting, finish validation
