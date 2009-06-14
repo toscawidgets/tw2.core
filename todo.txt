@@ -6,12 +6,8 @@ widget instance per request
     labels for grid layout
     re-enable attr clash detection
     display as a class or instance method
-    validate only as class method(?)
 
 design documentation
-deglobalise config - using rl storage
- -> milestone
-
 error reporting, finish validation
 wsgi tutorial
  -> milestone

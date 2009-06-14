@@ -21,14 +21,16 @@ class BaseWidget(pm.Parametered):
 
     @classmethod
     def cls(cls, **kw):
-        return type(cls.__name__+'s', (cls,), kw)
+        return type(cls.__name__+'_s', (cls,), kw)
 
     @classmethod
     def req(cls, **kw):
-        return cls(**kw) #.__new__(cls, **kw)
+        ins = object.__new__(cls)
+        ins.__init__(**kw)
+        return ins
 
-    #def __new__(cls, **kw):
-    #    return cls.cls(**kw)
+    def __new__(cls, **kw):
+        return cls.cls(**kw)
 
     def __init__(self, **kw):
         for k, v in kw.items():
