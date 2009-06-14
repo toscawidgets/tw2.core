@@ -33,12 +33,13 @@ def catch_errors(fn):
     catch = ValidationError
     if formencode:
         catch = (catch, formencode.Invalid)
-    def inner(self):
+    def inner(self, *args, **kw):
         try:
-            return fn(self)
+            return fn(self, *args, **kw)
         except catch, e:
-            self.err_msg = str(e)
-            raise ValidationError(self.err_msg, widget=self)
+            if self:
+                self.error_msg = str(e)
+            raise ValidationError(str(e), widget=self)
     return inner
 
 

@@ -195,11 +195,13 @@ TBD: change this to explaining HOW you use a widget...
             raise core.WidgetError('Only call validate on root widgets')
         value = vd.unflatten_params(params)
         try:
-            if self.id:
-                value = value[self.id]
+            if cls.id:
+                value = value[cls.id]
         except KeyError:
             raise vd.ValidationError('corrupt', cls.validator, widget=cls.req())
-        return cls.req()._validate(value)
+        ins = cls.req()
+        core.request_local()['validated_widget'] = ins
+        return ins._validate(value)
 
     @vd.catch_errors
     def _validate(self, value):
@@ -233,10 +235,10 @@ class CompoundWidget(Widget):
     template = 'genshi:tw.core.templates.display_children'
 
     @classmethod
-    def post_define(cls):
+    def post_define(cls, cls2=None):
+        cls = cls2 or cls
         Widget.post_define(cls)
-        if not getattr(cls, 'id', None):
-            cls._sub_compound = True
+        cls._sub_compound = not cls.id_elem
         if not hasattr(cls, 'children'):
             return
         ids = set()
@@ -249,7 +251,8 @@ class CompoundWidget(Widget):
                 if c.id in ids:
                     raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)
-            cls.resources.update(c.resources)
+            if c.resources: # TBD: this shouldn't be needed
+                cls.resources.update(c.resources)
             joined_cld.append(c.cls(parent=cls, resources=[]))
         # TBD: check for dupes in _sub_compound
         cls.children = WidgetBunch(joined_cld)
@@ -286,7 +289,7 @@ class CompoundWidget(Widget):
             except vd.ValidationError:
                 data[c.id] = vd.Invalid
                 any_errors = True
-        data = self.validator.validate_python(data)
+        self.validator.validate_python(data)
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data
@@ -380,15 +383,16 @@ class RepeatingWidget(Widget):
         if not isinstance(value, list):
             raise vd.ValidationError('corrupt', self.validator)
         self.value = value
+        self.repetitions = len(value) # TBD
         any_errors = False
         data = []
-        for c in self.children:
+        for i,v in enumerate(value):
             try:
-                c._validate()
+                data.append(self.children[i]._validate(v))
             except vd.ValidationError:
                 data.append(vd.Invalid)
                 any_errors = True
-        data = self.validator.validate_python(data)
+        self.validator.validate_python(data)
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data
