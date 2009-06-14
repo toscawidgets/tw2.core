@@ -20,17 +20,13 @@ class BaseWidget(pm.Parametered):
     __metaclass__ = WidgetMeta
 
     @classmethod
-    def cls(cls, **kw):
-        return type(cls.__name__+'_s', (cls,), kw)
-
-    @classmethod
     def req(cls, **kw):
         ins = object.__new__(cls)
         ins.__init__(**kw)
         return ins
 
     def __new__(cls, **kw):
-        return cls.cls(**kw)
+        return type(cls.__name__+'_s', (cls,), kw)
 
     def __init__(self, **kw):
         for k, v in kw.items():
@@ -255,7 +251,7 @@ class CompoundWidget(Widget):
                 ids.add(c.id)
             if c.resources: # TBD: this shouldn't be needed
                 cls.resources.update(c.resources)
-            joined_cld.append(c.cls(parent=cls, resources=[]))
+            joined_cld.append(c(parent=cls, resources=[]))
         # TBD: check for dupes in _sub_compound
         cls.children = WidgetBunch(joined_cld)
 
@@ -306,7 +302,7 @@ class RepeatingWidgetBunchCls(object):
         try:
             rep = self._repetition_cache[item]
         except KeyError:
-            rep = self.parent.child.cls(parent=self.parent, repetition=item, id_elem=str(item))
+            rep = self.parent.child(parent=self.parent, repetition=item, id_elem=str(item))
             self._repetition_cache[item] = rep
         return rep
 
@@ -359,7 +355,7 @@ class RepeatingWidget(Widget):
             raise pm.ParameterError("Child must have no id")
         cls.resources = set(cls.resources)
         cls.resources.update(cls.child.resources)
-        cls.child = cls.child.cls(parent=cls, resources=[])
+        cls.child = cls.child(parent=cls, resources=[])
         cls.children = RepeatingWidgetBunchCls(parent=cls)
 
     def __init__(self, **kw):
@@ -422,7 +418,7 @@ class DisplayOnlyWidget(Widget):
         cls.resources = set(cls.resources).update(cls.child.resources)
         cls.id = cls.child.id
         cls.id_elem = None
-        cls.child = cls.child.cls(parent=cls, resources=[])
+        cls.child = cls.child(parent=cls, resources=[])
 
     def __init__(self, **kw):
         super(DisplayOnlyWidget, self).__init__(**kw)
@@ -445,7 +441,7 @@ class WidgetListMeta(type):
                 children.extend(getattr(b, 'children', []))
             for d, v in dct.items():
                  if issubclass(v, Widget):
-                    children.append(v.cls(id=d))
+                    children.append(v(id=d))
                  else:
                     raise core.WidgetError('All members of a WidgetList must be widgets.')
             children.sort(key=lambda w: w._seq)
