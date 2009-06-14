@@ -1,16 +1,14 @@
 widget instance per request
-    make old, instantiative behaviour work - ok
-    re-enable attr clash detection - ok
-
     new tests for this stuff
     post_define - fe validator
     labels for grid layout
     display as a class or instance method
-    remove need for .req() on resources
     remove "cls2 or cls" hack
 
 design documentation
-error reporting, finish validation
+validation
+declarative instantiation
+
 wsgi tutorial
  -> milestone
 
@@ -34,52 +32,14 @@ client-side validation
 
 --------------
 
-unit test
-    validate_python & metaclass magic
-    Variable.__init__
-
 
 later
-    detect attempts to modify a widget class? may not be worth it
+    detect attempts to modify a widget class
     This makes GridLayout with hidden RowLayout much more possible
     csslink auto module name isn't working - can't easily fix, remove
     id as default param to Widget.__init__
     override __init__ to change default parameter
         and make id the top default parameter
-
-
-Considered designs...
-    The main issue is that some widget parameters are fixed for the life of the app
-    Some change with each request
-
-    In TW 0.9, widget instances existed for the life of the app
-        per-request params were stored in a dict
-        problems:
-            copying the dict around can be slow
-            you have to create singletons
-            it's hard to set things on children - child_args gets messy
-
-    In TW 2.0-1, widget instances exist for the life of the app
-        Instrumentation made some params request local
-        problems:
-            Instrumentation is complex and probably slow
-            you have to create singletons
-
-    In TW 2.0-2
-        Instance per request
-        problems:
-            instantiative-style declaration is now a hack
-            difference between display, idisplay...
-
-        Now, one lifecycle considered was "fixed at instantiation"
-        i.e. you pass all args into constructor
-        but - this takes away the advantage of easily setting params
-
-        ok, so do almost all the work in "prepare"
-            this needs to know if the widget is redisplaying on validation failure
-            (no as not to call from_python)
-
-        one challenge is value propagation in validation
 
 
 
@@ -260,15 +220,6 @@ framework helpers & test
     @validate decorator
 
 
-separate tw.devtools
-    widget browser
-    resource bundler
-    library quickstart
-
-    aim is that core toscawidgets depends only on webob and simplejson
-        (and maybe even drop those)
-
-
 tw2.forms
 ---------
 form fields - ok
@@ -286,9 +237,9 @@ fancy layouts
 
 data grid
 gridlayout/rowlayout
-    labels are broken
+    labels are broken *** and there's a deeper problem, dual use of None for suppress_label
 
-vaidation
+validation
     some fields need particular work (checkbox, fileupload)
     MSF
         You want validator to apply to the whole list (default none, but ListLength good)
@@ -542,6 +493,41 @@ Allow hints on the model class (but don't overdo it)
 And allow per-field hints on the form
 
 
+Considered designs...
+    The main issue is that some widget parameters are fixed for the life of the app
+    Some change with each request
+
+    In TW 0.9, widget instances existed for the life of the app
+        per-request params were stored in a dict
+        problems:
+            copying the dict around can be slow
+            you have to create singletons
+            it's hard to set things on children - child_args gets messy
+
+    In TW 2.0-1, widget instances exist for the life of the app
+        Instrumentation made some params request local
+        problems:
+            Instrumentation is complex and probably slow
+            you have to create singletons
+
+    In TW 2.0-2
+        Instance per request
+        problems:
+            instantiative-style declaration is now a hack
+            difference between display, idisplay...
+
+        Now, one lifecycle considered was "fixed at instantiation"
+        i.e. you pass all args into constructor
+        but - this takes away the advantage of easily setting params
+
+        ok, so do almost all the work in "prepare"
+            this needs to know if the widget is redisplaying on validation failure
+            (no as not to call from_python)
+
+        one challenge is value propagation in validation
+
+
+
 
 Done
 ----
@@ -565,3 +551,8 @@ overall plan
     fix loose ends - ok
     basic widget browser - ok
     make tw.forms look good in wb - ok
+
+widget instance per request
+    make old, instantiative behaviour work - ok
+    re-enable attr clash detection - ok
+    remove need for .req() on resources - ok

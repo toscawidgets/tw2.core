@@ -175,7 +175,8 @@ TBD: change this to explaining HOW you use a widget...
             the parent's template engine, or the default, if there is no
             parent. Set this to ``string`` to get raw string output.
         """
-        self.prepare()
+        if not self.parent:
+            self.prepare()
         mw = core.request_local().get('middleware')
         if displays_on is None:
             displays_on = (self.parent.template.split(':')[0] if self.parent
@@ -269,6 +270,8 @@ class CompoundWidget(Widget):
         else:
             for c in self.children:
                 c.value = getattr(v, c.id, None)
+        for c in self.children:
+            c.prepare()
 
     @vd.catch_errors
     def _validate(self, value):
@@ -375,6 +378,8 @@ class RepeatingWidget(Widget):
             self.repetitions = reps
         for i,v in enumerate(value):
             self.children[i].value = v
+        for c in self.children:
+            c.prepare()
 
     @vd.catch_errors
     def _validate(self, value):
@@ -429,6 +434,7 @@ class DisplayOnlyWidget(Widget):
     def prepare(self):
         super(DisplayOnlyWidget, self).prepare()
         self.child.value = self.value
+        self.child.prepare()
 
     def _validate(self, value):
         return self.child._validate(value)
