@@ -1,18 +1,17 @@
 import copy, weakref, re, itertools
-import template, core, util, validation as vd, param
-
+import template, core, util, validation as vd, params as pm
 
 _widget_seq = itertools.count(0)
 
-class WidgetMeta(params.ParamMeta):
+class WidgetMeta(pm.ParamMeta):
     def __new__(meta, name, bases, dct):
-        widget = super(WidgetMeta, meta).__new__(name, bases, dct)
+        widget = super(WidgetMeta, meta).__new__(meta, name, bases, dct)
         widget._seq = _widget_seq.next()
         widget.post_define()
         return widget
 
 
-class BaseWidget(params.Parametered):
+class BaseWidget(pm.Parametered):
     """
     Base class for all widgets.
 
@@ -22,23 +21,18 @@ class BaseWidget(params.Parametered):
 
     @classmethod
     def cls(cls, **kw):
-        class subcls(cls):
-            pass
-        for k, v in kw.items():
-            setattr(subcls, k, v)
-        return subcls
+        return type(cls.__name__+'s', (cls,), kw)
 
     @classmethod
     def req(cls, **kw):
-        return cls(**kw) # object.__new__(cls, **kw)
+        return cls(**kw) #.__new__(cls, **kw)
 
-#    def __new__(cls, **kw):
-#        return cls.cls(**kw)
+    #def __new__(cls, **kw):
+    #    return cls.cls(**kw)
 
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
-        self.post_init()
 
     @classmethod
     def post_define(cls):
@@ -52,7 +46,7 @@ class BaseWidget(params.Parametered):
                     super(MyWidget, cls).post_define() !!! TBD
                     id = getattr(cls,  'id', None)
                     if id and not id.startswith('my'):
-                        raise ParameterError("id must start with 'my'")
+                        raise pm.ParameterError("id must start with 'my'")
 
         post_define should always cope with missing data - the class may be an
         abstract class.
@@ -88,47 +82,49 @@ TBD: change this to explaining HOW you use a widget...
     Basic params for all widgets
     """
 
-    id = Param('Widget identifier', request_local=False)
-    template = Param('Template file for the widget, in the format engine_name:template_path.')
-    validator = Param('Validator for the widget.', default=vd.Validator(), request_local=False)
-    attrs = Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
-    value = Param("The value for the widget.", default=None)
-    resources = Param("Resources used by the widget. This must be an iterable, each item of which is a :class:`Resource` subclass.", default=[])
+    id = pm.Param('Widget identifier', request_local=False)
+    template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
+    validator = pm.Param('Validator for the widget.', default=vd.Validator(), request_local=False)
+    attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
+    value = pm.Param("The value for the widget.", default=None)
+    resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a :class:`Resource` subclass.", default=[], request_local=False)
 
-    orig_value = Variable("Original value before validation.")
-    error_msg = Variable("Validation error message.")
-    parent = Variable("The parent of this widget, or None if this is a root widget.")
+    orig_value = pm.Variable("Original value before validation.")
+    error_msg = pm.Variable("Validation error message.")
+    parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
 
     _sub_compound = False
     id_elem = None
     _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
 
     @classmethod
-    def post_define(cls):
+    def post_define(cls, zzz=None):
         """
         Define the widget:
           * Set attrs['id'] to the compound id
           * Get any defaults from the parent
         """
+        if zzz:
+            cls = zzz # TBD: remove this hack!
         id = getattr(cls, 'id', None)
         if id:
             if not cls._valid_id_re.match(id):
-                raise ParameterError("Not a valid identifier: '%s'" % id)
+                raise pm.ParameterError("Not a valid identifier: '%s'" % id)
             if not cls.id_elem:
                 cls.id_elem = id
             cls.attrs = cls.attrs.copy()
-            cls.attrs['id'] = cls._compound_id
+            cls.attrs['id'] = cls._compound_id()
 
         if cls.validator and not isinstance(cls.validator, vd.Validator):
             # TBD: do formencode as well or just hasattr to_python, from_python
-            raise ParameterError("Validator must be a tw.core.Validator instance, or a F")
+            raise pm.ParameterError("Validator must be a tw.core.Validator instance, or a F")
 
-        cls._deferred = [a for a in dir(cls) if isinstance(getattr(cls, a), Deferred)]
+        cls._deferred = [a for a in dir(cls) if isinstance(getattr(cls, a), pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
 
         if cls.parent:
-            for p in cls.parent._all_params:
-                if p.child_param and not hasattr(cls, p.name) and p.default is not Required:
+            for p in cls.parent._all_params.values():
+                if p.child_param and not hasattr(cls, p.name) and p.default is not pm.Required:
                     setattr(cls, p.name, p.default)
 
 
@@ -140,31 +136,31 @@ TBD: change this to explaining HOW you use a widget...
           * Initialise and register any resources
           * Call ``validator.from_python`` on the value
         """
-        if 1: # TBD debug mode only
+        if 0: # TBD debug mode only
             for k in kw:
                 if not self._params[k].request_local:
-                    raise ParameterError("Cannot set non-request-local parameter '%s' in a request" % k)
+                    raise pm.ParameterError("Cannot set non-request-local parameter '%s' in a request" % k)
             for p in self._params:
                 if not hasattr(self, p):
-                    raise ParameterError("Missing required parameter '%s'" % p)
+                    raise pm.ParameterError("Missing required parameter '%s'" % p)
 
         for a in self._deferred:
             setattr(self, a, getattr(self, a).fn())
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.id:
-                self.attrs['id'] = self._compound_id
+                self.attrs['id'] = self._compound_id()
             for a in self._attr:
                 self.attrs[a] = getattr(self, a)
-        if self.validator and not self._validated:
+        if self.validator: # TBD: and not self._validated:
             self.value = self.validator.from_python(self.value)
         if self.resources:
-            core.request_local().setdefault('resources', set()).update(r() for r in self.resources)
+            core.request_local().setdefault('resources', set()).update(r for r in self.resources)
 
-    @property
-    def _compound_id(self):
+    @classmethod
+    def _compound_id(cls):
         ancestors = []
-        cur = self
+        cur = cls
         while cur:
             ancestors.append(cur.id_elem)
             cur = cur.parent
@@ -180,7 +176,8 @@ TBD: change this to explaining HOW you use a widget...
             the parent's template engine, or the default, if there is no
             parent. Set this to ``string`` to get raw string output.
         """
-        mw = core.request_local()['middleware']
+        self.prepare()
+        mw = core.request_local().get('middleware')
         if displays_on is None:
             displays_on = (self.parent.template.split(':')[0] if self.parent
                                                 else mw.config.default_engine)
@@ -190,7 +187,7 @@ TBD: change this to explaining HOW you use a widget...
     def idisplay(cls, displays_on=None, **kw):
         """Initialise and display the widget. This intended for simple widgets
         that don't need a value from the controller."""
-        return cls(**kw).display(displays_on)
+        return cls.req(**kw).display(displays_on)
 
     @classmethod
     def validate(cls, params):
@@ -209,9 +206,6 @@ TBD: change this to explaining HOW you use a widget...
         self._validated = True
         self.value = value
         return self.validator.to_python(value)
-
-# TBD - there's two different types of validation error - with and without widget
-# is it worth having two different exceptions?
 
 class LeafWidget(Widget):
     """
@@ -233,14 +227,14 @@ class CompoundWidget(Widget):
     A widget that has an arbitrary number of children, this is common for
     layout components, such as :class:`tw.forms.TableLayout`.
     """
-    children = Param('Children for this widget. This must be an interable, each item of which is a Widget')
-    c = Variable("Alias for children", default=property(lambda s: s.children))
-    children_deep = Variable("Children, including any children from child CompoundWidgets that have no id")
+    children = pm.Param('Children for this widget. This must be an interable, each item of which is a Widget')
+    c = pm.Variable("Alias for children", default=property(lambda s: s.children))
+    children_deep = pm.Variable("Children, including any children from child CompoundWidgets that have no id")
     template = 'genshi:tw.core.templates.display_children'
 
     @classmethod
     def post_define(cls):
-        # TBD: super(CompoundWidget, cls).post_define()
+        Widget.post_define(cls)
         if not getattr(cls, 'id', None):
             cls._sub_compound = True
         if not hasattr(cls, 'children'):
@@ -250,26 +244,29 @@ class CompoundWidget(Widget):
         cls.resources = set(cls.resources)
         for c in cls.children:
             if not issubclass(c, Widget):
-                raise ParameterError("All children must be widgets")
+                raise pm.ParameterError("All children must be widgets")
             if c.id:
                 if c.id in ids:
                     raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)
-            cls.resources.update(cls.child.resources)
+            cls.resources.update(c.resources)
             joined_cld.append(c.cls(parent=cls, resources=[]))
         # TBD: check for dupes in _sub_compound
-        self.children = joined_cld
+        cls.children = WidgetBunch(joined_cld)
+
+    def __init__(self, **kw):
+        super(CompoundWidget, self).__init__(**kw)
+        self.children = WidgetBunch(c.req(parent=weakref.proxy(self)) for c in self.children)
 
     def prepare(self):
         super(CompoundWidget, self).prepare()
         v = self.value or {}
         if isinstance(v, dict):
             for c in self.children:
-                c.value = value.get(c.id)
+                c.value = v.get(c.id)
         else:
             for c in self.children:
-                c.value = getattr(value, c.id, None)
-        self.children = WidgetBunch(c.req(parent=weakref.proxy(self)) for c in self.children)
+                c.value = getattr(v, c.id, None)
 
     @vd.catch_errors
     def _validate(self, value):
@@ -294,10 +291,25 @@ class CompoundWidget(Widget):
             raise vd.ValidationError('childerror', self.validator)
         return data
 
-class RepeatingWidgetBunch(object):
+class RepeatingWidgetBunchCls(object):
     def __init__(self, parent):
         self.parent = parent
-        self.repetition_cache = {}
+        self._repetition_cache = {}
+    def __getitem__(self, item):
+        if not isinstance(item, int):
+            raise KeyError("Must specify an integer")
+        try:
+            rep = self._repetition_cache[item]
+        except KeyError:
+            rep = self.parent.child.cls(parent=self.parent, repetition=item, id_elem=str(item))
+            self._repetition_cache[item] = rep
+        return rep
+
+class RepeatingWidgetBunch(object):
+    def __init__(self, parent, rwbc):
+        self.parent = parent
+        self.rwbc = rwbc
+        self._repetition_cache = {}
     def __len__(self):
         return self.parent.repetitions
     def __iter__(self):
@@ -309,7 +321,7 @@ class RepeatingWidgetBunch(object):
         try:
             rep = self._repetition_cache[item]
         except KeyError:
-            rep = self.parent.child.cls(parent=self.parent, repetition=item, id_elem=str(item))
+            rep = self.rwbc[item].req(parent=weakref.proxy(self.parent))
             self._repetition_cache[item] = rep
         return rep
 
@@ -319,46 +331,48 @@ class RepeatingWidget(Widget):
     A widget that has a single child, which is repeated an arbitrary number
     of times, such as :class:`tw.forms.GridLayout`.
     """
-    child = Param('Child for this widget. This must be a Widget.')
-    repetitions = Param('Fixed number of repetitions. If this is None, it dynamically determined, based on the length of the value list.', default=None)
-    min_reps = Param('Minimum number of repetitions', default=None)
-    max_reps = Param('Maximum number of repetitions', default=None)
-    extra_reps = Param('Number of extra repeitions, beyond the length of the value list.', default=1)
+    child = pm.Param('Child for this widget. This must be a Widget.')
+    repetitions = pm.Param('Fixed number of repetitions. If this is None, it dynamically determined, based on the length of the value list.', default=None)
+    min_reps = pm.Param('Minimum number of repetitions', default=None)
+    max_reps = pm.Param('Maximum number of repetitions', default=None)
+    extra_reps = pm.Param('Number of extra repeitions, beyond the length of the value list.', default=1)
 
-    children = Variable()
-    repetition = ChildVariable('The repetition of a child widget.')
+    children = pm.Variable()
+    repetition = pm.ChildVariable('The repetition of a child widget.')
 
     template = 'genshi:tw.core.templates.display_children'
 
     @classmethod
-    def post_define(cls):
-        # TBD super(RepeatingWidget, self).post_define()
+    def post_define(cls, cls2=None):
+        cls = cls2 or cls
+        Widget.post_define(cls)
         if not hasattr(cls, 'child'):
             return
         if not issubclass(cls.child, Widget):
-            raise ParameterError("Child must be a widget")
-        if getattr(cls, 'child', None):
-            raise ParameterError("Child must have no id")
-        cls.resources = set(cls.resources).update(cls.child.resources)
+            raise pm.ParameterError("Child must be a widget")
+        if cls.child.id_elem:
+            raise pm.ParameterError("Child must have no id")
+        cls.resources = set(cls.resources)
+        cls.resources.update(cls.child.resources)
         cls.child = cls.child.cls(parent=cls, resources=[])
         cls.children = RepeatingWidgetBunchCls(parent=cls)
 
+    def __init__(self, **kw):
+        super(RepeatingWidget, self).__init__(**kw)
+        self.children = RepeatingWidgetBunch(self, self.children)
+
     def prepare(self):
         super(RepeatingWidget, self).prepare()
-        v = self.value or []
+        value = self.value or []
         if self.repetitions is None:
-            reps = len(v) + self.extra_reps
+            reps = len(value) + self.extra_reps
             if self.max_reps is not None and reps > self.max_reps:
                 reps = self.max_reps
             if self.min_reps is not None and reps < self.min_reps:
                 reps = self.min_reps
             self.repetitions = reps
-
-        # TBD - simplify
-        # rwb_instance
-        self.children = [self.children[i].req(parent=weakref.proxy(self),
-                            value=value[i] if i < len(value) else None
-                         ) for i in xrange(self.repetitions)]
+        for i,v in enumerate(value):
+            self.children[i].value = v
 
     @vd.catch_errors
     def _validate(self, value):
@@ -387,25 +401,30 @@ class DisplayOnlyWidget(Widget):
     :class:`tw.forms.FieldSet` that surround a group of widgets in a wrapper,
     without otherwise affecting the behaviour.
     """
-    child = Param('Child for this widget. This must be a widget.')
+    child = pm.Param('Child for this widget. This must be a widget.')
     id = None
 
     @classmethod
-    def post_define(cls):
-        #super(DisplayOnlyWidget, cls).post_define()
+    def post_define(cls, cls2=None):
+        cls = cls2 or cls
+        Widget.post_define(cls)
         if not hasattr(cls, 'child'):
             return
         if not issubclass(cls.child, Widget):
-            raise ParameterError("Child must be a widget")
-        cls._sub_compound = child._sub_compound
+            raise pm.ParameterError("Child must be a widget")
+        cls._sub_compound = cls.child._sub_compound
         cls.resources = set(cls.resources).update(cls.child.resources)
         cls.id = cls.child.id
         cls.id_elem = None
         cls.child = cls.child.cls(parent=cls, resources=[])
 
+    def __init__(self, **kw):
+        super(DisplayOnlyWidget, self).__init__(**kw)
+        self.child = self.child.req(parent=weakref.proxy(self))
+
     def prepare(self):
         super(DisplayOnlyWidget, self).prepare()
-        self.child = self.child.req(parent=weakref.proxy(self), value=self.value)
+        self.child.value = self.value
 
     def _validate(self, value):
         return self.child._validate(value)

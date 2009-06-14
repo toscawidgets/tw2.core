@@ -32,7 +32,7 @@ class Config(object):
 
     inject_resources = True
     serve_resources = True
-    res_prefix = '/resources'
+    res_prefix = '/resources/'
     bufsize = 4*1024
 
     def __init__(self, **kw):
@@ -52,9 +52,9 @@ class TwMiddleware(object):
     """
     def __init__(self, app, **config):
         self.app = app
-        self.config = Config(config)
+        self.config = Config(**config)
         self.engines = template.EngineManager()
-        self.resources = resources.ResourcesApp()
+        self.resources = resources.ResourcesApp(self.config)
 
     def __call__(self, environ, start_response):
         rl = core.request_local()

@@ -7,7 +7,7 @@ from template import (EngineError)
 from params import (Param, ChildParam, Variable, ChildVariable, Required,
     Deferred, ParameterError)
 
-from widgets import (LeafWidget, CompoundWidget, RepeatingWidget,
+from widgets import (Widget, CompoundWidget, RepeatingWidget,
     DisplayOnlyWidget)
 
 from resources import (Link, JSLink, CSSLink, JSSource, inject_resources)

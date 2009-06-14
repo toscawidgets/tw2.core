@@ -1,3 +1,6 @@
+import core, itertools, copy
+
+
 class ParameterError(core.WidgetError):
     "Errors related to parameters."
     pass
@@ -111,6 +114,7 @@ class ParamMeta(type):
         for pname, prm in dct.items():
             if isinstance(prm, Param):
                 if pname in params:
+                    newprm = prm
                     prm = copy.copy(params[pname])
                     for a in newprm.specified:
                         setattr(prm, a, getattr(newprm, a))
@@ -123,12 +127,15 @@ class ParamMeta(type):
                     dct[pname] = prm.default
                 else:
                     del dct[pname]
+            elif pname in params:
+                params[pname] = copy.copy(params[pname])
+                params[pname].default = prm
 
         ins = type.__new__(meta, name, bases, dct)
         ins._all_params = params # TBD: still needed?
         ins._params = dict((p.name, p) for p in params.values()
                                                     if not p.child_param)
-        return widget
+        return ins
 
 
 class Parametered(object):

@@ -1,4 +1,4 @@
-import widgets as wd, util, core
+import widgets as wd, util, core, params as pm
 import threading, re, logging, wsgiref.util as wru, itertools, heapq, operator
 import os, webob as wo, pkg_resources as pr, mimetypes, errno
 
@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 
 class Resource(wd.Widget):
-    location = wd.Param('Location on the page where the resource should be placed. This can be one of: head, headbottom, bodytop or bodybottom.')
+    location = pm.Param('Location on the page where the resource should be placed. This can be one of: head, headbottom, bodytop or bodybottom.')
     # TBD: do we want 'afterwidget' as a location?
     id = None
 
@@ -15,20 +15,19 @@ class Link(wd.Widget):
     A link to a file.
     '''
     id = None
-    link = wd.Param('Direct web link to file. If this is not specified, it is automatically generated, based on :attr:`modname` and :attr:`filename`.')
-    modname = wd.Param('Name of Python module that contains the file.', default=None)
-    filename = wd.Param('Path to file, relative to module base.', default=None)
+    link = pm.Param('Direct web link to file. If this is not specified, it is automatically generated, based on :attr:`modname` and :attr:`filename`.')
+    modname = pm.Param('Name of Python module that contains the file.', default=None)
+    filename = pm.Param('Path to file, relative to module base.', default=None)
 
-    def post_init(self):
+    def prepare(self):
+        super(Link, self).prepare()
         if not hasattr(self, 'link'):
             if not (self.filename and self.modname):
-                raise wd.ParameterError("Either 'link' or both 'filename' and 'modname' must be specified")
+                raise pm.ParameterError("Either 'link' or both 'filename' and 'modname' must be specified")
             resources = core.request_local()['middleware'].resources
             self.link = resources.register(self.modname, self.filename)
-        super(Link, self).process()
 
     def __hash__(self):
-        # TBD: this could cause bugs! self.link should be set when we hash
         return hash(hasattr(self, 'link') and self.link)
     def __eq__(self, other):
         return self.link == getattr(other, "link", None)
@@ -38,7 +37,7 @@ class JSLink(Link, Resource):
     template = 'genshi:tw.core.templates.jslink'
 
 class CSSLink(Link, Resource):
-    media = wd.Param('Media tag', default='all')
+    media = pm.Param('Media tag', default='all')
     location = 'head'
     template = 'genshi:tw.core.templates.csslink'
 
@@ -53,7 +52,7 @@ class JSSource(Resource):
                 super(MyWidget, self).post_init()
                 self.resources = self.resources + [JSSource('alert(value)')]
     """
-    src = wd.Param('Source code')
+    src = pm.Param('Source code')
     location = 'bodybottom'
     template = 'genshi:tw.core.templates.jssource'
 
@@ -80,7 +79,7 @@ class ResourcesApp(object):
     """
 
     def __init__(self, config):
-        self.paths = {}
+        self._paths = {}
         self.config = config
 
     def register(self, modname, filename):
@@ -125,7 +124,7 @@ class ResourcesApp(object):
         except IOError:
             resp = wo.Response(status="404 Not Found")
         else:
-            stream = wru.FileWrapper(stream, self.bufsize)
+            stream = wru.FileWrapper(stream, self.config.bufsize)
             resp = wo.Response(request=req, app_iter=stream, content_type=ct)
             if enc:
                 resp.content_type_params['charset'] = enc
@@ -181,6 +180,8 @@ class _ResourceInjector(util.MultipleReplacer):
 
     def _injector_for_location(self, key, after=True):
         def inject(group, resources, encoding):
+            for r in resources:
+                r.prepare() # TBD: is this needed?
             inj = u'\n'.join([r.display(displays_on='string') for r in resources if r.location == key])
             inj = inj.encode(encoding)
             if after:

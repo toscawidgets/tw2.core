@@ -1,34 +1,38 @@
-Tidy up repositories
-    create tw2.devtools
-    remove .pyc, egg-info, etc.
+widget instance per request
+    new tests for this stuff
+    make old, instantiative behaviour work, tweak __new__
+    post_define - fe validator
 
+    labels for grid layout
+    re-enable attr clash detection
+    display as a class or instance method
+    validate only as class method(?)
 
+design documentation
+deglobalise config - using rl storage
+ -> milestone
 
+error reporting, finish validation
+wsgi tutorial
+ -> milestone
 
-    switch to instance-per-request
-    design documentation
-    error reporting, finish validation
-    deglobalise config
-    wsgi tutorial
-        -> this would be a reasonable release point
+frameworks
+declarative
+another round of loose ends
+widget browser
+tw.forms
+ -> milestone
 
-    frameworks
-    declarative
-    another round of loose ends
-        widget browser
-        tw.forms
+tw.dynforms2
+widgets as controllers
+sa_forms
+jquery, mochikit, dojo, yui
+ajax_sa_forms
+cool new and different widgets - popup links, photos
+client-side validation
 
-    documentation - getting there
-
-    -> release
-
-    tw.dynforms2
-    widgets as controllers
-    sa_forms
-    jquery, mochikit, dojo, yui
-    ajax_sa_forms
-    cool new and different widgets - popup links, photos
-    client-side validation
+# TBD - there's two different types of validation error - with and without widget
+# is it worth having two different exceptions?
 
 --------------
 
@@ -36,24 +40,14 @@ unit test
     validate_python & metaclass magic
     Variable.__init__
 
-csslink auto module name isn't working - can't easily fix, remove
-id as default param to Widget.__init__
-re-enable attr clash detection
-just pass self into template - make tw.forms work
-override __init__ to change default parameter
-    and make id the top default parameter
 
-
-----
-
-widget instance per request
-    get unit tests running with this setup ***
-    new tests for this stuff
-    make old, instantiative behaviour work, tweak __new__
-    This make GridLayout with hidden RowLayout much more possible
-    post_define - fe validator
-    later
-        detect attempts to modify a widget class? may not be worth it
+later
+    detect attempts to modify a widget class? may not be worth it
+    This makes GridLayout with hidden RowLayout much more possible
+    csslink auto module name isn't working - can't easily fix, remove
+    id as default param to Widget.__init__
+    override __init__ to change default parameter
+        and make id the top default parameter
 
 
 Considered designs...
@@ -210,8 +204,6 @@ widget browser
     move to tw2.devtools - ok
 
     demos
-        remove bullets with css
-            UL.plain  { list-style-type: none }
         imagebutton - what image?
     make tw.core neat
     paster command entry point
