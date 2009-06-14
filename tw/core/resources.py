@@ -31,6 +31,8 @@ class Link(wd.Widget):
         return hash(hasattr(self, 'link') and self.link)
     def __eq__(self, other):
         return self.link == getattr(other, "link", None)
+    def __repr__(self):
+        return "%s('%s')" % (self.__class__.__name__, getattr(self, 'link', '%s/%s'%(self.modname,self.filename)))
 
 class JSLink(Link, Resource):
     location = 'head'
@@ -60,6 +62,8 @@ class JSSource(Resource):
         return hash(self.src)
     def __eq__(self, other):
         return self.src == getattr(other, "src", None)
+    def __repr__(self):
+        return "%s('%s')" % (self.__class__.__name__, self.src)
 
 class ResourcesApp(object):
     """WSGI Middleware to serve static resources

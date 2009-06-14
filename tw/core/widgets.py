@@ -117,6 +117,7 @@ TBD: change this to explaining HOW you use a widget...
 
         cls._deferred = [a for a in dir(cls) if isinstance(getattr(cls, a), pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
+        cls.resources = [r.req() for r in cls.resources]
 
         if cls.parent:
             for p in cls.parent._all_params.values():
