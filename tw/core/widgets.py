@@ -147,6 +147,8 @@ TBD: change this to explaining HOW you use a widget...
             if self.id:
                 self.attrs['id'] = self._compound_id()
             for a in self._attr:
+                if a in self.attrs:
+                    raise pm.ParameterError("Class with user-supplied attribute: '%s'" % a)
                 self.attrs[a] = getattr(self, a)
         if self.validator: # TBD: and not self._validated:
             self.value = self.validator.from_python(self.value)
