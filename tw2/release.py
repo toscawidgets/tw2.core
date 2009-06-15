@@ -7,7 +7,7 @@ __all__ = [
     '__PACKAGE_NAME__',
     ]
 
-__PACKAGE_NAME__ = "tw.core"
+__PACKAGE_NAME__ = "tw2.core"
 __VERSION__ = "2.0.0-alpha1"
 __AUTHOR__ = "Paul Johnston"
 __EMAIL__ = "paj@pajhome.org.uk"

@@ -25,8 +25,8 @@ def get_description(fname='README.txt'):
     return ''.join(lines)
 
 PACKAGES = [
-    'tw',
-    'tw.core',
+    'tw2',
+    'tw2.core',
     ]
 
 # Requirements to install buffet plugins and engines
@@ -56,7 +56,7 @@ setup(
     author_email=__EMAIL__,
     license=__LICENSE__,
     packages = PACKAGES,
-    namespace_packages = ['tw'],
+    namespace_packages = ['tw2'],
     include_package_data=True,
     exclude_package_data={"thirdparty" : ["*"]},
     entry_points="""

@@ -1,10 +1,10 @@
 widget instance per request
     new tests for this stuff
     post_define - fe validator
-    labels for grid layout
     display as a class or instance method
     remove "cls2 or cls" hack
 
+tw2 namespace
 design documentation
 validation
 declarative instantiation
@@ -13,7 +13,6 @@ wsgi tutorial
  -> milestone
 
 frameworks
-declarative
 another round of loose ends
 widget browser
 tw.forms
@@ -231,13 +230,13 @@ fancy layouts
     container_attrs
     odd/even
     hover_help
-    required
+    required - need to interface with validation
     hidden fields
     document
 
 data grid
 gridlayout/rowlayout
-    labels are broken *** and there's a deeper problem, dual use of None for suppress_label
+    dual use of None for suppress_label and auto *** doesn't matter for now
 
 validation
     some fields need particular work (checkbox, fileupload)
