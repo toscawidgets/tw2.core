@@ -7,8 +7,6 @@ from setuptools import setup
 if sys.version_info < (2, 5):
     raise SystemExit("Python 2.5 or later is required")
 
-execfile(os.path.join("tw", "release.py"))
-
 def get_description(fname='README.txt'):
     # Adapted from PEAK-Rules' setup.py
     # Get our long description from the documentation
@@ -24,11 +22,6 @@ def get_description(fname='README.txt'):
     f.close()
     return ''.join(lines)
 
-PACKAGES = [
-    'tw2',
-    'tw2.core',
-    ]
-
 # Requirements to install buffet plugins and engines
 _extra_cheetah = ["Cheetah>=1.0", "TurboCheetah>=0.9.5"]
 _extra_genshi = ["Genshi >= 0.3.5"]
@@ -36,8 +29,8 @@ _extra_kid = ["kid>=0.9.5", "TurboKid>=0.9.9"]
 _extra_mako = ["Mako >= 0.1.1"]
 
 setup(
-    name=__PACKAGE_NAME__,
-    version=__VERSION__,
+    name='tw2.core',
+    version='2.0.0-alpha1',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=[
@@ -52,16 +45,16 @@ setup(
         },
     url = "http://toscawidgets.org/",
     download_url = "http://toscawidgets.org/download/",
-    author=__AUTHOR__,
-    author_email=__EMAIL__,
-    license=__LICENSE__,
-    packages = PACKAGES,
+    author='Paul Johnston, Alberto Valverde & contributors',
+    author_email='paj@pajhome.org.uk',
+    license='MIT',
+    packages = ['tw2', 'tw2.core'],
     namespace_packages = ['tw2'],
     include_package_data=True,
     exclude_package_data={"thirdparty" : ["*"]},
     entry_points="""
-    [toscawidgets.widgets]
-    tw.core = tw.core
+    [tw2.widgets]
+    tw2.core = tw2.core
 
     [turbogears.extensions]
     toscawidgets=tw.core.framework:tg

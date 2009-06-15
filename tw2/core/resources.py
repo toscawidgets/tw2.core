@@ -36,12 +36,12 @@ class Link(wd.Widget):
 
 class JSLink(Link, Resource):
     location = 'head'
-    template = 'genshi:tw.core.templates.jslink'
+    template = 'genshi:tw2.core.templates.jslink'
 
 class CSSLink(Link, Resource):
     media = pm.Param('Media tag', default='all')
     location = 'head'
-    template = 'genshi:tw.core.templates.csslink'
+    template = 'genshi:tw2.core.templates.csslink'
 
 class JSSource(Resource):
     """
@@ -56,7 +56,7 @@ class JSSource(Resource):
     """
     src = pm.Param('Source code')
     location = 'bodybottom'
-    template = 'genshi:tw.core.templates.jssource'
+    template = 'genshi:tw2.core.templates.jssource'
 
     def __hash__(self):
         return hash(self.src)
@@ -69,11 +69,11 @@ class ResourcesApp(object):
     """WSGI Middleware to serve static resources
 
     This handles URLs like this:
-        /resources/tw.forms/static/forms.css
+        /resources/tw2.forms/static/forms.css
 
     Where:
         resources       is the prefix
-        tw.forms        is a python package name
+        tw2.forms       is a python package name
         static          is a directory inside the package
         forms.css       is the file to retrieve
 
@@ -89,9 +89,9 @@ class ResourcesApp(object):
     def register(self, modname, filename):
         """Register a file for static serving, and return the web path.
 
-        After this method has been called, for say ('tw.forms',
-        'static/forms.css'), the URL /resources/tw.forms/static/forms.css will
-        then serve that file from within the tw.forms package. This works
+        After this method has been called, for say ('tw2.forms',
+        'static/forms.css'), the URL /resources/tw2.forms/static/forms.css will
+        then serve that file from within the tw2.forms package. This works
         correctly for zipped eggs.
 
         *Security Consideration* - This file will be readable by users of the

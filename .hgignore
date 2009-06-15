@@ -1,2 +1,2 @@
-glob:tw.core.egg-info
 glob:*.pyc
+glob:tw2.core.egg-info
