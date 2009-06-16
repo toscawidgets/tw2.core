@@ -15,8 +15,10 @@ class EngineManager(dict):
         in a suitable way for inclusion in a template of the engine specified
         in ``displays_on``.
         """
-        engine_name, template_path = template.split(':')
+        engine_name, template_path = template.split(':', 1)
         adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on)
+        if engine_name == 'genshi' and (template_path.startswith('/') or template_path[1] == ':'):
+            engine_name = 'genshi_abs'
         template = (template_path if engine_name == 'cheetah'
             else self[engine_name].load_template(template_path))
         output = adaptor_renderer(template=template, info=dct)
@@ -45,6 +47,10 @@ class EngineManager(dict):
     def load_engine(self, name, options={}, extra_vars_func=None):
         if name in self:
             raise EngineError("Template engine '%s' is already loaded" % name)
+        orig_name = name
+        if name == 'genshi_abs':
+            name = 'genshi'
+            options.update({'genshi.search_path': '/'})
         for entrypoint in pk.iter_entry_points("python.templating.engines"):
             if entrypoint.name == name:
                 factory = entrypoint.load()
@@ -60,7 +66,7 @@ class EngineManager(dict):
             # unicode internally
             options['mako.output_encoding'] = 'utf-8'
 
-        self[name] = factory(extra_vars_func, options)
+        self[orig_name] = factory(extra_vars_func, options)
 
     def __getitem__(self, name):
         """Return a Buffet plugin by name. If the plugin is not loaded it
