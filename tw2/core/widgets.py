@@ -231,6 +231,21 @@ class WidgetBunch(tuple):
         raise AttributeError("Widget has no child named '%s'" % id)
 
 
+class CompoundWidgetMeta(WidgetMeta):
+    def __new__(meta, name, bases, dct):
+        if name != 'CompoundWidget' and 'children' not in dct:
+            new_children = []
+            for d, v in dct.items():
+                if isinstance(v, type) and issubclass(v, BaseWidget) and d != 'parent':
+                    new_children.append((v, d))
+                    del dct[d]
+            children = []
+            for b in bases:
+                children.extend(getattr(b, 'children', None) or [])
+            children.extend(v(id=d) for v,d in sorted(new_children, key=lambda t: t[0]._seq))
+            dct['children'] = children
+        return super(CompoundWidgetMeta, meta).__new__(meta, name, bases, dct)
+
 class CompoundWidget(Widget):
     """
     A widget that has an arbitrary number of children, this is common for
@@ -240,6 +255,8 @@ class CompoundWidget(Widget):
     c = pm.Variable("Alias for children", default=property(lambda s: s.children))
     children_deep = pm.Variable("Children, including any children from child CompoundWidgets that have no id")
     template = 'genshi:tw.core.templates.display_children'
+
+    __metaclass__ = CompoundWidgetMeta
 
     @classmethod
     def post_define(cls, cls2=None):
@@ -452,46 +469,3 @@ class DisplayOnlyWidget(Widget):
         except vd.ValidationError, e:
             e.widget = self
             raise
-
-class WidgetListMeta(type):
-    """Metaclass for WidgetList."""
-    def __new__(meta, name, bases, dct):
-        children = []
-        if name != 'WidgetList':
-            for b in bases:
-                children.extend(getattr(b, 'children', []))
-            for d, v in dct.items():
-                 if issubclass(v, Widget):
-                    children.append(v(id=d))
-                 else:
-                    raise core.WidgetError('All members of a WidgetList must be widgets.')
-            children.sort(key=lambda w: w._seq)
-        widget = type.__new__(meta, name, bases, {'children':children})
-
-
-class WidgetList(object):
-    """
-    This lets you define a list of widgets declaratively; use it like::
-
-        class MyWidgets(twc.WidgetList):
-            a = TextField()
-            b = Label(text='a')
-
-    The class is then iterable, so it can be passed as the :attr:`children`
-    parameter to :class:`CompoundWidget`. It also supports addition (e.g.
-    MyWidgets + MyWidgets2 returns the concatonated list). Inheritence has
-    a similar effect.
-
-    Note: ordering, which uses :attr:`_seq`.
-    """
-    __metaclass__ = WidgetListMeta
-
-    @classmethod
-    def __iter__(self):
-        return self.children.__iter__()
-
-    @classmethod
-    def __add__(self, other):
-        if isinstance(other, WidgetList):
-            other = other.children
-        return self.children + other

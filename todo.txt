@@ -1,13 +1,17 @@
 widget instance per request
     new tests for this stuff
-    post_define - fe validator
     display as a class or instance method
     remove "cls2 or cls" hack
+    params_as_vars config option
+    children_deep / _sub_compound
 tw2 namespace - ok
 
-design documentation
 validation
+    post_define - fe validator
+
 declarative instantiation
+
+design documentation
 
 wsgi tutorial
  -> milestone
