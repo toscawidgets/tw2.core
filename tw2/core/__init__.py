@@ -15,6 +15,7 @@ from resources import (Link, JSLink, CSSLink, JSSource, inject_resources)
 from validation import (Validator, LengthValidator,
     RegexValidator, IntValidator, OneOfValidator, DateValidator,
     DateTimeValidator, ValidationError, Invalid, EmailValidator,
-    UrlValidator, IpAddressValidator)
+    UrlValidator, IpAddressValidator, StringLengthValidator,
+    ListLengthValidator)
 
 from middleware import (TwMiddleware)
