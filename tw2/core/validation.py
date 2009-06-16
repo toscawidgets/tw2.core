@@ -46,9 +46,8 @@ def catch_errors(fn):
 def unflatten_params(params):
     """This performs the first stage of validation. It takes a dictionary where
     some keys will be compound names, such as "form:subform:field" and converts
-    this into a nested dict/list structure. Any values that are strings will be
-    decoded to unicode. This has been designed to it (should!) never raise an
-    exception.
+    this into a nested dict/list structure. This has been designed so it
+    (should!) never raise an exception.
     """
     out = {}
     for pname in params:
@@ -57,24 +56,22 @@ def unflatten_params(params):
         for e in elements[:-1]:
             dct = dct.setdefault(e, {})
         dct[elements[-1]] = params[pname]
-
-    number_re = re.compile('^\d+$')
-    def numdict_to_list(dct):
-        for k,v in dct.items():
-            if isinstance(v, dict):
-                numdict_to_list(v)
-                if all(number_re.match(k) for k in v):
-                    dct[k] = [v[x] for x in sorted(v, key=int)]
     numdict_to_list(out)
     return out
+
+number_re = re.compile('^\d+$')
+def numdict_to_list(dct):
+    for k,v in dct.items():
+        if isinstance(v, dict):
+            numdict_to_list(v)
+            if all(number_re.match(k) for k in v):
+                dct[k] = [v[x] for x in sorted(v, key=int)]
 
 
 class ValidatorMeta(type):
     """Metaclass for :class:`Validator`.
 
-    This makes the :attr:`msgs` dict copy from its base class. It also makes
-    the :meth:`to_python`, :meth:`from_python` automatically call the base
-    class method first.
+    This makes the :attr:`msgs` dict copy from its base class.
     """
     def __new__(meta, name, bases, dct):
         if 'msgs' in dct:
@@ -84,20 +81,7 @@ class ValidatorMeta(type):
                     msgs.update(b.msgs)
             msgs.update(dct['msgs'])
             dct['msgs'] = msgs
-
-        for meth in ('to_python', 'validate_python', 'from_python'):
-            if meth in dct:
-                if hasattr(bases[0], meth):
-                    def wrapper(self, value, outer_call=True, meth=meth, method=dct[meth]):
-                        value = getattr(bases[0], meth)(self, value, outer_call=False)
-                        value = method(self, value)
-                        if meth == 'to_python' and outer_call:
-                            self.validate_python(value)
-                        return value
-                    dct[meth] = wrapper
-
-        validator = type.__new__(meta, name, bases, dct)
-        return validator
+        return type.__new__(meta, name, bases, dct)
 
 
 # TBD: locked after init?
@@ -155,6 +139,8 @@ class Validator(object):
                 value = value.strip()
         if self.required and not value:
             raise ValidationError('required', self)
+        if value:
+            self.validate_python(value)
         return value
 
     def validate_python(self, value, outer_call=None):
@@ -177,6 +163,7 @@ class LengthValidator(Validator):
     max = None
 
     def validate_python(self, value):
+        super(LengthValidator, self).validate_python
         if self.min and len(value) < self.min:
             raise ValidationError('tooshort', self)
         if self.max and len(value) > self.max:
@@ -195,17 +182,6 @@ class ListLengthValidator(LengthValidator):
     }
 
 
-class RegexValidator(Validator):
-    msgs = {
-        'regex': 'Value must match regular expression',
-    }
-    regex = None
-
-    def validate_python(self, value):
-        if not self.regex.search(value):
-            raise ValidationError('regex', self)
-
-
 class RangeValidator(Validator):
     msgs = {
         'toosmall': 'Must be at least $min',
@@ -215,6 +191,7 @@ class RangeValidator(Validator):
     max = None
 
     def validate_python(self, value):
+        super(RangeValidator, self).validate_python(value)
         if self.min and value < self.min:
             raise ValidationError('toosmall', self)
         if self.max and value > self.max:
@@ -227,6 +204,7 @@ class IntValidator(RangeValidator):
     }
 
     def to_python(self, value):
+        value = super(IntValidator, self).to_python(value)
         try:
             return int(value)
         except ValueError:
@@ -243,6 +221,7 @@ class OneOfValidator(Validator):
     values = []
 
     def validate_python(self, value):
+        super(OneOfValidator, self).validate_python(value)
         if value not in self.values:
             raise ValidationError('notinlist', self)
 
@@ -270,6 +249,7 @@ class DateValidator(RangeValidator):
         return self.max.strftime(self.format)
 
     def to_python(self, value):
+        value = super(DateValidator, self).to_python(value)
         try:
             date = time.strptime(value, self.format)
             return datetime.Date(date.tm_year, date.tm_month, date.tm_day)
@@ -287,6 +267,7 @@ class DateTimeValidator(DateValidator):
     format = '%d/%m/%Y %h:%m'
 
     def to_python(self, value):
+        value = super(DateTimeValidator, self).to_python(value)
         try:
             return datetime.strptime(value, self.format)
         except ValueError:
@@ -296,6 +277,38 @@ class DateTimeValidator(DateValidator):
         return value.strftime(self.format)
 
 
-# email
-# url
-# ip address
+class RegexValidator(Validator):
+    msgs = {
+        'regex': 'Value must match regular expression',
+    }
+    regex = None
+
+    def validate_python(self, value):
+        super(RegexValidator, self).validate_python(value)
+        if value and not self.regex.search(value):
+            raise ValidationError('regex', self)
+
+
+class EmailValidator(RegexValidator):
+    msgs = {
+        'regex': 'Must be a valid email address',
+    }
+    regex = re.compile('^[\w\-.]+@[\w\-.]+$')
+
+
+class UrlValidator(RegexValidator):
+    msgs = {
+        'regex': 'Must be a valid URL',
+    }
+    regex = re.compile('^https?://', re.IGNORECASE)
+
+
+class IpAddressValidator(Validator):
+    msgs = {
+        'ipaddress': 'Must be a valid IP address',
+    }
+    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)$', re.IGNORECASE)
+    def validate_python(self, value):
+        m = self.regex.search(value)
+        if not m or any(not(0 <= int(g) <= 255) for g in m.groups()):
+            raise ValidationError('ipaddress', self)

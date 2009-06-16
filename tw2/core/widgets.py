@@ -82,7 +82,7 @@ TBD: change this to explaining HOW you use a widget...
 
     id = pm.Param('Widget identifier', request_local=False)
     template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
-    validator = pm.Param('Validator for the widget.', default=vd.Validator(), request_local=False)
+    validator = pm.Param('Validator for the widget.', default=None, request_local=False)
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
     value = pm.Param("The value for the widget.", default=None)
     resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a :class:`Resource` subclass.", default=[], request_local=False)
@@ -111,9 +111,14 @@ TBD: change this to explaining HOW you use a widget...
             cls.attrs = cls.attrs.copy()
             cls.attrs['id'] = cls._compound_id()
 
-        if cls.validator and not isinstance(cls.validator, vd.Validator):
-            # TBD: do formencode as well or just hasattr to_python, from_python
-            raise pm.ParameterError("Validator must be a tw.core.Validator instance, or a F")
+        if cls.validator:
+            if cls.validator is pm.Required: # this is a bit of a hack
+                cls.validator = vd.Validator(required=True)
+            if isinstance(cls.validator, type) and issubclass(cls.validator, vd.Validator):
+                cls.validator = cls.validator()
+            if not isinstance(cls.validator, vd.Validator):
+                # TBD: do formencode as well or just hasattr to_python, from_python
+                raise pm.ParameterError("Validator must be a tw.core.Validator instance, or a F")
 
         cls._deferred = [a for a in dir(cls) if isinstance(getattr(cls, a), pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
@@ -140,7 +145,6 @@ TBD: change this to explaining HOW you use a widget...
             for p in self._params:
                 if not hasattr(self, p):
                     raise pm.ParameterError("Missing required parameter '%s'" % p)
-
         for a in self._deferred:
             setattr(self, a, getattr(self, a).fn())
         if self._attr or 'attrs' in self.__dict__:
@@ -149,9 +153,9 @@ TBD: change this to explaining HOW you use a widget...
                 self.attrs['id'] = self._compound_id()
             for a in self._attr:
                 if a in self.attrs:
-                    raise pm.ParameterError("Class with user-supplied attribute: '%s'" % a)
+                    raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[a] = getattr(self, a)
-        if self.validator: # TBD: and not self._validated:
+        if self.validator and not hasattr(self, '_validated'):
             self.value = self.validator.from_python(self.value)
         if self.resources:
             core.request_local().setdefault('resources', set()).update(r for r in self.resources)
@@ -207,7 +211,10 @@ TBD: change this to explaining HOW you use a widget...
     def _validate(self, value):
         self._validated = True
         self.value = value
-        return self.validator.to_python(value)
+        if self.validator:
+            value = self.validator.to_python(value)
+            self.validator.validate_python(value)
+        return value
 
 class LeafWidget(Widget):
     """
@@ -264,12 +271,13 @@ class CompoundWidget(Widget):
     def prepare(self):
         super(CompoundWidget, self).prepare()
         v = self.value or {}
-        if isinstance(v, dict):
-            for c in self.children:
-                c.value = v.get(c.id)
-        else:
-            for c in self.children:
-                c.value = getattr(v, c.id, None)
+        if not hasattr(self, '_validated'):
+            if isinstance(v, dict):
+                for c in self.children:
+                    c.value = v.get(c.id)
+            else:
+                for c in self.children:
+                    c.value = getattr(v, c.id, None)
         for c in self.children:
             c.prepare()
 
@@ -291,7 +299,8 @@ class CompoundWidget(Widget):
             except vd.ValidationError:
                 data[c.id] = vd.Invalid
                 any_errors = True
-        self.validator.validate_python(data)
+        if self.validator:
+            self.validator.validate_python(data)
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data
@@ -385,7 +394,7 @@ class RepeatingWidget(Widget):
     def _validate(self, value):
         value = value or []
         if not isinstance(value, list):
-            raise vd.ValidationError('corrupt', self.validator)
+            raise vd.ValidationError('corrupt', self.validator, self)
         self.value = value
         self.repetitions = len(value) # TBD
         any_errors = False
@@ -396,9 +405,10 @@ class RepeatingWidget(Widget):
             except vd.ValidationError:
                 data.append(vd.Invalid)
                 any_errors = True
-        self.validator.validate_python(data)
+        if self.validator:
+            self.validator.validate_python(data)
         if any_errors:
-            raise vd.ValidationError('childerror', self.validator)
+            raise vd.ValidationError('childerror', self.validator, self)
         return data
 
 
@@ -437,8 +447,11 @@ class DisplayOnlyWidget(Widget):
         self.child.prepare()
 
     def _validate(self, value):
-        return self.child._validate(value)
-
+        try:
+            return self.child._validate(value)
+        except vd.ValidationError, e:
+            e.widget = self
+            raise
 
 class WidgetListMeta(type):
     """Metaclass for WidgetList."""

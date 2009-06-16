@@ -3,8 +3,8 @@ widget instance per request
     post_define - fe validator
     display as a class or instance method
     remove "cls2 or cls" hack
+tw2 namespace - ok
 
-tw2 namespace
 design documentation
 validation
 declarative instantiation
