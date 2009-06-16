@@ -236,7 +236,7 @@ class CompoundWidgetMeta(WidgetMeta):
         if name != 'CompoundWidget' and 'children' not in dct:
             new_children = []
             for d, v in dct.items():
-                if isinstance(v, type) and issubclass(v, BaseWidget) and d != 'parent':
+                if isinstance(v, type) and issubclass(v, BaseWidget) and d not in ('parent', 'demo_for'):
                     new_children.append((v, d))
                     del dct[d]
             children = []

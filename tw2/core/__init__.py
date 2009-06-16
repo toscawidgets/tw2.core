@@ -5,7 +5,7 @@ from core import (WidgetError)
 from template import (EngineError)
 
 from params import (Param, ChildParam, Variable, ChildVariable, Required,
-    Deferred, ParameterError)
+    Deferred, ParameterError, Auto)
 
 from widgets import (Widget, CompoundWidget, RepeatingWidget,
     DisplayOnlyWidget)

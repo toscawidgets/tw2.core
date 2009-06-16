@@ -3,12 +3,14 @@ import core, itertools, copy
 
 class ParameterError(core.WidgetError):
     "Errors related to parameters."
-    pass
 
 class Required(object):
     """This class is used to mark a widget parameter as being required, by
     setting the default value to this."""
-    pass
+
+class Auto(object):
+    """Used to explicitly mark a parameter as being automatically generated.
+    """
 
 class Deferred(object):
     """This class is used as a wrapper around a parameter value. It takes a

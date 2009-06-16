@@ -1,5 +1,4 @@
 widget instance per request
-    new tests for this stuff
     display as a class or instance method
     remove "cls2 or cls" hack
     params_as_vars config option
@@ -10,8 +9,10 @@ validation
     post_define - fe validator
 
 declarative instantiation
+    fix spacer in widget browser
 
 design documentation
+unit tests
 
 wsgi tutorial
  -> milestone
