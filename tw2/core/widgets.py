@@ -231,12 +231,12 @@ class WidgetBunch(tuple):
         raise AttributeError("Widget has no child named '%s'" % id)
 
 
-class CompoundWidgetMeta(WidgetMeta):
+class DeclarativeWidgetMeta(WidgetMeta):
     def __new__(meta, name, bases, dct):
         if name != 'CompoundWidget' and 'children' not in dct:
             new_children = []
             for d, v in dct.items():
-                if isinstance(v, type) and issubclass(v, BaseWidget) and d not in ('parent', 'demo_for'):
+                if isinstance(v, type) and issubclass(v, BaseWidget) and d not in ('parent', 'demo_for', 'layout', 'child'):
                     new_children.append((v, d))
                     del dct[d]
             children = []
@@ -244,7 +244,7 @@ class CompoundWidgetMeta(WidgetMeta):
                 children.extend(getattr(b, 'children', None) or [])
             children.extend(v(id=d) for v,d in sorted(new_children, key=lambda t: t[0]._seq))
             dct['children'] = children
-        return super(CompoundWidgetMeta, meta).__new__(meta, name, bases, dct)
+        return super(DeclarativeWidgetMeta, meta).__new__(meta, name, bases, dct)
 
 class CompoundWidget(Widget):
     """
@@ -256,7 +256,7 @@ class CompoundWidget(Widget):
     children_deep = pm.Variable("Children, including any children from child CompoundWidgets that have no id")
     template = 'genshi:tw.core.templates.display_children'
 
-    __metaclass__ = CompoundWidgetMeta
+    __metaclass__ = DeclarativeWidgetMeta
 
     @classmethod
     def post_define(cls, cls2=None):
@@ -437,12 +437,21 @@ class DisplayOnlyWidget(Widget):
     without otherwise affecting the behaviour.
     """
     child = pm.Param('Child for this widget. This must be a widget.')
+    layout = pm.Param('Layout child container TBD', default=None)
     id = None
+
+    __metaclass__ = DeclarativeWidgetMeta
 
     @classmethod
     def post_define(cls, cls2=None):
         cls = cls2 or cls
         Widget.post_define(cls)
+        if cls.layout and cls.children:
+            if getattr(cls, 'child', None):
+                raise pm.ParameterError("If layout is specified, you cannot specify child")
+            cls.child = cls.layout(children = cls.children)
+            cls.children = []
+            cls.layout = None
         if not hasattr(cls, 'child'):
             return
         if not issubclass(cls.child, Widget):
@@ -450,9 +459,9 @@ class DisplayOnlyWidget(Widget):
         cls._sub_compound = cls.child._sub_compound
         if cls.child.resources:
             cls.resources = set(cls.resources).update(cls.child.resources)
-        cls.id = cls.child.id
+        cls.id = cls.id or cls.child.id
         cls.id_elem = None
-        cls.child = cls.child(parent=cls, resources=[])
+        cls.child = cls.child(id=cls.id, parent=cls, resources=[])
 
     def __init__(self, **kw):
         super(DisplayOnlyWidget, self).__init__(**kw)

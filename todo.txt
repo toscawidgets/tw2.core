@@ -3,6 +3,7 @@ widget instance per request
     remove "cls2 or cls" hack
     params_as_vars config option
     children_deep / _sub_compound
+    avoid so many subclasses being created - inplace addition of parent
 tw2 namespace - ok
 
 validation
@@ -10,6 +11,9 @@ validation
 
 declarative instantiation
     fix spacer in widget browser
+    layout
+        need to juggle how ids are passed around
+    auto id from class name
 
 design documentation
 unit tests
