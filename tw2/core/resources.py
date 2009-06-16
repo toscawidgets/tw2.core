@@ -22,8 +22,8 @@ class Link(wd.Widget):
     def prepare(self):
         super(Link, self).prepare()
         if not hasattr(self, 'link'):
-            if not (self.filename and self.modname):
-                raise pm.ParameterError("Either 'link' or both 'filename' and 'modname' must be specified")
+            if not self.filename:
+                raise pm.ParameterError("Either 'link' or 'filename' must be specified")
             resources = core.request_local()['middleware'].resources
             self.link = resources.register(self.modname, self.filename)
 
@@ -104,10 +104,11 @@ class ResourcesApp(object):
 
         `filename`
             The path, relative to the base of the module, of the file to be
-            published.
+            published. If *modname* is None, it's an absolute path.
         """
         if isinstance(modname, pr.Requirement):
             modname = os.path.basename(pr.working_set.find(modname).location)
+        modname = modname or ''
         path = modname + '/' + filename.strip('/')
         if path not in self._paths:
             ct, enc = mimetypes.guess_type(os.path.basename(filename))
@@ -124,7 +125,10 @@ class ResourcesApp(object):
                 raise IOError()
             (modname, filename, ct, enc) = self._paths[path]
             # TBD: non pkg-resources dependent alternative
-            stream = pr.resource_stream(modname, filename)
+            if modname:
+                stream = pr.resource_stream(modname, filename)
+            else:
+                stream = open(filename)
         except IOError:
             resp = wo.Response(status="404 Not Found")
         else:
