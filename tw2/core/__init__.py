@@ -8,7 +8,7 @@ from params import (Param, ChildParam, Variable, ChildVariable, Required,
     Deferred, ParameterError, Auto)
 
 from widgets import (Widget, CompoundWidget, RepeatingWidget,
-    DisplayOnlyWidget)
+    DisplayOnlyWidget, Page)
 
 from resources import (Link, JSLink, CSSLink, JSSource, inject_resources)
 

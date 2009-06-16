@@ -10,10 +10,9 @@ validation
     post_define - fe validator
 
 declarative instantiation
-    fix spacer in widget browser
     layout
-        need to juggle how ids are passed around
-    auto id from class name
+        layouts for repeating widgets
+        should container widget now have children as a parameter?
 
 design documentation
 unit tests
@@ -48,6 +47,7 @@ later
     id as default param to Widget.__init__
     override __init__ to change default parameter
         and make id the top default parameter
+    auto id from class name - is this even a good idea?
 
 
 

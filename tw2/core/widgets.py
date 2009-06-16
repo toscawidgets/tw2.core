@@ -478,3 +478,9 @@ class DisplayOnlyWidget(Widget):
         except vd.ValidationError, e:
             e.widget = self
             raise
+
+class Page(DisplayOnlyWidget):
+    """An HTML page
+    """
+    title = pm.Param('Title for the page')
+    template = "genshi:tw2.core.templates.page"
