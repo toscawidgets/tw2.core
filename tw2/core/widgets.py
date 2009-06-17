@@ -1,7 +1,7 @@
 import copy, weakref, re, itertools
 import template, core, util, validation as vd, params as pm
 
-reserved_names = ('parent', 'demo_for', 'layout', 'child')
+reserved_names = ('parent', 'demo_for', 'child')
 _widget_seq = itertools.count(0)
 
 class WidgetMeta(pm.ParamMeta):
@@ -350,8 +350,8 @@ class RepeatingWidget(Widget):
     min_reps = pm.Param('Minimum number of repetitions', default=None)
     max_reps = pm.Param('Maximum number of repetitions', default=None)
     extra_reps = pm.Param('Number of extra repeitions, beyond the length of the value list.', default=1)
+    children = pm.Param('Any children specified for this widget will be passed to the child. In the template, children gets the list of repeated childen.')
 
-    children = pm.Variable()
     repetition = pm.ChildVariable('The repetition of a child widget.')
 
     template = 'genshi:tw.core.templates.display_children'
@@ -363,6 +363,9 @@ class RepeatingWidget(Widget):
         """
         if not hasattr(cls, 'child'):
             return
+        if getattr(cls, 'children', None):
+            cls.child = cls.child(children = cls.children)
+            cls.children = []
         if not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
         if cls.child.id_elem:
@@ -423,19 +426,16 @@ class DisplayOnlyWidget(Widget):
     by widgets like :class:`tw.forms.FieldSet`.
     """
     child = pm.Param('Child for this widget. This must be a widget.')
-    layout = pm.Param('Layout child container TBD', default=None)
+    children = pm.Param('Any children specified for this widget will be passed to the child')
     id = None
 
     @classmethod
     def post_define(cls):
-        if cls.layout and cls.children:
-            if getattr(cls, 'child', None):
-                raise pm.ParameterError("If layout is specified, you cannot specify child")
-            cls.child = cls.layout(children = cls.children)
-            cls.children = []
-            cls.layout = None
         if not getattr(cls, 'child', None):
             return
+        if getattr(cls, 'children', None):
+            cls.child = cls.child(children = cls.children)
+            cls.children = []
         if not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
         cls._sub_compound = cls.child._sub_compound
