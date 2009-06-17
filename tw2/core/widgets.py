@@ -434,7 +434,7 @@ class DisplayOnlyWidget(Widget):
             cls.child = cls.layout(children = cls.children)
             cls.children = []
             cls.layout = None
-        if not hasattr(cls, 'child'):
+        if not getattr(cls, 'child', None):
             return
         if not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")

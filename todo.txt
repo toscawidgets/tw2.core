@@ -5,23 +5,16 @@ widget instance per request
     children_deep / _sub_compound
     avoid so many subclasses being created - inplace addition of parent
 
-validation
-    post_define - fe validator
-
 declarative instantiation
     layout
         layouts for repeating widgets
         should container widget now have children as a parameter?
 
-design documentation
-
 unit tests
     validators - doc tests?
 
-frameworks
-
-
 validation
+    post_define - fe validator
     test compound id with deeply nested widgets
     whole form validators
         twc.MatchValidator
@@ -30,58 +23,22 @@ validation
     how does msf work?
     have display detect validated_widget in rl
 
-
-when redisplaying on error:
-    run validator.to_python(x, validate=False)
-    this is for selection fields
-        if to_python fails - use None
-        if it doesn't match an item - just no item is selected
-    everything else (in tw.forms at least) just display as-is
-
-
-    validate - classmethod
-        returns value
-        or raises an error, with widget attached to exception
-
-    selection fields need a hook:
-        to process before their validator is called
-        and in validate to use a to_python value, or None
-
-        python_value = True -> on Widget, or validator?
-            Think it has to be widget atm
+    when redisplaying on error:
+        run validator.to_python(x, validate=False)
+        this is for selection fields
+            if to_python fails - use None
+            if it doesn't match an item - just no item is selected
+        everything else (in tw.forms at least) just display as-is
 
 
 documentation
-    design doc
-        polish off
-            configuration
-            widget lifecycle
-            params - tidy up
-                remove args from autoclass
-            move template info to parameter doc
-            resources
-
-        widget browser
-        paste template
-        middleware (deserves its own section?)
-
-        anything else missing?
-
-        -> gives a decent narrative design doc, with some stuff pushed into doc strings
-
-
-    tutorial
-
-
-config
-    debug
-    pass config to templates
-        absolute paths (e.g. genshi_abs)
-        output format
-        safe vars
-        extra vars
-        -> to do a proper job of this, I have to find out what the options are for each template engine
-    configurable compound id separator [but this is global]
+    configuration
+    widget lifecycle
+    params - tidy up
+        remove args from autoclass
+    move template info to parameter doc
+    resources
+    middleware (deserves its own section?)
 
 misc
     setup.py - entrypoints
@@ -92,125 +49,29 @@ misc
     review all the TBDs
     use quotes in all exceptions
 
-
 widget browser
-    demos
-        imagebutton - what image?
     make tw.core neat
     paster command entry point
         tweak help
 
-
-framework helpers & test
-    cherrypy
-        start with cp3 - it allows easy stacking
-        how to stack wsgi with cp2?
-
-        how does tg1 startup?
-            startup.start_server - good place to hook
-
-        need StackedObjectProxy?
-
-    tg.start_extension
-    pylons
-        helper function to glue pylons config to tw global config
-        avoid needing |n when you display a widget
-    tg2
+frameworks
+    pylons / tg2
+    cp3
     django
-
     @validate decorator
 
 
 tw2.forms
----------
-form fields - ok
+    DemoImageButton
+    form id - ${child.id}:_form
 
-form/fieldset as a display-only widget
-    id - ${child.id}:_form
+    BaseLayout
+        display hidden fields separately
+        document
 
-fancy layouts
-    container_attrs
-    odd/even
-    hover_help
-    required - need to interface with validation
-    hidden fields
-    document
-
-data grid
-
-validation
-    some fields need particular work (checkbox, fileupload)
-
-unit tests - what can be done?
-bug: radiobuttonlist and table were clashing if same id
-    the repeating should keep them separate
-named buttons
-
-later
-    stop label names being post-to-able
-    booleanradiobuttonlist
-        instead? twf.RadioButtonTable(options=twf.BooleanOptions)
-    make selection_list and selection_table support grouping
-    make selection table configurable how it arranges (horiz/vert)
-    make ImageButton a subclass of link?
-        that avoids Link being a public class (good)
-        -> I'm erring towards no at the minute
-
-
-Notes
------
-Options
-    This can take several formats:
-
-    list of values ['', 'Red', 'Blue']
-    list of (code, value) tuples [(0, ''), (1, 'Red'), (2, 'Blue')]
-    you can mix these - if code is not specified, it defaults to value
-    you can also do grouping:
-        [('group', ['', (1, 'Red'), (2, 'Blue')]),
-         ('group2', ['', 'Pink', 'Yellow'])]
-
-
-tw0.9 mods
-    cp2/3 - mostly reimplements middleware as a filter
-        these are just for tg really, would need some work to use independently
-    pylons
-        some config
-        provides @validate
-    turbogears
-        uses cherrypy for request local
-        url
-        start_extension - presumably the entry point
-
-
-Considered designs...
-    The main issue is that some widget parameters are fixed for the life of the app
-    Some change with each request
-
-    In TW 0.9, widget instances existed for the life of the app
-        per-request params were stored in a dict
-        problems:
-            copying the dict around can be slow
-            you have to create singletons
-            it's hard to set things on children - child_args gets messy
-
-    In TW 2.0-1, widget instances exist for the life of the app
-        Instrumentation made some params request local
-        problems:
-            Instrumentation is complex and probably slow
-            you have to create singletons
-
-    In TW 2.0-2
-        Instance per request
-        problems:
-            instantiative-style declaration is now a hack
-            difference between display, idisplay...
-
-        Now, one lifecycle considered was "fixed at instantiation"
-        i.e. you pass all args into constructor
-        but - this takes away the advantage of easily setting params
-
-        ok, so do almost all the work in "prepare"
-            this needs to know if the widget is redisplaying on validation failure
-            (no as not to call from_python)
-
-        one challenge is value propagation in validation
+    data grid
+    validation
+        some fields need particular work (checkbox, fileupload)
+    named buttons
+    bug: radiobuttonlist and table were clashing if same id
+        the repeating should keep them separate
