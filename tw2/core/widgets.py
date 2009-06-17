@@ -10,6 +10,20 @@ class WidgetMeta(pm.ParamMeta):
         widget.post_define()
         return widget
 
+class DeclarativeWidgetMeta(WidgetMeta):
+    def __new__(meta, name, bases, dct):
+        if name != 'CompoundWidget' and 'children' not in dct:
+            new_children = []
+            for d, v in dct.items():
+                if isinstance(v, type) and issubclass(v, Widget) and d not in ('parent', 'demo_for', 'layout', 'child'):
+                    new_children.append((v, d))
+                    del dct[d]
+            children = []
+            for b in bases:
+                children.extend(getattr(b, 'children', None) or [])
+            children.extend(v(id=d) for v,d in sorted(new_children, key=lambda t: t[0]._seq))
+            dct['children'] = children
+        return super(DeclarativeWidgetMeta, meta).__new__(meta, name, bases, dct)
 
 class Widget(pm.Parametered):
     """
@@ -202,21 +216,6 @@ class WidgetBunch(tuple):
                 return w
         raise AttributeError("Widget has no child named '%s'" % id)
 
-
-class DeclarativeWidgetMeta(WidgetMeta):
-    def __new__(meta, name, bases, dct):
-        if name != 'CompoundWidget' and 'children' not in dct:
-            new_children = []
-            for d, v in dct.items():
-                if isinstance(v, type) and issubclass(v, Widget) and d not in ('parent', 'demo_for', 'layout', 'child'):
-                    new_children.append((v, d))
-                    del dct[d]
-            children = []
-            for b in bases:
-                children.extend(getattr(b, 'children', None) or [])
-            children.extend(v(id=d) for v,d in sorted(new_children, key=lambda t: t[0]._seq))
-            dct['children'] = children
-        return super(DeclarativeWidgetMeta, meta).__new__(meta, name, bases, dct)
 
 class CompoundWidget(Widget):
     """

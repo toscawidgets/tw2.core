@@ -16,6 +16,6 @@ from validation import (Validator, LengthValidator,
     RegexValidator, IntValidator, OneOfValidator, DateValidator,
     DateTimeValidator, ValidationError, Invalid, EmailValidator,
     UrlValidator, IpAddressValidator, StringLengthValidator,
-    ListLengthValidator)
+    ListLengthValidator, RangeValidator)
 
 from middleware import (TwMiddleware)

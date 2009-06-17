@@ -88,18 +88,12 @@ class ValidatorMeta(type):
 class Validator(object):
     """Base class for validators
 
-    TBD: describe msgs
-
-    There are three parameters:
-
     `required`
-        Whether empty values are forbidden in this field. If this is not
-        specified, it defaults to the value specified in the parent. For
-        widgets with no parent, it defaults to False.
+        Whether empty values are forbidden in this field. (default: False)
 
     `strip`
         Whether to strip leading and trailing space from the input, before
-        any other validation. (default: False)
+        any other validation. (default: True)
 
     `encoding`
         Input character set. All incoming strings are automatically decoded
@@ -108,8 +102,6 @@ class Validator(object):
 
     To create your own validators, sublass this class, and override any of:
     :meth:`to_python`, :meth:`validate_python`, or :meth:`from_python`.
-    There is a metaclass that makes these methods automatically call the base
-    class method, so you do not need to use ``super`` in your methods.
     """
     __metaclass__ = ValidatorMeta
 
@@ -137,14 +129,11 @@ class Validator(object):
                 raise ValidationError('decode', self)
             if self.strip:
                 value = value.strip()
-        if self.required and not value:
-            raise ValidationError('required', self)
-        if value:
-            self.validate_python(value)
         return value
 
     def validate_python(self, value, outer_call=None):
-        pass
+        if self.required and not value:
+            raise ValidationError('required', self)
 
     def from_python(self, value, outer_call=None):
         return value
@@ -155,6 +144,16 @@ class Validator(object):
             (_bool[int(self.required)], _bool[int(self.strip)], self.encoding))
 
 class LengthValidator(Validator):
+    """
+    Confirm a value is of a suitable length. Usually you'll use
+    :class:`StringLengthValidator` or :class:`ListLengthValidator` instead.
+
+    `min`
+        Minimum length (default: None)
+
+    `max`
+        Maximum length (default: None)
+    """
     msgs = {
         'tooshort': 'Value is too short',
         'toolong': 'Value is too long',
@@ -170,12 +169,22 @@ class LengthValidator(Validator):
             raise ValidationError('toolong', self)
 
 class StringLengthValidator(LengthValidator):
+    """
+    Check a string is a suitable length. The only difference to LengthValidator
+    is that the messages are worded differently.
+    """
+
     msgs = {
         'tooshort': 'Must be at least $min characters',
         'toolong': 'Cannot be longer than $max characters',
     }
 
 class ListLengthValidator(LengthValidator):
+    """
+    Check a list is a suitable length. The only difference to LengthValidator
+    is that the messages are worded differently.
+    """
+
     msgs = {
         'tooshort': 'Pick at least $min',
         'toolong': 'Pick no more than $max',
@@ -183,6 +192,16 @@ class ListLengthValidator(LengthValidator):
 
 
 class RangeValidator(Validator):
+    """
+    Confirm a value is within an appropriate range. This is not usually used
+    directly, but other validators are derived from this.
+
+    `min`
+        Minimum value (default: None)
+
+    `max`
+        Maximum value (default: None)
+    """
     msgs = {
         'toosmall': 'Must be at least $min',
         'toobig': 'Cannot be more than $max',
@@ -199,6 +218,10 @@ class RangeValidator(Validator):
 
 
 class IntValidator(RangeValidator):
+    """
+    Confirm the value is an integer. This is derived from :class:`RangeValidator`
+    so `min` and `max` can be specified.
+    """
     msgs = {
         'notint': 'Must be an integer',
     }
@@ -215,6 +238,13 @@ class IntValidator(RangeValidator):
 
 
 class OneOfValidator(Validator):
+    """
+    Confirm the value is one of a list of acceptable values. This is useful for
+    confirming that select fields have not been tampered with by a user.
+
+    `values`
+        Acceptable values
+    """
     msgs = {
         'notinlist': 'Invalid value', # TBD: better message?
     }
@@ -227,6 +257,14 @@ class OneOfValidator(Validator):
 
 
 class DateValidator(RangeValidator):
+    """
+    Confirm the value is a valid date. This is derived from :class:`RangeValidator`
+    so `min` and `max` can be specified.
+
+    `format`
+        The expected date format. The format must be specified using the same
+        syntax as the Python strftime function.
+    """
     msgs = {
         'notdate': 'Must follow date format $format_str',
         'toosmall': 'Cannot be earlier than $min_str',
@@ -261,6 +299,9 @@ class DateValidator(RangeValidator):
 
 
 class DateTimeValidator(DateValidator):
+    """
+    Confirm the value is a valid date and time; otherwise just like :class:`DateValidator`.
+    """
     msgs = {
         'notdate': 'Must follow date/time format $format_str',
     }
@@ -278,6 +319,12 @@ class DateTimeValidator(DateValidator):
 
 
 class RegexValidator(Validator):
+    """
+    Confirm the value matches a regular expression.
+
+    `regex`
+        A Python regular expression object, generated like ``re.compile('^\w+$')``
+    """
     msgs = {
         'regex': 'Value must match regular expression',
     }
@@ -290,6 +337,9 @@ class RegexValidator(Validator):
 
 
 class EmailValidator(RegexValidator):
+    """
+    Confirm the value is a valid email address.
+    """
     msgs = {
         'regex': 'Must be a valid email address',
     }
@@ -297,6 +347,9 @@ class EmailValidator(RegexValidator):
 
 
 class UrlValidator(RegexValidator):
+    """
+    Confirm the value is a valid URL.
+    """
     msgs = {
         'regex': 'Must be a valid URL',
     }
@@ -304,6 +357,9 @@ class UrlValidator(RegexValidator):
 
 
 class IpAddressValidator(Validator):
+    """
+    Confirm the value is a valid IP4 address.
+    """
     msgs = {
         'ipaddress': 'Must be a valid IP address',
     }

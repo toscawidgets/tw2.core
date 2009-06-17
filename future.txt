@@ -1,0 +1,208 @@
+Later
+-----
+widgets as controllers
+    ** widgets aren't singletons - update design
+    middleware
+    util functions for tokens & ut
+        how to access session? shall we start with beaker?
+        where to store server_secret (there is precedent for this...)
+    widget .link .controller .authorise
+    DisplayWidget - controller method that displays the widget
+        sitetemplate
+    switcher
+
+    ultimately, toscawidgets doesn't have to be middleware - it can be an app!
+
+
+widget browser
+    sphinx integration
+        widget browser just displays each registered package's sphinx docs
+        it has a sphinx extension for embedding widgets
+        links from parameters to bits of documentation (even across packages)
+
+
+    need to look on inet:
+        use setuptools better - need to understand entrypoints more
+            update samples.py in paste template
+            http://peak.telecommunity.com/DevCenter/PythonEggs#accessing-package-resources
+
+    use paste web server?
+
+    more detail:
+        full params list
+        demo source
+        source
+        template
+        -> I want a lightweight tab-switcher - no ajax to start with
+            onclick - do thing (id, subid):
+                clear old (hide all id children)
+                if loaded, display (show id_subid)
+                else ajax (url, subid) - url is generated to include id
+                    need to pass arbitrary params to the ajax
+            -> ok, ok this is doing widgets as controllers
+                and scalaing is a consideration - don't really want to register a controller method for each repeating row.
+
+            Summary / Demo Source / Parameters / Source / Template
+
+
+genshi template optimiser
+    this reduces things to one template per page in most circumstances
+    for compound
+        look for py:for
+        if it's "var in s.c(hildren)?"
+        then unroll to a series of
+        <with "var = s.c[0]">...<with> blocks
+        in each block, ${var.display()}
+        can be replaced with the template,
+        surrounded by a with block
+
+        also
+        ${s.c(hildren).var.display()} can be optimised
+        or s.c[1].display()
+    for repeater, it's
+        var in s.c - loop is not unrolled
+        but inside it, var.display is replaced
+        also, s.c[1].display is done
+
+
+widget registry
+declarative - set id on class to rewritten class name
+
+DatabaseForms
+    lists
+    forms & posting
+        make forms smarter about their action (closewindow, etc.)
+    autoforms, autolist
+    fkeyselect
+        how to merge nicely with tw.forms?
+        try to avoid inheritence, something more like
+            twf.CheckBoxList(options=twb.Options(db.Table))
+            (although how you do validation this way is anyone's guess)
+
+    db_ajax_forms
+        where's logical to put this?
+        perhaps in db_forms, but as soft dependency?
+
+validation
+    client-side
+    file upload
+    MatchField
+    instantiate validator class automatically
+    make msg dict more global?
+
+    inheriting required:
+        self.validate(value, required=False)
+        if self.required is not None:
+            required = self.required
+        child.validate(.., required)
+
+template
+    mako helper functions
+    multiple templates for widget (different engines)
+    cacheing
+    inline templates
+    disable kid's doctype header on inner widgets
+    tests for jinja, myghty, breve
+    only test engines that are installed
+
+widget hierarchy
+    compound repeating widget
+
+parameters
+    find a neater way to break param descriptions across lines
+
+resources
+    optimisation
+    proper web server - paste command to grab resources
+    hooks to cp static service & similar?
+    expires header - need firebug? **
+    refactor resources a bit - at the minute, location only takes affect when you reference a resource within a resources tag; not when you display directly. maybe this is ok.
+
+misc
+    logging - not much to log, but tw has some useful debug info
+    do __repr__ functions better
+    make pkg_resources a soft dependence
+
+unit tests
+    nick more tests from tw1, e.g. leaks
+
+
+Database Widgets
+----------------
+
+These are widgets that interact with the database. The following controller methods are used:
+
+`Lists`
+    Lists sublass DataGrid
+    The controller loads data from the database and displays the widget.
+
+`Forms`
+    Forms use the controller method for two tasks:
+
+     * Displaying the form
+     * Receiving posted form data
+
+    The same URL is used for both tasks; it displays on GET requests and receives on POST requests. Then same authorisation is done on each, as anyone who can view a form is authorised to POST to it. If you want a user to be able to view and not POST, you should display a view to that user, not a form.
+
+    The posted form data is first validated. If it is invalid, the form is redisplayed with errors. If it is valid, the data is saved to the database, and the controller issues an HTTP redirect to a pre-configured URL.
+
+
+**Auto Forms**
+
+Take a model class and produce a form
+Do this in accordance with a policy - users can define own policies
+Allow hints on the model class (but don't overdo it)
+And allow per-field hints on the form
+
+
+dynforms
+--------
+
+    - calendardatepicker
+        but remove any database dependence
+            leave ajax lookup and filtering grid in, but without db dependence
+        the idea is that these are non-framework useful js widgets
+        just leaves OSSF homeless, but that's pretty minor
+
+
+linkcontainer - leave js popup for now
+    could potentially do without a template - compound widget of child and the link
+    nah, bad idea, makes hierarchy complicated
+
+*** copying attributes is becoming a pain - go back to having proxies?
+    self.safe_modify('resources')
+
+ajaxlookup
+    widgets as controllers will help
+    do very simple server-side until then
+
+CustomisedForm - need submit_attrs on Form
+hiding - grandchild hiding will work differently
+HidingComponentMixin - has JS optimisation that should be on general resources
+There's some general things for all ajax requests
+    extra - siblings (parent?) of this widget, include value in req
+need to refactor validation of writeonlytextfield
+general issue of passing configuration to a validator
+    compoundwidget.validate should have a marker that means "don't include in dict"
+
+Ok, general problem, we want to add functionality to a set of widgets
+    e.g. Hiding, Cascading
+    Could have HidingComponent as a display-only widget
+
+    myfield = twd.HidingComponent(child=twf.SingleSelectField(...), mapping={})
+    hmmm, hiding integrates with each control a bit too much for this
+    -> for now, lets just leave as-is
+
+
+jquery, mochikit, dojo, yui
+ajax_sa_forms
+cool new and different widgets - popup links, photos
+
+
+later
+    detect attempts to modify a widget class
+    csslink auto module name isn't working - can't easily fix, remove
+    id as default param to Widget.__init__
+        override __init__ to change default parameter?
+            and make id the top default parameter
+    auto id from class name - is this even a good idea?

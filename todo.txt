@@ -4,7 +4,6 @@ widget instance per request
     params_as_vars config option
     children_deep / _sub_compound
     avoid so many subclasses being created - inplace addition of parent
-tw2 namespace - ok
 
 validation
     post_define - fe validator
@@ -15,43 +14,17 @@ declarative instantiation
         should container widget now have children as a parameter?
 
 design documentation
-unit tests
 
-wsgi tutorial
- -> milestone
+unit tests
+    validators - doc tests?
 
 frameworks
-another round of loose ends
-widget browser
-tw.forms
- -> milestone
-
-tw.dynforms2
-widgets as controllers
-sa_forms
-jquery, mochikit, dojo, yui
-ajax_sa_forms
-cool new and different widgets - popup links, photos
-client-side validation
-
-
-
-later
-    detect attempts to modify a widget class
-    csslink auto module name isn't working - can't easily fix, remove
-    id as default param to Widget.__init__
-        override __init__ to change default parameter?
-            and make id the top default parameter
-    auto id from class name - is this even a good idea?
-
 
 
 validation
     test compound id with deeply nested widgets
     whole form validators
-    individual validators
-        doc strings with params
-        unit tests - doc tests?
+        twc.MatchValidator
     redisplaying with errors - need fancy layout [this is probably quite big]
         non-safe widgets - most resources are non-safe
     how does msf work?
@@ -80,18 +53,9 @@ when redisplaying on error:
 
 documentation
     design doc
-
         polish off
             configuration
             widget lifecycle
-
-The compound widget itself gets its ``id`` from the class name, but rewritten to, e.g. ``movie_form``.
-Widgets have the following lifecycle:
-
- * A Widget subclass will be defined at application startup, with static configuration, e.g. id.
- * In each request, a Widget instance is created, with request-local configuration, e.g. value.
-            explain BaseWidget.req .cls
-
             params - tidy up
                 remove args from autoclass
             move template info to parameter doc
@@ -105,29 +69,19 @@ Widgets have the following lifecycle:
 
         -> gives a decent narrative design doc, with some stuff pushed into doc strings
 
-    module doc
-        tw.core needs module docs in addition to widget browser
-        the public api (not too hard)
-        the internals (want to fully autogen)
 
     tutorial
-        webob decorator???
-
-    readme.txt
 
 
 config
-    document
-    unit test
-
-    more config:
-        debug
-        pass config to templates
-            output format
-            safe vars
-            extra vars
-            -> to do a proper job of this, I have to find out what the options are for each template engine
-        configurable compound id separator [but this is global]
+    debug
+    pass config to templates
+        absolute paths (e.g. genshi_abs)
+        output format
+        safe vars
+        extra vars
+        -> to do a proper job of this, I have to find out what the options are for each template engine
+    configurable compound id separator [but this is global]
 
 misc
     setup.py - entrypoints
@@ -138,63 +92,13 @@ misc
     review all the TBDs
     use quotes in all exceptions
 
-declarative instantiation
-    Widget list - unit test
-
-    Then add stuff to Widget metaclass, for direct use
-        is it possible to have a different metaclass for CompoundWidget?
-            -> yep!
-
-        should give error for:
-            member set to widget subclass - suggests a typo
-            children set explicitly, and members are widget instances
-            -> arguably these should just be warnings, with explicit children taking priority
-
 
 widget browser
-    css - ok
-    ordering - ok
-    show member params separately - ok
-    make tw.forms neat - ok
-    move to tw2.devtools - ok
-
     demos
         imagebutton - what image?
     make tw.core neat
     paster command entry point
         tweak help
-
-    ---
-
-    sphinx integration
-        widget browser just displays each registered package's sphinx docs
-        it has a sphinx extension for embedding widgets
-        links from parameters to bits of documentation (even across packages)
-
-
-    need to look on inet:
-        use setuptools better - need to understand entrypoints more
-            update samples.py in paste template
-            http://peak.telecommunity.com/DevCenter/PythonEggs#accessing-package-resources
-
-    use paste web server?
-
-    more detail:
-        full params list
-        demo source
-        source
-        template
-        -> I want a lightweight tab-switcher - no ajax to start with
-            onclick - do thing (id, subid):
-                clear old (hide all id children)
-                if loaded, display (show id_subid)
-                else ajax (url, subid) - url is generated to include id
-                    need to pass arbitrary params to the ajax
-            -> ok, ok this is doing widgets as controllers
-                and scalaing is a consideration - don't really want to register a controller method for each repeating row.
-
-            Summary / Demo Source / Parameters / Source / Template
-
 
 
 framework helpers & test
@@ -233,33 +137,28 @@ fancy layouts
     document
 
 data grid
-gridlayout/rowlayout
-    dual use of None for suppress_label and auto *** doesn't matter for now
 
 validation
     some fields need particular work (checkbox, fileupload)
-    MSF
-        You want validator to apply to the whole list (default none, but ListLength good)
-        And item_validator to apply to each item (default to Int?)
-    stop label names being post-to-able
 
 unit tests - what can be done?
 bug: radiobuttonlist and table were clashing if same id
     the repeating should keep them separate
 named buttons
-document - tutorial, describe 'options'
 
 later
+    stop label names being post-to-able
     booleanradiobuttonlist
         instead? twf.RadioButtonTable(options=twf.BooleanOptions)
     make selection_list and selection_table support grouping
-    demo form validation
     make selection table configurable how it arranges (horiz/vert)
     make ImageButton a subclass of link?
         that avoids Link being a public class (good)
         -> I'm erring towards no at the minute
 
 
+Notes
+-----
 Options
     This can take several formats:
 
@@ -271,127 +170,6 @@ Options
          ('group2', ['', 'Pink', 'Yellow'])]
 
 
-
-dynforms
---------
-
-    - calendardatepicker
-        but remove any database dependence
-            leave ajax lookup and filtering grid in, but without db dependence
-        the idea is that these are non-framework useful js widgets
-        just leaves OSSF homeless, but that's pretty minor
-
-
-linkcontainer - leave js popup for now
-    could potentially do without a template - compound widget of child and the link
-    nah, bad idea, makes hierarchy complicated
-
-*** copying attributes is becoming a pain - go back to having proxies?
-    self.safe_modify('resources')
-
-ajaxlookup
-    widgets as controllers will help
-    do very simple server-side until then
-
-CustomisedForm - need submit_attrs on Form
-hiding - grandchild hiding will work differently
-HidingComponentMixin - has JS optimisation that should be on general resources
-There's some general things for all ajax requests
-    extra - siblings (parent?) of this widget, include value in req
-need to refactor validation of writeonlytextfield
-general issue of passing configuration to a validator
-    compoundwidget.validate should have a marker that means "don't include in dict"
-
-Ok, general problem, we want to add functionality to a set of widgets
-    e.g. Hiding, Cascading
-    Could have HidingComponent as a display-only widget
-
-    myfield = twd.HidingComponent(child=twf.SingleSelectField(...), mapping={})
-    hmmm, hiding integrates with each control a bit too much for this
-    -> for now, lets just leave as-is
-
-
-
-Later
------
-widgets as controllers
-    ** widgets aren't singletons - update design
-    middleware
-    util functions for tokens & ut
-        how to access session? shall we start with beaker?
-        where to store server_secret (there is precedent for this...)
-    widget .link .controller .authorise
-    DisplayWidget - controller method that displays the widget
-        sitetemplate
-    switcher
-
-    ultimately, toscawidgets doesn't have to be middleware - it can be an app!
-
-
-performance
-    template optimisation
-
-DatabaseForms
-    lists
-    forms & posting
-        make forms smarter about their action (closewindow, etc.)
-    autoforms, autolist
-    fkeyselect
-        how to merge nicely with tw.forms?
-        try to avoid inheritence, something more like
-            twf.CheckBoxList(options=twb.Options(db.Table))
-            (although how you do validation this way is anyone's guess)
-
-    db_ajax_forms
-        where's logical to put this?
-        perhaps in db_forms, but as soft dependency?
-
-validation
-    client-side
-    file upload
-    MatchField
-    instantiate validator class automatically
-    make msg dict more global?
-
-    inheriting required:
-        self.validate(value, required=False)
-        if self.required is not None:
-            required = self.required
-        child.validate(.., required)
-
-template
-    mako helper functions
-    multiple templates for widget (different engines)
-    cacheing
-    inline templates
-    disable kid's doctype header on inner widgets
-    tests for jinja, myghty, breve
-    only test engines that are installed
-
-widget hierarchy
-    compound repeating widget
-
-parameters
-    find a neater way to break param descriptions across lines
-
-resources
-    optimisation
-    proper web server - paste command to grab resources
-    hooks to cp static service & similar?
-    expires header - need firebug? **
-    refactor resources a bit - at the minute, location only takes affect when you reference a resource within a resources tag; not when you display directly. maybe this is ok.
-
-misc
-    logging - not much to log, but tw has some useful debug info
-    do __repr__ functions better
-    make pkg_resources a soft dependence
-
-unit tests
-    nick more tests from tw1, e.g. leaks
-
-
-Notes
------
 tw0.9 mods
     cp2/3 - mostly reimplements middleware as a filter
         these are just for tg really, would need some work to use independently
@@ -402,92 +180,6 @@ tw0.9 mods
         uses cherrypy for request local
         url
         start_extension - presumably the entry point
-
-
-    widget registry
-        -> the more I think about it, the more this should just be left for later
-
-        it's a mapping of id -> widget class
-            used in two places:
-                user templates, for convenience - ${tw.movie_form()}
-                    (is this even worth it?)
-                controller
-
-        initialising a widget puts it in the registry
-            this may give us temporary dupe ids
-            but cloning it removes it from the registry
-
-        maybe the registry is a SET of widgets
-        at startup, it's converted to a dict for efficiency
-            all dupes will have been removed by now
-        but this will interfere with the use of sets for resources
-
-    declarative
-        set id on class to rewritten class name
-
-
-efficiency improvement: just pass self into template
-    -> seems a really good step
-    enables a genshi template optimiser
-        for compound
-            look for py:for
-            if it's "var in s.c(hildren)?"
-            then unroll to a series of
-            <with "var = s.c[0]">...<with> blocks
-            in each block, ${var.display()}
-            can be replaced with the template,
-            surrounded by a with block
-
-            also
-            ${s.c(hildren).var.display()} can be optimised
-            or s.c[1].display()
-        for repeater, it's
-            var in s.c - loop is not unrolled
-            but inside it, var.display is replaced
-            also, s.c[1].display is done
-    this reduces things to one template per page in most circumstances
-
--> so, we're down to one template and minimal init
-    could avoid initing repeating widgets for each row
-    beyond this - pyrex / psycho
-
-    should users be using post_init, to avoid worrying about **kw?
-        probably not needed
-
-    display is a class or instance method
-        if called on the class, creates an instance and calls itself
-
-    how does this affect widgets the override init?
-        compound widget - set parent on child class? or just instances?
-
-
-
-Database Widgets
-----------------
-
-These are widgets that interact with the database. The following controller methods are used:
-
-`Lists`
-    Lists sublass DataGrid
-    The controller loads data from the database and displays the widget.
-
-`Forms`
-    Forms use the controller method for two tasks:
-
-     * Displaying the form
-     * Receiving posted form data
-
-    The same URL is used for both tasks; it displays on GET requests and receives on POST requests. Then same authorisation is done on each, as anyone who can view a form is authorised to POST to it. If you want a user to be able to view and not POST, you should display a view to that user, not a form.
-
-    The posted form data is first validated. If it is invalid, the form is redisplayed with errors. If it is valid, the data is saved to the database, and the controller issues an HTTP redirect to a pre-configured URL.
-
-
-**Auto Forms**
-
-Take a model class and produce a form
-Do this in accordance with a policy - users can define own policies
-Allow hints on the model class (but don't overdo it)
-And allow per-field hints on the form
 
 
 Considered designs...
@@ -522,34 +214,3 @@ Considered designs...
             (no as not to call from_python)
 
         one challenge is value propagation in validation
-
-
-
-
-Done
-----
-
-loose ends done
-    fix failing unit tests - ok
-    test generated links - ok
-    test mimetype - ok
-    test resource injector - ok
-        inject2 - unrelated bug now appears fixed
-    unit test displayonlywidget - ok
-    middleware - ok
-    thread local - ok
-    remove core.started
-    locked ut - ok
-    2 failing unit tests - ok
-    tests for .validate - cw, rw, dow - ok
-
-
-overall plan
-    fix loose ends - ok
-    basic widget browser - ok
-    make tw.forms look good in wb - ok
-
-widget instance per request
-    make old, instantiative behaviour work - ok
-    re-enable attr clash detection - ok
-    remove need for .req() on resources - ok
