@@ -34,19 +34,14 @@ ajax_sa_forms
 cool new and different widgets - popup links, photos
 client-side validation
 
-# TBD - there's two different types of validation error - with and without widget
-# is it worth having two different exceptions?
-
---------------
 
 
 later
     detect attempts to modify a widget class
-    This makes GridLayout with hidden RowLayout much more possible
     csslink auto module name isn't working - can't easily fix, remove
     id as default param to Widget.__init__
-    override __init__ to change default parameter
-        and make id the top default parameter
+        override __init__ to change default parameter?
+            and make id the top default parameter
     auto id from class name - is this even a good idea?
 
 
@@ -60,18 +55,7 @@ validation
     redisplaying with errors - need fancy layout [this is probably quite big]
         non-safe widgets - most resources are non-safe
     how does msf work?
-
-display, validate are class methods
-normal usage is:
-
-movie_form = MovieForm.display(db.Movie.get(id))
-try:
-    data = MovieForm.validate(**params)
-except ValidationError, e:
-    movie_form = e.widget.idisplay()
-
-*** also - save in request-local storage
-    .display detects rl thing and uses that
+    have display detect validated_widget in rl
 
 
 when redisplaying on error:
@@ -93,8 +77,6 @@ when redisplaying on error:
         python_value = True -> on Widget, or validator?
             Think it has to be widget atm
 
-    there's no error_display, it's an error if err_msg is set
-    and for attempt 1, layouts always interpret this
 
 documentation
     design doc
@@ -102,9 +84,16 @@ documentation
         polish off
             configuration
             widget lifecycle
+
+The compound widget itself gets its ``id`` from the class name, but rewritten to, e.g. ``movie_form``.
+Widgets have the following lifecycle:
+
+ * A Widget subclass will be defined at application startup, with static configuration, e.g. id.
+ * In each request, a Widget instance is created, with request-local configuration, e.g. value.
+            explain BaseWidget.req .cls
+
             params - tidy up
                 remove args from autoclass
-            explain BaseWidget.req .cls
             move template info to parameter doc
             resources
 

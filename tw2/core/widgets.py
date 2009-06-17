@@ -11,74 +11,11 @@ class WidgetMeta(pm.ParamMeta):
         return widget
 
 
-class BaseWidget(pm.Parametered):
+class Widget(pm.Parametered):
     """
     Base class for all widgets.
-
-    This just sets up __new__, post_ etc.
     """
     __metaclass__ = WidgetMeta
-
-    @classmethod
-    def req(cls, **kw):
-        ins = object.__new__(cls)
-        ins.__init__(**kw)
-        return ins
-
-    def __new__(cls, **kw):
-        return type(cls.__name__+'_s', (cls,), kw)
-
-    def __init__(self, **kw):
-        for k, v in kw.items():
-            setattr(self, k, v)
-
-    @classmethod
-    def post_define(cls):
-        """
-        This is a class method, that is called when a subclass of this Widget
-        is created. Process static configuration here. Use it like this::
-
-            class MyWidget(LeafWidget):
-                @classmethod
-                def post_define(cls):
-                    super(MyWidget, cls).post_define() !!! TBD
-                    id = getattr(cls,  'id', None)
-                    if id and not id.startswith('my'):
-                        raise pm.ParameterError("id must start with 'my'")
-
-        post_define should always cope with missing data - the class may be an
-        abstract class.
-        """
-        pass
-
-    def prepare(self):
-        """
-        This is an instance method, that is called just before the Widget is
-        displayed. Process request-local configuration here. For
-        efficiency, widgets should do as little work as possible here.
-        Use it like this::
-
-            class MyWidget(LeafWidget):
-                def prepare(self):
-                    super(MyWidget, self).prepare()
-                    self.value = 'My: ' + str(self.value)
-        """
-        pass
-
-
-class Widget(BaseWidget):
-    """
-    Practical widget:
-
-This is the base class for all widgets. Widgets have the following lifecycle:
-
- * A Widget subclass will be defined at application startup, with static configuration, e.g. id.
- * In each request, a Widget instance is created, with request-local configuration, e.g. value.
-
-TBD: change this to explaining HOW you use a widget...
-
-    Basic params for all widgets
-    """
 
     id = pm.Param('Widget identifier', request_local=False)
     template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
@@ -94,12 +31,42 @@ TBD: change this to explaining HOW you use a widget...
     id_elem = None
     _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
 
+
+    @classmethod
+    def req(cls, **kw):
+        """
+        Generate an instance of the widget.
+        """
+        ins = object.__new__(cls)
+        ins.__init__(**kw)
+        return ins
+
+    def __new__(cls, **kw):
+        """
+        New is overloaded to return a subclass of the widget, rather than an instance.
+        """
+        return type(cls.__name__+'_s', (cls,), kw)
+
+    def __init__(self, **kw):
+        for k, v in kw.items():
+            setattr(self, k, v)
+
     @classmethod
     def post_define(cls, cls2=None):
         """
-        Define the widget:
-          * Set attrs['id'] to the compound id
-          * Get any defaults from the parent
+        This is a class method, that is called when a subclass of this Widget
+        is created. Process static configuration here. Use it like this::
+
+            class MyWidget(LeafWidget):
+                @classmethod
+                def post_define(cls):
+                    id = getattr(cls,  'id', None)
+                    if id and not id.startswith('my'):
+                        raise pm.ParameterError("id must start with 'my'")
+
+        post_define should always cope with missing data - the class may be an
+        abstract class. There is no need to call super(), the metaclass will do
+        this automatically.
         """
         cls = cls2 or cls
         id = getattr(cls, 'id', None)
@@ -132,11 +99,15 @@ TBD: change this to explaining HOW you use a widget...
 
     def prepare(self):
         """
-        Prepare the widget for display:
-          * Call any deferred parameters
-          * Place any attribute parameters in the ``attrs`` dict
-          * Initialise and register any resources
-          * Call ``validator.from_python`` on the value
+        This is an instance method, that is called just before the Widget is
+        displayed. Process request-local configuration here. For
+        efficiency, widgets should do as little work as possible here.
+        Use it like this::
+
+            class MyWidget(Widget):
+                def prepare(self):
+                    super(MyWidget, self).prepare()
+                    self.value = 'My: ' + str(self.value)
         """
         if 0: # TBD debug mode only
             for k in kw:
@@ -189,12 +160,13 @@ TBD: change this to explaining HOW you use a widget...
 
     @classmethod
     def idisplay(cls, displays_on=None, **kw):
-        """Initialise and display the widget. This intended for simple widgets
-        that don't need a value from the controller."""
         return cls.req(**kw).display(displays_on)
 
     @classmethod
     def validate(cls, params):
+        """
+        Validate form input TBD
+        """
         if cls.parent:
             raise core.WidgetError('Only call validate on root widgets')
         value = vd.unflatten_params(params)
@@ -236,7 +208,7 @@ class DeclarativeWidgetMeta(WidgetMeta):
         if name != 'CompoundWidget' and 'children' not in dct:
             new_children = []
             for d, v in dct.items():
-                if isinstance(v, type) and issubclass(v, BaseWidget) and d not in ('parent', 'demo_for', 'layout', 'child'):
+                if isinstance(v, type) and issubclass(v, Widget) and d not in ('parent', 'demo_for', 'layout', 'child'):
                     new_children.append((v, d))
                     del dct[d]
             children = []
@@ -260,6 +232,9 @@ class CompoundWidget(Widget):
 
     @classmethod
     def post_define(cls, cls2=None):
+        """
+        Check children are valid; update them to have a link to the parent.
+        """
         cls = cls2 or cls
         Widget.post_define(cls)
         cls._sub_compound = not cls.id_elem
@@ -286,6 +261,9 @@ class CompoundWidget(Widget):
         self.children = WidgetBunch(c.req(parent=weakref.proxy(self)) for c in self.children)
 
     def prepare(self):
+        """
+        Propagate the value for this widget to the children, based on their id.
+        """
         super(CompoundWidget, self).prepare()
         v = self.value or {}
         if not hasattr(self, '_validated'):
@@ -375,6 +353,9 @@ class RepeatingWidget(Widget):
 
     @classmethod
     def post_define(cls, cls2=None):
+        """
+        Check child is valid; update with link to parent.
+        """
         cls = cls2 or cls
         Widget.post_define(cls)
         if not hasattr(cls, 'child'):
@@ -393,6 +374,9 @@ class RepeatingWidget(Widget):
         self.children = RepeatingWidgetBunch(self, self.children)
 
     def prepare(self):
+        """
+        Propagate the value for this widget to the children, based on their index.
+        """
         super(RepeatingWidget, self).prepare()
         value = self.value or []
         if self.repetitions is None:
@@ -431,10 +415,9 @@ class RepeatingWidget(Widget):
 
 class DisplayOnlyWidget(Widget):
     """
-    A widget that is used only for display purposes; it does not affect value
-    propagation or validation. This is used by widgets like
-    :class:`tw.forms.FieldSet` that surround a group of widgets in a wrapper,
-    without otherwise affecting the behaviour.
+    A widget that has a single child. The parent widget is only used for display
+    purposes; it does not affect value propagation or validation. This is used
+    by widgets like :class:`tw.forms.FieldSet`.
     """
     child = pm.Param('Child for this widget. This must be a widget.')
     layout = pm.Param('Layout child container TBD', default=None)
