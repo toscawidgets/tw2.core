@@ -1,25 +1,25 @@
 widget instance per request
     display as a class or instance method
-    remove "cls2 or cls" hack
+        *** this is difficult!
     params_as_vars config option
-    children_deep / _sub_compound
     avoid so many subclasses being created - inplace addition of parent
 
 declarative instantiation
     layout
+        I wonder if layout was actually a bad idea and instead TableForm should just provide a default child
         layouts for repeating widgets
         should container widget now have children as a parameter?
 
 unit tests
     validators - doc tests?
+    children_deep / _sub_compound
 
 validation
     post_define - fe validator
     test compound id with deeply nested widgets
     whole form validators
         twc.MatchValidator
-    redisplaying with errors - need fancy layout [this is probably quite big]
-        non-safe widgets - most resources are non-safe
+    non-safe widgets - most resources are non-safe
     how does msf work?
     have display detect validated_widget in rl
 
@@ -29,7 +29,6 @@ validation
             if to_python fails - use None
             if it doesn't match an item - just no item is selected
         everything else (in tw.forms at least) just display as-is
-
 
 documentation
     configuration
@@ -51,7 +50,8 @@ misc
 
 widget browser
     make tw.core neat
-    paster command entry point
+    support rst
+    paster command entry point -- update tutorial
         tweak help
 
 frameworks
@@ -64,11 +64,7 @@ frameworks
 tw2.forms
     DemoImageButton
     form id - ${child.id}:_form
-
-    BaseLayout
-        display hidden fields separately
-        document
-
+    BaseLayout - display hidden fields separately
     data grid
     validation
         some fields need particular work (checkbox, fileupload)

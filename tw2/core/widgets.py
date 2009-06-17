@@ -1,28 +1,42 @@
 import copy, weakref, re, itertools
 import template, core, util, validation as vd, params as pm
 
+reserved_names = ('parent', 'demo_for', 'layout', 'child')
 _widget_seq = itertools.count(0)
 
 class WidgetMeta(pm.ParamMeta):
+    """
+    This metaclass gives widgets a sequence number, to ensure that ordering
+    works correctly fo DeclarativeWidgetMeta. It also calls post_define for
+    the widget class and base classes. This is needed as it's not possible
+    to call super() in post_define.
+    """
     def __new__(meta, name, bases, dct):
         widget = super(WidgetMeta, meta).__new__(meta, name, bases, dct)
         widget._seq = _widget_seq.next()
-        widget.post_define()
+        for w in reversed(widget.__mro__):
+            if 'post_define' in w.__dict__:
+                w.post_define.im_func(widget)
         return widget
 
 class DeclarativeWidgetMeta(WidgetMeta):
+    """
+    This metaclass detects members that are widgets, and constructs the
+    `children` parameter based on this.
+    """
     def __new__(meta, name, bases, dct):
-        if name != 'CompoundWidget' and 'children' not in dct:
+        if 'children' not in dct:
             new_children = []
             for d, v in dct.items():
-                if isinstance(v, type) and issubclass(v, Widget) and d not in ('parent', 'demo_for', 'layout', 'child'):
+                if isinstance(v, type) and issubclass(v, Widget) and d not in reserved_names:
                     new_children.append((v, d))
                     del dct[d]
             children = []
             for b in bases:
                 children.extend(getattr(b, 'children', None) or [])
             children.extend(v(id=d) for v,d in sorted(new_children, key=lambda t: t[0]._seq))
-            dct['children'] = children
+            if children:
+                dct['children'] = children
         return super(DeclarativeWidgetMeta, meta).__new__(meta, name, bases, dct)
 
 class Widget(pm.Parametered):
@@ -66,7 +80,7 @@ class Widget(pm.Parametered):
             setattr(self, k, v)
 
     @classmethod
-    def post_define(cls, cls2=None):
+    def post_define(cls):
         """
         This is a class method, that is called when a subclass of this Widget
         is created. Process static configuration here. Use it like this::
@@ -82,7 +96,6 @@ class Widget(pm.Parametered):
         abstract class. There is no need to call super(), the metaclass will do
         this automatically.
         """
-        cls = cls2 or cls
         id = getattr(cls, 'id', None)
         if id:
             if not cls._valid_id_re.match(id):
@@ -230,12 +243,10 @@ class CompoundWidget(Widget):
     __metaclass__ = DeclarativeWidgetMeta
 
     @classmethod
-    def post_define(cls, cls2=None):
+    def post_define(cls):
         """
         Check children are valid; update them to have a link to the parent.
         """
-        cls = cls2 or cls
-        Widget.post_define(cls)
         cls._sub_compound = not cls.id_elem
         if not hasattr(cls, 'children'):
             return
@@ -351,12 +362,10 @@ class RepeatingWidget(Widget):
     template = 'genshi:tw.core.templates.display_children'
 
     @classmethod
-    def post_define(cls, cls2=None):
+    def post_define(cls):
         """
         Check child is valid; update with link to parent.
         """
-        cls = cls2 or cls
-        Widget.post_define(cls)
         if not hasattr(cls, 'child'):
             return
         if not issubclass(cls.child, Widget):
@@ -425,9 +434,7 @@ class DisplayOnlyWidget(Widget):
     __metaclass__ = DeclarativeWidgetMeta
 
     @classmethod
-    def post_define(cls, cls2=None):
-        cls = cls2 or cls
-        Widget.post_define(cls)
+    def post_define(cls):
         if cls.layout and cls.children:
             if getattr(cls, 'child', None):
                 raise pm.ParameterError("If layout is specified, you cannot specify child")
