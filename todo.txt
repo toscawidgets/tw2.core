@@ -1,13 +1,13 @@
 widget instance per request
     display as a class or instance method
-        *** this is difficult!
     params_as_vars config option
     avoid so many subclasses being created - inplace addition of parent
 
 declarative instantiation
+    layouts for repeating widgets **
+
     layout
         I wonder if layout was actually a bad idea and instead TableForm should just provide a default child
-        layouts for repeating widgets
         should container widget now have children as a parameter?
 
 unit tests

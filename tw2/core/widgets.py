@@ -6,26 +6,16 @@ _widget_seq = itertools.count(0)
 
 class WidgetMeta(pm.ParamMeta):
     """
-    This metaclass gives widgets a sequence number, to ensure that ordering
-    works correctly fo DeclarativeWidgetMeta. It also calls post_define for
-    the widget class and base classes. This is needed as it's not possible
-    to call super() in post_define.
-    """
-    def __new__(meta, name, bases, dct):
-        widget = super(WidgetMeta, meta).__new__(meta, name, bases, dct)
-        widget._seq = _widget_seq.next()
-        for w in reversed(widget.__mro__):
-            if 'post_define' in w.__dict__:
-                w.post_define.im_func(widget)
-        return widget
+    This metaclass:
 
-class DeclarativeWidgetMeta(WidgetMeta):
-    """
-    This metaclass detects members that are widgets, and constructs the
-    `children` parameter based on this.
+     * Detects members that are widgets, and constructs the
+       `children` parameter based on this.
+     * Gives widgets a sequence number, so ordering works correctly.
+     * Calls post_define for the widget class and base classes. This
+       is needed as it's not possible to call super() in post_define.
     """
     def __new__(meta, name, bases, dct):
-        if 'children' not in dct:
+        if name != 'Widget' and 'children' not in dct:
             new_children = []
             for d, v in dct.items():
                 if isinstance(v, type) and issubclass(v, Widget) and d not in reserved_names:
@@ -33,11 +23,18 @@ class DeclarativeWidgetMeta(WidgetMeta):
                     del dct[d]
             children = []
             for b in bases:
-                children.extend(getattr(b, 'children', None) or [])
+                bcld = getattr(b, 'children', None)
+                if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
+                    children.extend(bcld)
             children.extend(v(id=d) for v,d in sorted(new_children, key=lambda t: t[0]._seq))
             if children:
                 dct['children'] = children
-        return super(DeclarativeWidgetMeta, meta).__new__(meta, name, bases, dct)
+        widget = super(WidgetMeta, meta).__new__(meta, name, bases, dct)
+        widget._seq = _widget_seq.next()
+        for w in reversed(widget.__mro__):
+            if 'post_define' in w.__dict__:
+                w.post_define.im_func(widget)
+        return widget
 
 class Widget(pm.Parametered):
     """
@@ -240,8 +237,6 @@ class CompoundWidget(Widget):
     children_deep = pm.Variable("Children, including any children from child CompoundWidgets that have no id")
     template = 'genshi:tw.core.templates.display_children'
 
-    __metaclass__ = DeclarativeWidgetMeta
-
     @classmethod
     def post_define(cls):
         """
@@ -431,8 +426,6 @@ class DisplayOnlyWidget(Widget):
     layout = pm.Param('Layout child container TBD', default=None)
     id = None
 
-    __metaclass__ = DeclarativeWidgetMeta
-
     @classmethod
     def post_define(cls):
         if cls.layout and cls.children:
@@ -448,7 +441,7 @@ class DisplayOnlyWidget(Widget):
         cls._sub_compound = cls.child._sub_compound
         if cls.child.resources:
             cls.resources = set(cls.resources).update(cls.child.resources)
-        cls.id = cls.id or cls.child.id
+        cls.id = getattr(cls, 'id', None) or getattr(cls.child, 'id', None)
         cls.id_elem = None
         cls.child = cls.child(id=cls.id, parent=cls, resources=[])
 
