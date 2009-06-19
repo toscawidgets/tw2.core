@@ -160,9 +160,11 @@ class Widget(pm.Parametered):
         ancestors = []
         cur = cls
         while cur:
-            ancestors.append(cur.id_elem)
+            if cur in ancestors:
+                raise core.WidgetError('Parent loop')
+            ancestors.append(cur)
             cur = cur.parent
-        return ':'.join(reversed(filter(None, ancestors)))
+        return ':'.join(reversed([a.id_elem for a in ancestors if a.id_elem]))
 
     def display(self, displays_on=None):
         """Display the widget - render the template. In the template, the
@@ -251,7 +253,7 @@ class CompoundWidget(Widget):
         for c in cls.children:
             if not issubclass(c, Widget):
                 raise pm.ParameterError("All children must be widgets")
-            if c.id:
+            if getattr(c, 'id', None):
                 if c.id in ids:
                     raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)

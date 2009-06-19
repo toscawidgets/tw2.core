@@ -1,24 +1,28 @@
+Questions
+    What does the "paste.filter_app_factory" entry point do?
+
 widget instance per request
     display as a class or instance method
     params_as_vars config option
-    avoid so many subclasses being created - inplace addition of parent
 
-
-fix GridLayout sample
+fix tw.forms widget browser
 
 unit tests
     validators - doc tests?
     children_deep / _sub_compound
+    test compound id with deeply nested widgets
 
 validation
     post_define - fe validator
-    test compound id with deeply nested widgets
     whole form validators
         twc.MatchValidator
     non-safe widgets - most resources are non-safe
-    how does msf work?
     have display detect validated_widget in rl
 
+
+tw.forms & validation
+    how does msf work?
+    some fields need particular work (checkbox, fileupload)
     when redisplaying on error:
         run validator.to_python(x, validate=False)
         this is for selection fields
@@ -36,10 +40,7 @@ documentation
     middleware (deserves its own section?)
 
 misc
-    setup.py - entrypoints
-        not sure: [paste.filter_app_factory] - what is this?
-    i18n
-        we've got the global now, where to call it?
+    i18n - we've got the global now, where to call it?
     WidgetTestCase
     review all the TBDs
     use quotes in all exceptions
@@ -47,8 +48,6 @@ misc
 widget browser
     make tw.core neat
     support rst
-    paster command entry point -- update tutorial
-        tweak help
 
 frameworks
     pylons / tg2
@@ -58,12 +57,16 @@ frameworks
 
 
 tw2.forms
+    DemoForm / FieldSet causing parent loop
+    *** browser is failing with samples
+
+    having imagebutton derive from link causes some problems
+
     DemoImageButton
     form id - ${child.id}:_form
     BaseLayout - display hidden fields separately
     data grid
-    validation
-        some fields need particular work (checkbox, fileupload)
+        gid layout, with labelhiddenfield?
     named buttons
     bug: radiobuttonlist and table were clashing if same id
         the repeating should keep them separate
