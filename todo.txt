@@ -1,6 +1,5 @@
 Questions
     What does the "paste.filter_app_factory" entry point do?
-    display as a class or instance method
     sphinx: how to do :autoclass: that doesn't show __init__ args
 
 tw2.forms

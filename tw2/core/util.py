@@ -14,6 +14,12 @@ def thread_local():
         return rl_data
 
 
+class class_or_instance(object):
+    def __init__(self, fn):
+        self.fn = fn
+    def __get__(self, ins, cls):
+        return lambda *a, **kw: self.fn(ins, cls, *a, **kw)
+
 
 class MultipleReplacer(object):
     """Performs several regexp substitutions on a string with a single pass.

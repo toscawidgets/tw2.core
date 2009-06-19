@@ -166,9 +166,12 @@ class Widget(pm.Parametered):
             cur = cur.parent
         return ':'.join(reversed([a.id_elem for a in ancestors if a.id_elem]))
 
-    def display(self, displays_on=None):
+    @util.class_or_instance
+    def display(self, cls, displays_on=None, **kw):
         """Display the widget - render the template. In the template, the
         widget instance is available as the variable ``$w``.
+
+        TBD: special class/instance behaviour
 
         `displays_on`
             The name of the template engine this widget is being displayed
@@ -176,22 +179,21 @@ class Widget(pm.Parametered):
             the parent's template engine, or the default, if there is no
             parent. Set this to ``string`` to get raw string output.
         """
-        if not self.parent:
-            self.prepare()
-        mw = core.request_local().get('middleware')
-        if displays_on is None:
-            displays_on = (self.parent.template.split(':')[0] if self.parent
-                                                else mw.config.default_engine)
-        vars = {'w':self}
-        if mw.config.params_as_vars:
-            for p in self._params:
-                if hasattr(self, p):
-                    vars[p] = getattr(self, p)
-        return mw.engines.render(self.template, displays_on, vars)
-
-    @classmethod
-    def idisplay(cls, displays_on=None, **kw):
-        return cls.req(**kw).display(displays_on)
+        if not self:
+            return cls.req(**kw).display(displays_on)
+        else:
+            if not self.parent:
+                self.prepare()
+            mw = core.request_local().get('middleware')
+            if displays_on is None:
+                displays_on = (self.parent.template.split(':')[0] if self.parent
+                                                    else mw.config.default_engine)
+            vars = {'w':self}
+            if mw.config.params_as_vars:
+                for p in self._params:
+                    if hasattr(self, p):
+                        vars[p] = getattr(self, p)
+            return mw.engines.render(self.template, displays_on, vars)
 
     @classmethod
     def validate(cls, params):
