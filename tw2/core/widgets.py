@@ -144,7 +144,7 @@ class Widget(pm.Parametered):
             setattr(self, a, getattr(self, a).fn())
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
-            if self.id:
+            if getattr(self, 'id', None):
                 self.attrs['id'] = self._compound_id()
             for a in self._attr:
                 if a in self.attrs:
@@ -182,7 +182,12 @@ class Widget(pm.Parametered):
         if displays_on is None:
             displays_on = (self.parent.template.split(':')[0] if self.parent
                                                 else mw.config.default_engine)
-        return mw.engines.render(self.template, displays_on, {'w':self})
+        vars = {'w':self}
+        if mw.config.params_as_vars:
+            for p in self._params:
+                if hasattr(self, p):
+                    vars[p] = getattr(self, p)
+        return mw.engines.render(self.template, displays_on, vars)
 
     @classmethod
     def idisplay(cls, displays_on=None, **kw):

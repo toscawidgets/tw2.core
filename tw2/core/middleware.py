@@ -25,15 +25,19 @@ class Config(object):
 
     `bufsize`
         Buffer size used by static resource server. (default: 4096)
+
+    `params_as_vars`
+        Whether to present parameters as variables in widget templates. This
+        is the behaviour from ToscaWidgets 0.9. (default: False)
     '''
 
     translator = lambda s: s
     default_engine = 'string'
-
     inject_resources = True
     serve_resources = True
     res_prefix = '/resources/'
     bufsize = 4*1024
+    params_as_vars = False
 
     def __init__(self, **kw):
         for k, v in kw.items():

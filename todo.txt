@@ -5,12 +5,15 @@ widget instance per request
     display as a class or instance method
     params_as_vars config option
 
-fix tw.forms widget browser
-
 unit tests
     validators - doc tests?
     children_deep / _sub_compound
     test compound id with deeply nested widgets
+
+tw2.forms
+    fix grid layout sample ***
+    form id - ${child.id}:_form
+    BaseLayout - display hidden fields separately
 
 validation
     post_define - fe validator
@@ -54,19 +57,3 @@ frameworks
     cp3
     django
     @validate decorator
-
-
-tw2.forms
-    DemoForm / FieldSet causing parent loop
-    *** browser is failing with samples
-
-    having imagebutton derive from link causes some problems
-
-    DemoImageButton
-    form id - ${child.id}:_form
-    BaseLayout - display hidden fields separately
-    data grid
-        gid layout, with labelhiddenfield?
-    named buttons
-    bug: radiobuttonlist and table were clashing if same id
-        the repeating should keep them separate
