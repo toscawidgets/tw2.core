@@ -235,3 +235,10 @@ TableForm - how to make TableLayout parameters accessible?
 Params - remove default attribute altogether?
 tidy up id and id_elem
 avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
+
+more unit tests
+    validators - doc tests?
+    children_deep / _sub_compound
+    test compound id with deeply nested widgets
+
+django

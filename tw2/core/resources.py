@@ -35,24 +35,23 @@ class Link(wd.Widget):
         return "%s('%s')" % (self.__class__.__name__, getattr(self, 'link', '%s/%s'%(self.modname,self.filename)))
 
 class JSLink(Link, Resource):
+    '''
+    A JavaScript source file.
+    '''
     location = 'head'
     template = 'genshi:tw2.core.templates.jslink'
 
 class CSSLink(Link, Resource):
+    '''
+    A CSS style sheet.
+    '''
     media = pm.Param('Media tag', default='all')
     location = 'head'
     template = 'genshi:tw2.core.templates.csslink'
 
 class JSSource(Resource):
     """
-    Inline JavaScript source code. TBD - test this
-
-    To add a dynamic call, you can do this::
-
-        class MyWidget(twc.LeafWidget):
-            def post_init(self):
-                super(MyWidget, self).post_init()
-                self.resources = self.resources + [JSSource('alert(value)')]
+    Inline JavaScript source code.
     """
     src = pm.Param('Source code')
     location = 'bodybottom'

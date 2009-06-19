@@ -1,14 +1,7 @@
 Questions
     What does the "paste.filter_app_factory" entry point do?
-
-widget instance per request
     display as a class or instance method
-    params_as_vars config option
-
-unit tests
-    validators - doc tests?
-    children_deep / _sub_compound
-    test compound id with deeply nested widgets
+    sphinx: how to do :autoclass: that doesn't show __init__ args
 
 tw2.forms
     fix grid layout sample ***
@@ -22,7 +15,6 @@ validation
     non-safe widgets - most resources are non-safe
     have display detect validated_widget in rl
 
-
 tw.forms & validation
     how does msf work?
     some fields need particular work (checkbox, fileupload)
@@ -34,10 +26,7 @@ tw.forms & validation
         everything else (in tw.forms at least) just display as-is
 
 documentation
-    configuration
     widget lifecycle
-    params - tidy up
-        remove args from autoclass
     move template info to parameter doc
     resources
     middleware (deserves its own section?)
@@ -54,6 +43,8 @@ widget browser
 
 frameworks
     pylons / tg2
+        @validate decorator
     cp3
-    django
-    @validate decorator
+
+resources
+    currently they're done statically, but we need some way to include dynamic js calls
