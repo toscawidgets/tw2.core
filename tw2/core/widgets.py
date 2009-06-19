@@ -263,8 +263,7 @@ class CompoundWidget(Widget):
                 if c.id in ids:
                     raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)
-            if c.resources: # TBD: this shouldn't be needed
-                cls.resources.update(c.resources)
+            cls.resources.update(c.resources)
             joined_cld.append(c(parent=cls, resources=[]))
         # TBD: check for dupes in _sub_compound
         cls.children = WidgetBunch(joined_cld)
@@ -448,7 +447,8 @@ class DisplayOnlyWidget(Widget):
             raise pm.ParameterError("Child must be a widget")
         cls._sub_compound = cls.child._sub_compound
         if cls.child.resources:
-            cls.resources = set(cls.resources).update(cls.child.resources)
+            cls.resources = set(cls.resources)
+            cls.resources.update(cls.child.resources)
         cls.id = getattr(cls, 'id', None) or getattr(cls.child, 'id', None)
         cls.id_elem = None
         cls.child = cls.child(id=cls.id, parent=cls, resources=[])
@@ -470,7 +470,9 @@ class DisplayOnlyWidget(Widget):
             raise
 
 class Page(DisplayOnlyWidget):
-    """An HTML page
+    """
+    An HTML page. This widget includes a :meth:`request` method that serves
+    the page.
     """
     title = pm.Param('Title for the page')
     template = "genshi:tw2.core.templates.page"

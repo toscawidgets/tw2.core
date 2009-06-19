@@ -51,20 +51,20 @@ genshi template optimiser
         also, s.c[1].display is done
 
 
+widgets as controllers
+    security
+    switcher
+    csrf
+
 declarative
     set id on class to rewritten class name
+    ** maybe this should just apply to page subclasses
 
 validation
     client-side
-    file upload
     MatchField
     make msg dict more global
-
-    inheriting required, encoding:
-        self.validate(value, required=False)
-        if self.required is not None:
-            required = self.required
-        child.validate(.., required)
+    inheriting required, encoding
 
 template
     mako helper functions
@@ -82,10 +82,9 @@ parameters
     find a neater way to break param descriptions across lines
 
 resources
+    expires header
     optimisation
     proper web server - paste command to grab resources
-    hooks to cp static service & similar?
-    expires header - need firebug? **
     refactor resources a bit - at the minute, location only takes affect when you reference a resource within a resources tag; not when you display directly. maybe this is ok.
 
 misc
@@ -144,23 +143,17 @@ And allow per-field hints on the form
 dynforms
 --------
 
-    - calendardatepicker
-        but remove any database dependence
-            leave ajax lookup and filtering grid in, but without db dependence
-        the idea is that these are non-framework useful js widgets
-        just leaves OSSF homeless, but that's pretty minor
+First cut (no ajax):
+    calendar
+    growing
+    hiding
+    linkcontainer
+    customisedform
 
+Second:
+    cascading
+    leave ajax lookup and filtering grid in, but without db dependence
 
-linkcontainer - leave js popup for now
-    could potentially do without a template - compound widget of child and the link
-    nah, bad idea, makes hierarchy complicated
-
-*** copying attributes is becoming a pain - go back to having proxies?
-    self.safe_modify('resources')
-
-ajaxlookup
-    widgets as controllers will help
-    do very simple server-side until then
 
 CustomisedForm - need submit_attrs on Form
 hiding - grandchild hiding will work differently
@@ -191,7 +184,6 @@ tw2.core - later
     id as default param to Widget.__init__
         override __init__ to change default parameter?
             and make id the top default parameter
-    auto id from class name - is this even a good idea?
 
 tw2.forms - later
     stop label names being post-to-able
@@ -205,6 +197,7 @@ tw2.forms - later
     unit tests - what can be done?
     named buttons
     datagrid
+    form id - ${child.id}:_form
 
 config
     debug
@@ -218,7 +211,6 @@ config
 
 TableForm - how to make TableLayout parameters accessible?
 Params - remove default attribute altogether?
-tidy up id and id_elem
 avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
 
 more unit tests
@@ -227,4 +219,3 @@ more unit tests
     test compound id with deeply nested widgets
 
 django
-form id - ${child.id}:_form

@@ -77,10 +77,11 @@ class TwMiddleware(object):
         req = wo.Request(environ)
         if self.config.serve_resources and req.path.startswith(self.config.res_prefix):
             return self.resources(environ, start_response)
-        if self.config.serve_controllers and req.path.startswith(self.config.controller_prefix):
-            return self.controllers(environ, start_response)
         else:
-            resp = req.get_response(self.app)
+            if self.config.serve_controllers and req.path.startswith(self.config.controller_prefix):
+                resp = self.controllers(req)
+            else:
+                resp = req.get_response(self.app)
             content_type = resp.headers.get('Content-Type','text/plain').lower()
             if self.config.inject_resources and 'html' in content_type:
                 resp.body = resources.inject_resources(resp.body, encoding=resp.charset)
@@ -99,11 +100,10 @@ class ControllersApp(object):
     def register(self, widget, path):
         self._widgets[path] = widget
 
-    def __call__(self, environ, start_response):
-        req = wo.Request(environ)
+    def __call__(self, req):
         try:
             path = req.path_info[len(self.config.controller_prefix):]
             resp = self._widgets[path].request(req)
         except KeyError:
             resp = wo.Response(status="404 Not Found")
-        return resp(environ, start_response)
+        return resp

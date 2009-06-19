@@ -49,6 +49,8 @@ def unflatten_params(params):
     this into a nested dict/list structure. This has been designed so it
     (should!) never raise an exception.
     """
+    if hasattr(params, 'mixed'): # TBD: neater approach
+        params = params.mixed()
     out = {}
     for pname in params:
         dct = out

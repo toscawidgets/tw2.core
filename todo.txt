@@ -9,22 +9,18 @@ tw2.forms
     fix grid layout sample ***
     BaseLayout - display hidden fields separately
 
-widgets as controllers
-    update design doc
-
-    webob as tw2.core dependency
-    widget .link .controller .authorise
-    switcher
-
-
 validation
     post_define - fe validator
     non-safe widgets - most resources are non-safe
     have display detect validated_widget in rl
 
 tw.forms & validation
-    how does msf work?
-    some fields need particular work (checkbox, fileupload)
+    test all field types for roundtripping
+        file upload
+        select with codes
+        checkbox
+        better required messages for select fields
+
     when redisplaying on error:
         run validator.to_python(x, validate=False)
         this is for selection fields
