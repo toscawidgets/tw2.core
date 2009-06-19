@@ -25,10 +25,6 @@ tw.forms & validation
         everything else (in tw.forms at least) just display as-is
 
 documentation
-    widget lifecycle
-    move template info to parameter doc
-    resources
-    middleware (deserves its own section?)
 
 misc
     i18n - we've got the global now, where to call it?

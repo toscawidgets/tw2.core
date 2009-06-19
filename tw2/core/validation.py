@@ -1,4 +1,4 @@
-import core, re
+import core, re, util, string
 try:
     import formencode
 except ImportError:
@@ -110,7 +110,7 @@ class Validator(object):
         'decode': 'Received in the wrong character set',
         # TBD: is this the best place for these messages?
         'corrupt': 'The form submission was received corrupted; please try again',
-        'childerror': 'Children of this widget have errors'
+        'childerror': '' # Children of this widget have errors
     }
     required = False
     strip = True
@@ -368,3 +368,30 @@ class IpAddressValidator(Validator):
         m = self.regex.search(value)
         if not m or any(not(0 <= int(g) <= 255) for g in m.groups()):
             raise ValidationError('ipaddress', self)
+
+class MatchValidator(Validator):
+    """
+    Confirm two fields on a form match.
+    """
+    msgs = {
+        'mismatch': "$field1_str doesn't match $field2_str"
+    }
+
+    def __init__(self, field1, field2, **kw):
+        super(MatchValidator, self).__init__(**kw)
+        self.field1 = field1
+        self.field2 = field2
+
+    @property
+    def field1_str(self):
+        return string.capitalize(util.name2label(self.field1).lower())
+
+    @property
+    def field2_str(self):
+        return util.name2label(self.field2).lower()
+
+    def validate_python(self, value):
+        v1 = value[self.field1]
+        v2 = value[self.field2]
+        if v1 is not Invalid and v2 is not Invalid and v1 != v2:
+            raise ValidationError('mismatch', self)

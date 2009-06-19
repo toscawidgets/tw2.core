@@ -21,6 +21,18 @@ class class_or_instance(object):
         return lambda *a, **kw: self.fn(ins, cls, *a, **kw)
 
 
+def name2label(name):
+    """
+    Convert a column name to a Human Readable name.
+
+       1) Convert _ to spaces
+       2) Convert CamelCase to Camel Case
+       3) Upcase first character of Each Word
+    """
+    return ' '.join([s.capitalize() for s in
+               re.findall(r'([A-Z][a-z0-9]+|[a-z0-9]+|[A-Z0-9]+)', name)])
+
+
 class MultipleReplacer(object):
     """Performs several regexp substitutions on a string with a single pass.
 
