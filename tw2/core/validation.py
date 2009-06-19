@@ -239,6 +239,16 @@ class IntValidator(RangeValidator):
         return str(value)
 
 
+class BoolValidator(RangeValidator):
+    """
+    Convert a value to a boolean. This is particularly intended to handle
+    check boxes.
+    """
+    def to_python(self, value):
+        value = super(BoolValidator, self).to_python(value)
+        return str(value).lower() in ('on', 'yes', 'true', '1')
+
+
 class OneOfValidator(Validator):
     """
     Confirm the value is one of a list of acceptable values. This is useful for

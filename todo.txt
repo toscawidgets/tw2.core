@@ -18,7 +18,6 @@ tw.forms & validation
     test all field types for roundtripping
         file upload
         select with codes
-        checkbox
         better required messages for select fields
 
     when redisplaying on error:
