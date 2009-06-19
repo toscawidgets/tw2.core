@@ -1,4 +1,4 @@
-import copy, weakref, re, itertools
+import copy, weakref, re, itertools, webob
 import template, core, util, validation as vd, params as pm
 
 reserved_names = ('parent', 'demo_for', 'child')
@@ -119,7 +119,6 @@ class Widget(pm.Parametered):
             for p in cls.parent._all_params.values():
                 if p.child_param and not hasattr(cls, p.name) and p.default is not pm.Required:
                     setattr(cls, p.name, p.default)
-
 
     def prepare(self):
         """
@@ -475,3 +474,9 @@ class Page(DisplayOnlyWidget):
     """
     title = pm.Param('Title for the page')
     template = "genshi:tw2.core.templates.page"
+
+    @classmethod
+    def request(cls, req):
+        resp = webob.Response(request=req, content_type="text/html; charset=UTF8")
+        resp.body = cls.display().encode('utf-8')
+        return resp

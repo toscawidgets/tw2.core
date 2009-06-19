@@ -117,8 +117,6 @@ class ResourcesApp(object):
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
         try:
-            if not req.path_info.startswith(self.config.res_prefix):
-                raise IOError()
             path = req.path_info[len(self.config.res_prefix):]
             if path not in self._paths:
                 raise IOError()

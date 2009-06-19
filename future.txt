@@ -1,19 +1,5 @@
 Later
 -----
-widgets as controllers
-    ** widgets aren't singletons - update design
-    middleware
-    util functions for tokens & ut
-        how to access session? shall we start with beaker?
-        where to store server_secret (there is precedent for this...)
-    widget .link .controller .authorise
-    DisplayWidget - controller method that displays the widget
-        sitetemplate
-    switcher
-
-    ultimately, toscawidgets doesn't have to be middleware - it can be an app!
-
-
 widget browser
     sphinx integration
         widget browser just displays each registered package's sphinx docs
@@ -65,17 +51,16 @@ genshi template optimiser
         also, s.c[1].display is done
 
 
-widget registry
-declarative - set id on class to rewritten class name
+declarative
+    set id on class to rewritten class name
 
 validation
     client-side
     file upload
     MatchField
-    instantiate validator class automatically
-    make msg dict more global?
+    make msg dict more global
 
-    inheriting required:
+    inheriting required, encoding:
         self.validate(value, required=False)
         if self.required is not None:
             required = self.required
@@ -242,3 +227,4 @@ more unit tests
     test compound id with deeply nested widgets
 
 django
+form id - ${child.id}:_form

@@ -2,15 +2,23 @@ Questions
     What does the "paste.filter_app_factory" entry point do?
     sphinx: how to do :autoclass: that doesn't show __init__ args
 
+tidy up id, id_elem, _compound_id
+    avoid generating id=""
+
 tw2.forms
     fix grid layout sample ***
-    form id - ${child.id}:_form
     BaseLayout - display hidden fields separately
+
+widgets as controllers
+    update design doc
+
+    webob as tw2.core dependency
+    widget .link .controller .authorise
+    switcher
+
 
 validation
     post_define - fe validator
-    whole form validators
-        twc.MatchValidator
     non-safe widgets - most resources are non-safe
     have display detect validated_widget in rl
 
