@@ -7,7 +7,6 @@ log = logging.getLogger(__name__)
 
 class Resource(wd.Widget):
     location = pm.Param('Location on the page where the resource should be placed. This can be one of: head, headbottom, bodytop or bodybottom.')
-    # TBD: do we want 'afterwidget' as a location?
     id = None
 
 class Link(wd.Widget):
@@ -121,7 +120,6 @@ class ResourcesApp(object):
             if path not in self._paths:
                 raise IOError()
             (modname, filename, ct, enc) = self._paths[path]
-            # TBD: non pkg-resources dependent alternative
             if modname:
                 stream = pr.resource_stream(modname, filename)
             else:
@@ -133,7 +131,7 @@ class ResourcesApp(object):
             resp = wo.Response(request=req, app_iter=stream, content_type=ct)
             if enc:
                 resp.content_type_params['charset'] = enc
-            expires = int(req.environ.get('toscawidgets.resources_expire', 0)) # TBD
+            expires = int(req.environ.get('toscawidgets.resources_expire', 0))
             resp.cache_expires(expires)
         return resp(environ, start_response)
 
@@ -186,7 +184,7 @@ class _ResourceInjector(util.MultipleReplacer):
     def _injector_for_location(self, key, after=True):
         def inject(group, resources, encoding):
             for r in resources:
-                r.prepare() # TBD: is this needed?
+                r.prepare()
             inj = u'\n'.join([r.display(displays_on='string') for r in resources if r.location == key])
             inj = inj.encode(encoding)
             if after:
@@ -209,8 +207,7 @@ class _ResourceInjector(util.MultipleReplacer):
         if resources is None:
             resources = core.request_local().pop('resources', None)
         if resources:
-            # Only inject if there are resources registered for injection
-            encoding = encoding or find_charset(html) or 'ascii' # TBD: would utf-8 be a better choice?
+            encoding = encoding or find_charset(html) or 'utf-8'
             html = util.MultipleReplacer.__call__(self, html, resources, encoding)
         return html
 

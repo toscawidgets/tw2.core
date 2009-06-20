@@ -15,6 +15,9 @@ tw2.core
     i18n - where to call it?
     resources - dynamic js calls
     use quotes in all exceptions
+    logging - not much to log, but tw has some useful debug info
+    do __repr__ functions better
+    make pkg_resources a soft dependence
 
 tw2.forms
     selectionfield - auto item_validator
@@ -93,11 +96,7 @@ resources
     optimisation
     proper web server - paste command to grab resources
     refactor resources a bit - at the minute, location only takes affect when you reference a resource within a resources tag; not when you display directly. maybe this is ok.
-
-misc
-    logging - not much to log, but tw has some useful debug info
-    do __repr__ functions better
-    make pkg_resources a soft dependence
+    do we want 'afterwidget' as a location?
 
 django
 

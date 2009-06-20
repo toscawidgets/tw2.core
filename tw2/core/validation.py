@@ -1,4 +1,4 @@
-import core, re, util, string
+import core, re, util, string, webob
 try:
     import formencode
 except ImportError:
@@ -56,7 +56,7 @@ def unflatten_params(params):
     this into a nested dict/list structure. This has been designed so it
     (should!) never raise an exception.
     """
-    if hasattr(params, 'mixed'): # TBD: neater approach
+    if isinstance(params, webob.MultiDict):
         params = params.mixed()
     out = {}
     for pname in params:
@@ -93,7 +93,6 @@ class ValidatorMeta(type):
         return type.__new__(meta, name, bases, dct)
 
 
-# TBD: locked after init?
 class Validator(object):
     """Base class for validators
 
@@ -117,7 +116,6 @@ class Validator(object):
     msgs = {
         'required': 'Please enter a value',
         'decode': 'Received in the wrong character set',
-        # TBD: is this the best place for these messages?
         'corrupt': 'The form submission was received corrupted; please try again',
         'childerror': '' # Children of this widget have errors
     }
@@ -265,7 +263,7 @@ class OneOfValidator(Validator):
         Acceptable values
     """
     msgs = {
-        'notinlist': 'Invalid value', # TBD: better message?
+        'notinlist': 'Invalid value',
     }
     values = []
 

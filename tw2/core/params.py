@@ -134,7 +134,7 @@ class ParamMeta(type):
                 params[pname].default = prm
 
         ins = type.__new__(meta, name, bases, dct)
-        ins._all_params = params # TBD: still needed?
+        ins._all_params = params
         ins._params = dict((p.name, p) for p in params.values()
                                                     if not p.child_param)
         return ins

@@ -137,13 +137,6 @@ class Widget(pm.Parametered):
                     super(MyWidget, self).prepare()
                     self.value = 'My: ' + str(self.value)
         """
-        if 0: # TBD debug mode only
-            for k in kw:
-                if not self._params[k].request_local:
-                    raise pm.ParameterError("Cannot set non-request-local parameter '%s' in a request" % k)
-            for p in self._params:
-                if not hasattr(self, p):
-                    raise pm.ParameterError("Missing required parameter '%s'" % p)
         for a in self._deferred:
             setattr(self, a, getattr(self, a).fn())
         if self._attr or 'attrs' in self.__dict__:
@@ -175,7 +168,7 @@ class Widget(pm.Parametered):
         """Display the widget - render the template. In the template, the
         widget instance is available as the variable ``$w``.
 
-        TBD: special class/instance behaviour
+        If display is called on a class, it automatically creates an instance.
 
         `displays_on`
             The name of the template engine this widget is being displayed
@@ -202,7 +195,9 @@ class Widget(pm.Parametered):
     @classmethod
     def validate(cls, params):
         """
-        Validate form input TBD
+        Validate form input. This should always be called on a class. It
+        either returns the validated data, or raises a
+        :class:`ValidationError` exception.
         """
         if cls.parent:
             raise core.WidgetError('Only call validate on root widgets')
@@ -273,7 +268,6 @@ class CompoundWidget(Widget):
                 ids.add(c.id)
             cls.resources.update(c.resources)
             joined_cld.append(c(parent=cls, resources=[]))
-        # TBD: check for dupes in _sub_compound
         cls.children = WidgetBunch(joined_cld)
 
     def __init__(self, **kw):
@@ -420,7 +414,6 @@ class RepeatingWidget(Widget):
         if not isinstance(value, list):
             raise vd.ValidationError('corrupt', self.validator, self)
         self.value = value
-        self.repetitions = len(value) # TBD
         any_errors = False
         data = []
         for i,v in enumerate(value):
