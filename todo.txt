@@ -16,16 +16,9 @@ validation
 
 tw.forms & validation
     test all field types for roundtripping
-        file upload
+        file upload - need to set form mime-type?
         select with codes
         better required messages for select fields
-
-    when redisplaying on error:
-        run validator.to_python(x, validate=False)
-        this is for selection fields
-            if to_python fails - use None
-            if it doesn't match an item - just no item is selected
-        everything else (in tw.forms at least) just display as-is
 
 documentation
 

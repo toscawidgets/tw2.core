@@ -36,6 +36,9 @@ class Config(object):
     `params_as_vars`
         Whether to present parameters as variables in widget templates. This
         is the behaviour from ToscaWidgets 0.9. (default: False)
+
+    `debug`
+        Whether the app is running in development or production mode.
     '''
 
     translator = lambda s: s
@@ -47,6 +50,7 @@ class Config(object):
     controller_prefix = '/controllers/'
     bufsize = 4*1024
     params_as_vars = False
+    debug = False
 
     def __init__(self, **kw):
         for k, v in kw.items():

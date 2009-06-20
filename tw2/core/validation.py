@@ -27,6 +27,13 @@ class ValidationError(core.WidgetError):
         super(ValidationError, self).__init__(msg)
 
 
+def safe_validate(validator, value):
+    try:
+        return validator.to_python(value)
+    except ValidationError:
+        return Invalid
+
+
 def catch_errors(fn):
     """
     """
@@ -231,7 +238,7 @@ class IntValidator(RangeValidator):
     def to_python(self, value):
         value = super(IntValidator, self).to_python(value)
         try:
-            return int(value)
+            return value and int(value) or 0
         except ValueError:
             raise ValidationError('notint', self)
 

@@ -17,6 +17,6 @@ from validation import (Validator, LengthValidator,
     DateTimeValidator, ValidationError, Invalid, EmailValidator,
     UrlValidator, IpAddressValidator, StringLengthValidator,
     ListLengthValidator, RangeValidator, MatchValidator,
-    BoolValidator)
+    BoolValidator, safe_validate)
 
 from middleware import (TwMiddleware)
