@@ -3,17 +3,18 @@ widgets as controllers
     switcher
     csrf
 
-declarative
-    set id on class to rewritten class name
-    ** maybe this should just apply to page subclasses
-
-
 tw2.core
+    set id on class to rewritten class name (maybe just Page subclasses)
     detect attempts to modify a widget instance
-    csslink auto module name isn't working - can't easily fix, remove
-    id as default param to Widget.__init__
-        override __init__ to change default parameter?
-            and make id the top default parameter
+    csslink auto module name
+    id as default param to Widget.__init__?
+    configurable compound id separator [but this is global]
+    avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
+    params - find a neater way to break param descriptions across lines
+    params - remove default attribute altogether?
+    i18n - where to call it?
+    resources - dynamic js calls
+    use quotes in all exceptions
 
 tw2.forms
     selectionfield - auto item_validator
@@ -26,51 +27,24 @@ tw2.forms
     named buttons
     datagrid
     form id - ${child.id}:_form
+    TableForm - how to make TableLayout parameters accessible?
 
-config
-    configurable compound id separator [but this is global]
-
-TableForm - how to make TableLayout parameters accessible?
-Params - remove default attribute altogether?
-avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
-
-more unit tests
+unit tests
     validators - doc tests?
     children_deep / _sub_compound
     test compound id with deeply nested widgets
-
-django
-
+    nick more tests from tw1, e.g. leaks
+    WidgetTestCase
 
 widget browser
     sphinx integration
         widget browser just displays each registered package's sphinx docs
         it has a sphinx extension for embedding widgets
         links from parameters to bits of documentation (even across packages)
-
-
-    need to look on inet:
-        use setuptools better - need to understand entrypoints more
-            update samples.py in paste template
-            http://peak.telecommunity.com/DevCenter/PythonEggs#accessing-package-resources
-
+    avoid the dodgy '.samples' entrypoint
     use paste web server?
-
-    more detail:
-        full params list
-        demo source
-        source
-        template
-        -> I want a lightweight tab-switcher - no ajax to start with
-            onclick - do thing (id, subid):
-                clear old (hide all id children)
-                if loaded, display (show id_subid)
-                else ajax (url, subid) - url is generated to include id
-                    need to pass arbitrary params to the ajax
-            -> ok, ok this is doing widgets as controllers
-                and scalaing is a consideration - don't really want to register a controller method for each repeating row.
-
-            Summary / Demo Source / Parameters / Source / Template
+    lightweight tab-switcher - no ajax to start with
+        Summary / Demo Source / Parameters / Source / Template
 
 
 genshi template optimiser
@@ -98,6 +72,7 @@ validation
     MatchField
     make msg dict more global
     inheriting required, encoding
+    non-safe widgets - most resources are non-safe
 
 template
     mako helper functions
@@ -105,7 +80,6 @@ template
     cacheing
     inline templates
     disable kid's doctype header on inner widgets
-    tests for jinja, myghty, breve
     only test engines that are installed
     pass config to templates
         absolute paths (e.g. genshi_abs)
@@ -113,12 +87,6 @@ template
         safe vars
         extra vars
         -> to do a proper job of this, I have to find out what the options are for each template engine
-
-widget hierarchy
-    compound repeating widget
-
-parameters
-    find a neater way to break param descriptions across lines
 
 resources
     expires header
@@ -131,8 +99,7 @@ misc
     do __repr__ functions better
     make pkg_resources a soft dependence
 
-unit tests
-    nick more tests from tw1, e.g. leaks
+django
 
 
 Database Widgets
@@ -149,31 +116,9 @@ DatabaseForms
             twf.CheckBoxList(options=twb.Options(db.Table))
             (although how you do validation this way is anyone's guess)
 
-    db_ajax_forms
-        where's logical to put this?
-        perhaps in db_forms, but as soft dependency?
+Auto Forms
 
-
-These are widgets that interact with the database. The following controller methods are used:
-
-`Lists`
-    Lists sublass DataGrid
-    The controller loads data from the database and displays the widget.
-
-`Forms`
-    Forms use the controller method for two tasks:
-
-     * Displaying the form
-     * Receiving posted form data
-
-    The same URL is used for both tasks; it displays on GET requests and receives on POST requests. Then same authorisation is done on each, as anyone who can view a form is authorised to POST to it. If you want a user to be able to view and not POST, you should display a view to that user, not a form.
-
-    The posted form data is first validated. If it is invalid, the form is redisplayed with errors. If it is valid, the data is saved to the database, and the controller issues an HTTP redirect to a pre-configured URL.
-
-
-**Auto Forms**
-
-Take a model class and produce a form
+Take a model class and produces a form
 Do this in accordance with a policy - users can define own policies
 Allow hints on the model class (but don't overdo it)
 And allow per-field hints on the form
@@ -213,5 +158,4 @@ Ok, general problem, we want to add functionality to a set of widgets
 
 
 jquery, mochikit, dojo, yui
-ajax_sa_forms
 cool new and different widgets - popup links, photos

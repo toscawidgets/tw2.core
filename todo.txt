@@ -10,20 +10,29 @@ tw2.forms
     BaseLayout - display hidden fields separately
 
 validation
-    non-safe widgets - most resources are non-safe
     have display detect validated_widget in rl
-
     file upload - need to set form mime-type?
     cbl, rbl with codes
     better required messages for select fields
 
 documentation
 
-misc
-    i18n - we've got the global now, where to call it?
-    WidgetTestCase
-    review all the TBDs
-    use quotes in all exceptions
+review all the TBDs
+    core\params.py(137): ins._all_params = params # TBD: still needed?
+    core\resources.py(10): # TBD: do we want 'afterwidget' as a location?
+    core\resources.py(124): # TBD: non pkg-resources dependent alternative
+    core\resources.py(136): expires = int(req.environ.get('toscawidgets.resources_expire', 0)) # TBD
+    core\resources.py(189): r.prepare() # TBD: is this needed?
+    core\resources.py(213): encoding = encoding or find_charset(html) or 'ascii' # TBD: would utf-8 be a better choice?
+    core\validation.py(59): if hasattr(params, 'mixed'): # TBD: neater approach
+    core\validation.py(96): # TBD: locked after init?
+    core\validation.py(120): # TBD: is this the best place for these messages?
+    core\validation.py(268): 'notinlist': 'Invalid value', # TBD: better message?
+    core\widgets.py(140): if 0: # TBD debug mode only
+    core\widgets.py(178): TBD: special class/instance behaviour
+    core\widgets.py(205): Validate form input TBD
+    core\widgets.py(276): # TBD: check for dupes in _sub_compound
+    core\widgets.py(423): self.repetitions = len(value) # TBD
 
 widget browser
     make tw.core neat
@@ -33,6 +42,3 @@ frameworks
     pylons / tg2
         @validate decorator
     cp3
-
-resources
-    currently they're done statically, but we need some way to include dynamic js calls
