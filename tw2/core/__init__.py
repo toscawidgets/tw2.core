@@ -10,7 +10,8 @@ from params import (Param, ChildParam, Variable, ChildVariable, Required,
 from widgets import (Widget, CompoundWidget, RepeatingWidget,
     DisplayOnlyWidget, Page)
 
-from resources import (Link, JSLink, CSSLink, JSSource, inject_resources)
+from resources import (Link, JSLink, CSSLink, JSSource, JSFuncCall,
+    inject_resources)
 
 from validation import (Validator, LengthValidator,
     RegexValidator, IntValidator, OneOfValidator, DateValidator,

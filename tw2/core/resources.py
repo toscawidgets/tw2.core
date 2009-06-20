@@ -27,9 +27,12 @@ class Link(wd.Widget):
             self.link = resources.register(self.modname, self.filename)
 
     def __hash__(self):
-        return hash(hasattr(self, 'link') and self.link)
+        return hash(hasattr(self, 'link') and self.link or (self.modname + self.filename))
     def __eq__(self, other):
-        return self.link == getattr(other, "link", None)
+        return (getattr(self, 'link', None) == getattr(other, 'link', None)
+                and getattr(self, 'modname', None) == getattr(other, 'modname', None)
+                and getattr(self, 'filename', None) == getattr(other, 'filename', None))
+
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, getattr(self, 'link', '%s/%s'%(self.modname,self.filename)))
 
@@ -62,6 +65,19 @@ class JSSource(Resource):
         return self.src == getattr(other, "src", None)
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
+
+class JSFuncCall(JSSource):
+    """
+    Inline JavaScript function call.
+    """
+    src = None # TBD
+    function = pm.Param('Function name')
+    args = pm.Param('Function arguments', default=None)
+    location = 'bodybottom' # TBD: afterwidget?
+
+    def prepare(self):
+        super(JSFuncCall, self).prepare()
+        self.src = self.function + '({%s})' % ', '.join('"%s":"%s"' % a for a in self.args.items() or [])
 
 class ResourcesApp(object):
     """WSGI Middleware to serve static resources

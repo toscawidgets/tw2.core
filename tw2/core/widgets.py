@@ -139,6 +139,8 @@ class Widget(pm.Parametered):
         """
         for a in self._deferred:
             setattr(self, a, getattr(self, a).fn())
+        if self.validator:
+            self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if getattr(self, 'id', None):
@@ -147,8 +149,6 @@ class Widget(pm.Parametered):
                 if a in self.attrs:
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[a] = getattr(self, a)
-        if self.validator and not hasattr(self, '_validated'):
-            self.value = self.validator.from_python(self.value)
         if self.resources:
             core.request_local().setdefault('resources', set()).update(r for r in self.resources)
 
@@ -222,6 +222,11 @@ class Widget(pm.Parametered):
             else:
                 self.validator.validate_python(value, None)
         return value
+
+    def safe_modify(self, attr):
+        if (attr not in self.__dict__ and
+                isinstance(getattr(self, attr, None), (dict, list))):
+            setattr(self, attr, copy.copy(getattr(self, attr)))
 
 class LeafWidget(Widget):
     """

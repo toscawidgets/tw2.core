@@ -1,4 +1,4 @@
-import core, re, util, string, webob
+import core, re, util, string, webob, time, datetime
 try:
     import formencode
 except ImportError:
@@ -307,7 +307,7 @@ class DateValidator(RangeValidator):
         value = super(DateValidator, self).to_python(value)
         try:
             date = time.strptime(value, self.format)
-            return datetime.Date(date.tm_year, date.tm_month, date.tm_day)
+            return datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
         except ValueError:
             raise ValidationError('notdate', self)
 

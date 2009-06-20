@@ -12,8 +12,14 @@ tw2.forms
 validation
     have display detect validated_widget in rl
     file upload - need to set form mime-type?
-    cbl, rbl with codes
     better required messages for select fields
+    selectionfield - auto item_validator
+
+    client-side
+    MatchField
+    make msg dict more global
+    inheriting required, encoding
+    non-safe widgets - most resources are non-safe
 
 documentation
 
@@ -25,3 +31,42 @@ frameworks
     pylons / tg2
         @validate decorator
     cp3
+
+widgets as controllers
+    csrf protection
+    security
+    switcher
+    auto registration - design issues
+
+support python 2.4 and 2.6
+    use paste web server?
+
+resources
+    expires header
+
+widget browser
+    avoid the dodgy '.samples' entrypoint
+    lightweight tab-switcher - no ajax to start with
+        Summary / Demo Source / Parameters / Source / Template
+    tw branding
+
+quickstart
+    setup.py - name blank, entrypoints wrong
+    why was package rewritten to tw2dynforms?
+
+dynforms
+    calendar
+        dynamic resources
+    growing
+    hiding
+    linkcontainer
+    customisedform
+
+
+CustomisedForm - need submit_attrs on Form
+HidingComponentMixin - has JS optimisation that should be on general resources
+need to refactor validation of writeonlytextfield
+    general issue of passing configuration to a validator
+        compoundwidget.validate should have a marker that means "don't include in dict"
+
+calling from_python
