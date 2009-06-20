@@ -10,15 +10,12 @@ tw2.forms
     BaseLayout - display hidden fields separately
 
 validation
-    post_define - fe validator
     non-safe widgets - most resources are non-safe
     have display detect validated_widget in rl
 
-tw.forms & validation
-    test all field types for roundtripping
-        file upload - need to set form mime-type?
-        select with codes
-        better required messages for select fields
+    file upload - need to set form mime-type?
+    cbl, rbl with codes
+    better required messages for select fields
 
 documentation
 

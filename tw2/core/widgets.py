@@ -1,6 +1,11 @@
 import copy, weakref, re, itertools, webob
 import template, core, util, validation as vd, params as pm
 
+try:
+    import formencode
+except ImportError:
+    formencode = None
+
 reserved_names = ('parent', 'demo_for', 'child')
 _widget_seq = itertools.count(0)
 
@@ -107,9 +112,9 @@ class Widget(pm.Parametered):
                 cls.validator = vd.Validator(required=True)
             if isinstance(cls.validator, type) and issubclass(cls.validator, vd.Validator):
                 cls.validator = cls.validator()
-            if not isinstance(cls.validator, vd.Validator):
-                # TBD: do formencode as well or just hasattr to_python, from_python
-                raise pm.ParameterError("Validator must be a tw.core.Validator instance, or a F")
+            if not isinstance(cls.validator, vd.Validator) and not (
+                    formencode and isinstance(cls.validator, formencode.Validator)):
+                raise pm.ParameterError("Validator must be either a tw2 or FormEncode validator")
 
         cls._deferred = [a for a in dir(cls) if isinstance(getattr(cls, a), pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
@@ -217,7 +222,10 @@ class Widget(pm.Parametered):
         self.value = value
         if self.validator:
             value = self.validator.to_python(value)
-            self.validator.validate_python(value)
+            if isinstance(self.validator, vd.Validator):
+                self.validator.validate_python(value)
+            else:
+                self.validator.validate_python(value, None)
         return value
 
 class LeafWidget(Widget):

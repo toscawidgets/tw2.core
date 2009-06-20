@@ -1,5 +1,47 @@
-Later
------
+widgets as controllers
+    security
+    switcher
+    csrf
+
+declarative
+    set id on class to rewritten class name
+    ** maybe this should just apply to page subclasses
+
+
+tw2.core
+    detect attempts to modify a widget instance
+    csslink auto module name isn't working - can't easily fix, remove
+    id as default param to Widget.__init__
+        override __init__ to change default parameter?
+            and make id the top default parameter
+
+tw2.forms
+    selectionfield - auto item_validator
+    stop label names being post-to-able
+    booleanradiobuttonlist
+        instead? twf.RadioButtonTable(options=twf.BooleanOptions)
+    make selection_list and selection_table support grouping
+    make selection table configurable how it arranges (horiz/vert)
+    unit tests - what can be done?
+    named buttons
+    datagrid
+    form id - ${child.id}:_form
+
+config
+    configurable compound id separator [but this is global]
+
+TableForm - how to make TableLayout parameters accessible?
+Params - remove default attribute altogether?
+avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
+
+more unit tests
+    validators - doc tests?
+    children_deep / _sub_compound
+    test compound id with deeply nested widgets
+
+django
+
+
 widget browser
     sphinx integration
         widget browser just displays each registered package's sphinx docs
@@ -51,15 +93,6 @@ genshi template optimiser
         also, s.c[1].display is done
 
 
-widgets as controllers
-    security
-    switcher
-    csrf
-
-declarative
-    set id on class to rewritten class name
-    ** maybe this should just apply to page subclasses
-
 validation
     client-side
     MatchField
@@ -74,6 +107,12 @@ template
     disable kid's doctype header on inner widgets
     tests for jinja, myghty, breve
     only test engines that are installed
+    pass config to templates
+        absolute paths (e.g. genshi_abs)
+        output format
+        safe vars
+        extra vars
+        -> to do a proper job of this, I have to find out what the options are for each template engine
 
 widget hierarchy
     compound repeating widget
@@ -176,46 +215,3 @@ Ok, general problem, we want to add functionality to a set of widgets
 jquery, mochikit, dojo, yui
 ajax_sa_forms
 cool new and different widgets - popup links, photos
-
-
-tw2.core - later
-    detect attempts to modify a widget class
-    csslink auto module name isn't working - can't easily fix, remove
-    id as default param to Widget.__init__
-        override __init__ to change default parameter?
-            and make id the top default parameter
-
-tw2.forms - later
-    stop label names being post-to-able
-    booleanradiobuttonlist
-        instead? twf.RadioButtonTable(options=twf.BooleanOptions)
-    make selection_list and selection_table support grouping
-    make selection table configurable how it arranges (horiz/vert)
-    make ImageButton a subclass of link?
-        that avoids Link being a public class (good)
-        -> I'm erring towards no at the minute
-    unit tests - what can be done?
-    named buttons
-    datagrid
-    form id - ${child.id}:_form
-
-config
-    debug
-    pass config to templates
-        absolute paths (e.g. genshi_abs)
-        output format
-        safe vars
-        extra vars
-        -> to do a proper job of this, I have to find out what the options are for each template engine
-    configurable compound id separator [but this is global]
-
-TableForm - how to make TableLayout parameters accessible?
-Params - remove default attribute altogether?
-avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
-
-more unit tests
-    validators - doc tests?
-    children_deep / _sub_compound
-    test compound id with deeply nested widgets
-
-django
