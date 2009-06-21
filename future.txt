@@ -14,6 +14,7 @@ tw2.core
     logging - not much to log, but tw has some useful debug info
     do __repr__ functions better
     make pkg_resources a soft dependence
+    force ids to begin with a letter
 
 tw2.forms
     stop label names being post-to-able
@@ -97,3 +98,4 @@ dynforms
     There's some general things for all ajax requests
         extra - siblings (parent?) of this widget, include value in req
     Consider HidingComponent, CascadingComponent as a display-only widget
+    linkcontainer - popup links

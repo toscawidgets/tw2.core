@@ -58,8 +58,7 @@ class Widget(pm.Parametered):
     parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
 
     _sub_compound = False
-    id_elem = None
-    _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
+    _valid_id_re = re.compile(r'^[\w\-\_\.]*$')
 
 
     @classmethod
@@ -98,15 +97,9 @@ class Widget(pm.Parametered):
         abstract class. There is no need to call super(), the metaclass will do
         this automatically.
         """
-        id = getattr(cls, 'id', None)
-        if id:
-            if not cls._valid_id_re.match(id):
-                raise pm.ParameterError("Not a valid identifier: '%s'" % id)
-            if not cls.id_elem:
-                cls.id_elem = id
-            cls.attrs = cls.attrs.copy()
-            cls.attrs['id'] = cls._compound_id()
-
+        if getattr(cls, 'id', None) and not cls._valid_id_re.match(cls.id):
+            raise pm.ParameterError("Not a valid identifier: '%s'" % cls.id)
+        cls._gen_compound_id()
         if cls.validator:
             if cls.validator is pm.Required: # this is a bit of a hack
                 cls.validator = vd.Validator(required=True)
@@ -146,7 +139,7 @@ class Widget(pm.Parametered):
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if getattr(self, 'id', None):
-                self.attrs['id'] = self._compound_id()
+                self.attrs['id'] = self.compound_id
             for a in self._attr:
                 if a in self.attrs:
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
@@ -155,7 +148,7 @@ class Widget(pm.Parametered):
             core.request_local().setdefault('resources', set()).update(r for r in self.resources)
 
     @classmethod
-    def _compound_id(cls):
+    def _gen_compound_id(cls):
         ancestors = []
         cur = cls
         while cur:
@@ -163,7 +156,14 @@ class Widget(pm.Parametered):
                 raise core.WidgetError('Parent loop')
             ancestors.append(cur)
             cur = cur.parent
-        return ':'.join(reversed([a.id_elem for a in ancestors if a.id_elem]))
+        elems = reversed(filter(None, [a._compound_id_elem() for a in ancestors]))
+        cls.compound_id = elems and ':'.join(elems) or None
+        cls.attrs = cls.attrs.copy()
+        cls.attrs['id'] = cls.compound_id
+
+    @classmethod
+    def _compound_id_elem(cls):
+        return getattr(cls, 'id', None)
 
     @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
@@ -260,7 +260,7 @@ class CompoundWidget(Widget):
         """
         Check children are valid; update them to have a link to the parent.
         """
-        cls._sub_compound = not cls.id_elem
+        cls._sub_compound = not getattr(cls, 'id', None)
         if not hasattr(cls, 'children'):
             return
         ids = set()
@@ -333,7 +333,7 @@ class RepeatingWidgetBunchCls(object):
         try:
             rep = self._repetition_cache[item]
         except KeyError:
-            rep = self.parent.child(parent=self.parent, repetition=item, id_elem=str(item))
+            rep = self.parent.child(parent=self.parent, repetition=item, id=str(item))
             self._repetition_cache[item] = rep
         return rep
 
@@ -386,7 +386,7 @@ class RepeatingWidget(Widget):
             cls.children = []
         if not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
-        if cls.child.id_elem:
+        if getattr(cls.child, 'id', None):
             raise pm.ParameterError("Child must have no id")
         cls.resources = set(cls.resources)
         cls.resources.update(cls.child.resources)
@@ -459,9 +459,18 @@ class DisplayOnlyWidget(Widget):
         if cls.child.resources:
             cls.resources = set(cls.resources)
             cls.resources.update(cls.child.resources)
-        cls.id = getattr(cls, 'id', None) or getattr(cls.child, 'id', None)
-        cls.id_elem = None
+        cls_id = getattr(cls, 'id', None)
+        child_id = getattr(cls.child, 'id', None)
+        if cls_id and child_id and cls_id != child_id:
+            raise pm.ParameterError("Can only specify id on either a DisplayOnlyWidget, or its child, not both: '%s' '%s'" % (cls_id, child_id))
+        if not cls_id and child_id:
+            cls.id = cls_id or child_id
+            cls._gen_compound_id()
         cls.child = cls.child(id=cls.id, parent=cls, resources=[])
+
+    @classmethod
+    def _compound_id_elem(cls):
+        return None
 
     def __init__(self, **kw):
         super(DisplayOnlyWidget, self).__init__(**kw)

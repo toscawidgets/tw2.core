@@ -2,7 +2,7 @@ Questions
     What does the "paste.filter_app_factory" entry point do?
     sphinx: how to do :autoclass: that doesn't show __init__ args
 
-tidy up id, id_elem, _compound_id
+tidy up id generation
     avoid generating id=""
 
 tw2.forms
@@ -60,6 +60,7 @@ dynforms
     hiding
         HidingComponentMixin - has JS optimisation that should be on general resources
     linkcontainer
+        validation not working
     customisedform
         need submit_attrs on Form
     writeonlytextfield
