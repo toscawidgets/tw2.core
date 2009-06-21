@@ -2,11 +2,18 @@ Questions
     What does the "paste.filter_app_factory" entry point do?
     sphinx: how to do :autoclass: that doesn't show __init__ args
 
-tidy up id generation
-    avoid generating id=""
-
 tw2.forms
+    FormEncode validators and required CSS
     BaseLayout - display hidden fields separately
+    gridlayout & hidden fields
+    test gridlayout validation
+
+general infrastructure needed
+    calling a js func to initialise a widget
+    validator messages
+    autoinitialising controllers
+    resources needs a tidy up
+    global middleware?
 
 validation
     have display detect validated_widget in rl
@@ -16,9 +23,6 @@ validation
     selectionfield - auto item_validator
     client-side
     MatchField
-    make msg dict more global
-    inheriting required, encoding
-    non-safe widgets - most resources are non-safe
 
 documentation
 
@@ -57,12 +61,11 @@ dynforms
     calendar
         date_format as parameter
     growing
-    hiding
-        HidingComponentMixin - has JS optimisation that should be on general resources
+        ** how to go from node to parent?
     linkcontainer
         validation not working
     customisedform
         need submit_attrs on Form
     writeonlytextfield
         general issue of passing configuration to a validator
-            compoundwidget.validate should have a marker that means "don't include in dict"
+        compoundwidget.validate should have a marker that means "don't include in dict"

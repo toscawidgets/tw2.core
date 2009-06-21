@@ -293,7 +293,7 @@ class DateValidator(RangeValidator):
                   'S':'second', 'y':'year', 'Y':'year'}
     @property
     def format_str(self):
-        return re.sub('%(.)', lambda m: format_tbl.get(m.group(1), ''), self.format)
+        return re.sub('%(.)', lambda m: self.format_tbl.get(m.group(1), ''), self.format)
 
     @property
     def min_str(self):

@@ -1,8 +1,9 @@
 import widgets as wd, util, core, params as pm
 import threading, re, logging, wsgiref.util as wru, itertools, heapq, operator
-import os, webob as wo, pkg_resources as pr, mimetypes, errno
+import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
 
 log = logging.getLogger(__name__)
+encoder = simplejson.encoder.JSONEncoder()
 
 
 class Resource(wd.Widget):
@@ -59,10 +60,6 @@ class JSSource(Resource):
     location = 'bodybottom'
     template = 'genshi:tw2.core.templates.jssource'
 
-    def __hash__(self):
-        return hash(self.src)
-    def __eq__(self, other):
-        return self.src == getattr(other, "src", None)
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
 
@@ -77,7 +74,8 @@ class JSFuncCall(JSSource):
 
     def prepare(self):
         super(JSFuncCall, self).prepare()
-        self.src = self.function + '({%s})' % ', '.join('"%s":"%s"' % a for a in self.args.items() or [])
+        self.src = '%s(%s)' % (self.function, ', '.join(encoder.encode(a) for a in self.args))
+
 
 class ResourcesApp(object):
     """WSGI Middleware to serve static resources

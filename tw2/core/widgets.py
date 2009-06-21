@@ -138,14 +138,11 @@ class Widget(pm.Parametered):
             self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
-            if getattr(self, 'id', None):
-                self.attrs['id'] = self.compound_id
+            self.attrs['id'] = self.compound_id
             for a in self._attr:
                 if a in self.attrs:
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[a] = getattr(self, a)
-        if self.resources:
-            core.request_local().setdefault('resources', set()).update(r for r in self.resources)
 
     @classmethod
     def _gen_compound_id(cls):
@@ -183,6 +180,8 @@ class Widget(pm.Parametered):
         else:
             if not self.parent:
                 self.prepare()
+            if self.resources:
+                core.request_local().setdefault('resources', set()).update(r for r in self.resources)
             mw = core.request_local().get('middleware')
             if displays_on is None:
                 displays_on = (self.parent.template.split(':')[0] if self.parent
@@ -318,6 +317,7 @@ class CompoundWidget(Widget):
                 data[c.id] = vd.Invalid
                 any_errors = True
         if self.validator:
+            data = self.validator.to_python(data)
             self.validator.validate_python(data)
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
