@@ -6,15 +6,14 @@ tidy up id, id_elem, _compound_id
     avoid generating id=""
 
 tw2.forms
-    fix grid layout sample ***
     BaseLayout - display hidden fields separately
 
 validation
     have display detect validated_widget in rl
     file upload - need to set form mime-type?
     better required messages for select fields
-    selectionfield - auto item_validator
 
+    selectionfield - auto item_validator
     client-side
     MatchField
     make msg dict more global
@@ -56,17 +55,13 @@ quickstart
 
 dynforms
     calendar
-        dynamic resources
+        date_format as parameter
     growing
     hiding
+        HidingComponentMixin - has JS optimisation that should be on general resources
     linkcontainer
     customisedform
-
-
-CustomisedForm - need submit_attrs on Form
-HidingComponentMixin - has JS optimisation that should be on general resources
-need to refactor validation of writeonlytextfield
-    general issue of passing configuration to a validator
-        compoundwidget.validate should have a marker that means "don't include in dict"
-
-calling from_python
+        need submit_attrs on Form
+    writeonlytextfield
+        general issue of passing configuration to a validator
+            compoundwidget.validate should have a marker that means "don't include in dict"

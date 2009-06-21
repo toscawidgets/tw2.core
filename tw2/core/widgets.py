@@ -138,8 +138,10 @@ class Widget(pm.Parametered):
                     self.value = 'My: ' + str(self.value)
         """
         for a in self._deferred:
-            setattr(self, a, getattr(self, a).fn())
-        if self.validator:
+            dfr = getattr(self, a)
+            if isinstance(dfr, pm.Deferred):
+                setattr(self, a, dfr.fn())
+        if self.validator and not hasattr(self, '_validated'):
             self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
@@ -389,11 +391,11 @@ class RepeatingWidget(Widget):
         cls.resources = set(cls.resources)
         cls.resources.update(cls.child.resources)
         cls.child = cls.child(parent=cls, resources=[])
-        cls.children = RepeatingWidgetBunchCls(parent=cls)
+        cls.rwbc = RepeatingWidgetBunchCls(parent=cls)
 
     def __init__(self, **kw):
         super(RepeatingWidget, self).__init__(**kw)
-        self.children = RepeatingWidgetBunch(self, self.children)
+        self.children = RepeatingWidgetBunch(self, self.rwbc)
 
     def prepare(self):
         """
