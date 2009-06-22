@@ -39,9 +39,6 @@ frameworks
 
 widgets as controllers
     csrf protection
-    security
-    switcher
-    auto registration - design issues
 
 support python 2.4 and 2.6
     use paste web server?
@@ -56,20 +53,19 @@ widget browser
     tw branding
 
 quickstart
-    setup.py - name blank, entrypoints wrong
-    why was package rewritten to tw2dynforms?
+    autodetect package from "tw2.package"
 
 dynforms
     calendar - date_format as parameter
-    validation
-        growing - delete
-        linkcontainer
+    growing - delete & validation
     customisedform
         need submit_attrs on Form
     writeonlytextfield
         compoundwidget.validate should have a marker that means "don't include in dict"
 
     widget browser
+        hiding
+        make sure it contains everything the old docs did. Where to put tutorial?
 
 
 sqlalchemy
@@ -82,12 +78,10 @@ sqlalchemy
             view - label
             edit - select / ajax
 
-
-how to update
-    updating A with B
-    if B is AutoField
-        update A with params B has specified
-    else
-        update B with params A has specified and B not *** this sounds like trouble!
-        ok, for now just use B, any param set to auto is taken from A
-
+    how to update
+        updating A with B
+        if B is AutoField
+            update A with params B has specified
+        else
+            update B with params A has specified and B not *** this sounds like trouble!
+            ok, for now just use B, any param set to auto is taken from A

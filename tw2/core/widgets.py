@@ -312,7 +312,9 @@ class CompoundWidget(Widget):
                 if c._sub_compound:
                     data.update(c._validate(value))
                 else:
-                    data[c.id] = c._validate(value.get(c.id))
+                    val = c._validate(value.get(c.id))
+                    if val is not vd.EmptyField:
+                        data[c.id] = val
             except vd.ValidationError:
                 data[c.id] = vd.Invalid
                 any_errors = True

@@ -7,6 +7,9 @@ except ImportError:
 class Invalid(object):
     pass
 
+class EmptyField(object):
+    pass
+
 class ValidationError(core.WidgetError):
     """Invalid data was encountered during validation.
 

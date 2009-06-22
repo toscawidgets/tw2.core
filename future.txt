@@ -1,5 +1,6 @@
 tw2.core
     children_deep / _sub_compound
+        grandchild hiding
     set id on class to class name (rewritten?)
     detect attempts to modify a widget instance
     csslink auto module name
@@ -7,7 +8,6 @@ tw2.core
     configurable compound id separator [but this is global]
     avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
     params - find a neater way to break param descriptions across lines
-    params - remove default attribute altogether?
     i18n - where to call it?
     resources - dynamic js calls
     use quotes in all exceptions
@@ -35,13 +35,15 @@ unit tests
 
 validation
     inheriting required, encoding
-    non-safe widgets - most resources are non-safe
+    non-safe widgets
 
 widget browser
+    validator browser
     sphinx integration
-        widget browser just displays each registered package's sphinx docs
-        it has a sphinx extension for embedding widgets
-        links from parameters to bits of documentation (even across packages)
+
+controllers
+    security
+    switcher
 
 template
     mako helper functions
@@ -75,20 +77,22 @@ sqlalchemy
 
 dynforms
     cascading
-    ajax lookup
-    filtering grid
-    hiding button
+        this is where I need to think about ajax properly, which needs client validation
+        There's some general things for all ajax requests
+            extra - siblings (parent?) of this widget, include value in req
+
+    look at jquery / dojo first
+        filtering grid
+        ajax lookup
+        hiding button
 
     growing
         repeater
-        if(x[i].tagName == 'LEGEND') x[i].innerHTML = x[i].innerHTML.replace('$$', number+1);
         initialise controls
+            if(x[i].tagName == 'LEGEND') x[i].innerHTML = x[i].innerHTML.replace('$$', number+1);
+        make it not depend on customisedform
+    customisedform - save prompt
     HidingComponentMixin - has JS optimisation that should be on general resources
-    hidingbutton
-        for(var i = 0; i < x.length; i++)
-            if(x[i].tagName == 'IMG' && x[i].src.indexOf('/show.png')) x[i].style.display = '';
-    grandchild hiding
-    There's some general things for all ajax requests
-        extra - siblings (parent?) of this widget, include value in req
     Consider HidingComponent, CascadingComponent as a display-only widget
     linkcontainer - popup links
+    hiding, linkcontainer - better support the back button
