@@ -1,21 +1,18 @@
 http://bitbucket.org/paj/tw2dynforms/
 
-
-Questions
-    What does the "paste.filter_app_factory" entry point do?
-    sphinx: how to do :autoclass: that doesn't show __init__ args
-
 tw2.forms
     FormEncode validators and required CSS
     BaseLayout - display hidden fields separately
     gridlayout & hidden fields
-    gridlayout validation ** this is a bit of a problem
+    gridlayout validation - use an image with hover
+    auto '' on SingleSelectField
+    name2label - remove _id
 
 general infrastructure needed
-    calling a js func to initialise a widget
+    calling a js func to initialise a widget ** need to hook this for growing
     validator messages
         better required messages for select fields, upload fields, etc.
-        initially - change to twc.Required behaviour
+        initially - change to twc.Required behaviour *** this is broken anyway
         message for whole form
     autoinitialising controllers
     resources needs a tidy up
@@ -34,6 +31,7 @@ widget browser
     make tw.core neat
     support rst
     have a way to hide some widgets (e.g. InputField)
+    make Auto come up neater; also validators __repr__ better
 
 frameworks
     pylons / tg2
@@ -60,14 +58,17 @@ quickstart
 
 dynforms
     calendar - date_format as parameter
-    growing - delete & validation
-    customisedform
-        need submit_attrs on Form
-
     widget browser
         hiding
-        make sure it contains everything the old docs did. Where to put tutorial?
-
+    tutorial
+        db migration
+            | [4] http://code.google.com/p/sqlalchemy-migrate/
+            | [5] http://trac.ollix.org/miruku/
+        elixir sessions
+        LinkField
+        LabelField
+        webob redirect
+        request **kw
 
 sqlalchemy
     get a simple form working
@@ -86,3 +87,5 @@ sqlalchemy
         else
             update B with params A has specified and B not *** this sounds like trouble!
             ok, for now just use B, any param set to auto is taken from A
+
+move attrs generation to display? would make some other bits easier

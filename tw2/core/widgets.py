@@ -478,13 +478,17 @@ class DisplayOnlyWidget(Widget):
 
     def __init__(self, **kw):
         super(DisplayOnlyWidget, self).__init__(**kw)
-        self.child = self.child.req(parent=weakref.proxy(self))
+        if hasattr(self, 'child'):
+            self.child = self.child.req(parent=weakref.proxy(self))
+        else:
+            self.child = None
 
     def prepare(self):
         super(DisplayOnlyWidget, self).prepare()
-        if not hasattr(self, '_validated'):
-            self.child.value = self.value
-        self.child.prepare()
+        if self.child:
+            if not hasattr(self, '_validated'):
+                self.child.value = self.value
+            self.child.prepare()
 
     def _validate(self, value):
         self._validated = True

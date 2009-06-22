@@ -15,6 +15,7 @@ tw2.core
     do __repr__ functions better
     make pkg_resources a soft dependence
     force ids to begin with a letter
+    Support "paste.filter_app_factory" entry point
 
 tw2.forms
     stop label names being post-to-able
@@ -38,12 +39,15 @@ validation
     non-safe widgets
 
 widget browser
-    validator browser
     sphinx integration
+    browse other things in packages - validators, exceptions, etc.
 
 controllers
     security
     switcher
+
+    serving with paste and restart
+    transactional middleware (or just do it manually)
 
 template
     mako helper functions
