@@ -81,6 +81,7 @@ class Variable(Param):
     def __init__(self, description=Default, **kw):
         kw.setdefault('default', None)
         super(Variable, self).__init__(description, **kw)
+        self.specified.append('internal')
 
 
 class ChildParam(Param):
@@ -132,6 +133,8 @@ class ParamMeta(type):
             elif pname in params:
                 params[pname] = copy.copy(params[pname])
                 params[pname].default = prm
+                if prm is Required:
+                    del dct[pname]
 
         ins = type.__new__(meta, name, bases, dct)
         ins._all_params = params

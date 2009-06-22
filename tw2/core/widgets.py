@@ -370,7 +370,7 @@ class RepeatingWidget(Widget):
     min_reps = pm.Param('Minimum number of repetitions', default=None)
     max_reps = pm.Param('Maximum number of repetitions', default=None)
     extra_reps = pm.Param('Number of extra repeitions, beyond the length of the value list.', default=1)
-    children = pm.Param('Any children specified for this widget will be passed to the child. In the template, children gets the list of repeated childen.')
+    children = pm.Param('children specified for this widget will be passed to the child. In the template, children gets the list of repeated childen.', default=[])
 
     repetition = pm.ChildVariable('The repetition of a child widget.')
 
@@ -447,7 +447,7 @@ class DisplayOnlyWidget(Widget):
     by widgets like :class:`tw.forms.FieldSet`.
     """
     child = pm.Param('Child for this widget. This must be a widget.')
-    children = pm.Param('Any children specified for this widget will be passed to the child')
+    children = pm.Param('children specified for this widget will be passed to the child', default=[])
     id = None
 
     @classmethod
