@@ -28,7 +28,7 @@ class Link(wd.Widget):
             self.link = resources.register(self.modname, self.filename)
 
     def __hash__(self):
-        return hash(hasattr(self, 'link') and self.link or (self.modname + self.filename))
+        return hash(hasattr(self, 'link') and self.link or ((self.modname or '') + self.filename))
     def __eq__(self, other):
         return (getattr(self, 'link', None) == getattr(other, 'link', None)
                 and getattr(self, 'modname', None) == getattr(other, 'modname', None)

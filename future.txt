@@ -67,29 +67,10 @@ django
 jquery, mochikit, dojo, yui
 cool new and different widgets - popup links, photos
 
-
-Database Widgets
-----------------
-
-Look through Rum and Sprox before starting
-
-DatabaseForms
-    lists
-    forms & posting
-        make forms smarter about their action (closewindow, etc.)
-    autoforms, autolist
-    fkeyselect
-        how to merge nicely with tw.forms?
-        try to avoid inheritence, something more like
-            twf.CheckBoxList(options=twb.Options(db.Table))
-            (although how you do validation this way is anyone's guess)
-
-Auto Forms
-
-Take a model class and produces a form
-Do this in accordance with a policy - users can define own policies
-Allow hints on the model class (but don't overdo it)
-And allow per-field hints on the form
+sqlalchemy
+    generic function
+    OneToMany - list inline, with add and delete
+    ManyToMany - CheckBoxList (or growing with ajax)
 
 
 dynforms

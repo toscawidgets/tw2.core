@@ -1,3 +1,6 @@
+http://bitbucket.org/paj/tw2dynforms/
+
+
 Questions
     What does the "paste.filter_app_factory" entry point do?
     sphinx: how to do :autoclass: that doesn't show __init__ args
@@ -11,15 +14,14 @@ tw2.forms
 general infrastructure needed
     calling a js func to initialise a widget
     validator messages
+        better required messages for select fields, upload fields, etc.
     autoinitialising controllers
     resources needs a tidy up
     global middleware?
+    passing configuration from widget to validator
 
 validation
     have display detect validated_widget in rl
-    file upload - need to set form mime-type?
-    better required messages for select fields
-
     selectionfield - auto item_validator
     client-side
     MatchField
@@ -58,14 +60,34 @@ quickstart
     why was package rewritten to tw2dynforms?
 
 dynforms
-    calendar
-        date_format as parameter
-    growing
-        ** how to go from node to parent?
-    linkcontainer
-        validation not working
+    calendar - date_format as parameter
+    validation
+        growing
+        linkcontainer
     customisedform
         need submit_attrs on Form
     writeonlytextfield
-        general issue of passing configuration to a validator
         compoundwidget.validate should have a marker that means "don't include in dict"
+
+
+
+
+sqlalchemy
+    get a simple form working
+    lists
+    fkeyselect
+    Relations
+        skip cols for MTO relations
+        MTO
+            view - label
+            edit - select / ajax
+
+
+how to update
+    updating A with B
+    if B is AutoField
+        update A with params B has specified
+    else
+        update B with params A has specified and B not *** this sounds like trouble!
+        ok, for now just use B, any param set to auto is taken from A
+

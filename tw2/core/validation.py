@@ -127,7 +127,7 @@ class Validator(object):
         for k in kw:
             setattr(self, k, kw[k])
 
-    def to_python(self, value, outer_call=None):
+    def to_python(self, value):
         if isinstance(value, basestring):
             try:
                 if self.encoding:
@@ -138,11 +138,11 @@ class Validator(object):
                 value = value.strip()
         return value
 
-    def validate_python(self, value, outer_call=None):
+    def validate_python(self, value):
         if self.required and not value:
             raise ValidationError('required', self)
 
-    def from_python(self, value, outer_call=None):
+    def from_python(self, value):
         return value
 
     def __repr__(self):

@@ -417,6 +417,7 @@ class RepeatingWidget(Widget):
 
     @vd.catch_errors
     def _validate(self, value):
+        self._validated = True
         value = value or []
         if not isinstance(value, list):
             raise vd.ValidationError('corrupt', self.validator, self)
@@ -430,6 +431,7 @@ class RepeatingWidget(Widget):
                 data.append(vd.Invalid)
                 any_errors = True
         if self.validator:
+            data = self.validator.to_python(data)
             self.validator.validate_python(data)
         if any_errors:
             raise vd.ValidationError('childerror', self.validator, self)
