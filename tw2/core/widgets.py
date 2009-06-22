@@ -480,10 +480,12 @@ class DisplayOnlyWidget(Widget):
 
     def prepare(self):
         super(DisplayOnlyWidget, self).prepare()
-        self.child.value = self.value
+        if not hasattr(self, '_validated'):
+            self.child.value = self.value
         self.child.prepare()
 
     def _validate(self, value):
+        self._validated = True
         try:
             return self.child._validate(value)
         except vd.ValidationError, e:
