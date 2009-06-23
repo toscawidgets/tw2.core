@@ -1,3 +1,20 @@
+Hi,
+
+
+
+
+Jobs for people:
+
+Framework integration
+tw2.dojo / jquery / yui
+widget browser branding
+try out tutorials
+dynforms cascading
+tw2.sqlalchemy
+multiple template support
+performance
+
+
 http://bitbucket.org/paj/tw2dynforms/
 
 tw2.forms
@@ -6,7 +23,20 @@ tw2.forms
     gridlayout & hidden fields
     gridlayout validation - use an image with hover
     auto '' on SingleSelectField
-    name2label - remove _id
+        this is slightly trickier than planned
+    refactor LabelHiddenField? - it's just a LabelField with an option set
+        maybe LabelField shouldn't have the hidden field, just be used for data grids
+    shouldn't have item_validator on SingleSelectField???
+    remove submit_text, submit_attrs
+    textbox.size maxlength?
+
+tw2.core
+    children_deep / _sub_compound
+        grandchild hiding
+    csrf protection
+    resources -expires header
+    quickstart - autodetect package from "tw2.package"
+
 
 general infrastructure needed
     calling a js func to initialise a widget ** need to hook this for growing
@@ -26,6 +56,7 @@ validation
     MatchField
 
 documentation
+    dynforms - build on forms with sa, standalone
 
 widget browser
     make tw.core neat
@@ -33,19 +64,8 @@ widget browser
     have a way to hide some widgets (e.g. InputField)
     make Auto come up neater; also validators __repr__ better
 
-frameworks
-    pylons / tg2
-        @validate decorator
-    cp3
-
-widgets as controllers
-    csrf protection
-
 support python 2.4 and 2.6
     use paste web server?
-
-resources
-    expires header
 
 widget browser
     avoid the dodgy '.samples' entrypoint
@@ -53,24 +73,18 @@ widget browser
         Summary / Demo Source / Parameters / Source / Template
     tw branding
 
-quickstart
-    autodetect package from "tw2.package"
-
 dynforms
-    calendar - date_format as parameter
-    widget browser
-        hiding
+    calendar - pass format to validator
+    growing repeater
     tutorial
-        db migration
-            | [4] http://code.google.com/p/sqlalchemy-migrate/
-            | [5] http://trac.ollix.org/miruku/
-        elixir sessions
-        LinkField
-        LabelField
         webob redirect
-        request **kw
 
 sqlalchemy
+    db migration
+        | [4] http://code.google.com/p/sqlalchemy-migrate/
+        | [5] http://trac.ollix.org/miruku/
+    elixir sessions
+
     get a simple form working
     lists
     fkeyselect
@@ -89,3 +103,4 @@ sqlalchemy
             ok, for now just use B, any param set to auto is taken from A
 
 move attrs generation to display? would make some other bits easier
+ooops, shouldn't have removed release.py - it shares details between doc and setup.py

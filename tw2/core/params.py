@@ -8,9 +8,13 @@ class Required(object):
     """This class is used to mark a widget parameter as being required, by
     setting the default value to this."""
 
-class Auto(object):
-    """Used to explicitly mark a parameter as being automatically generated.
+class _Auto(object):
     """
+    Used to explicitly mark a parameter as being automatically generated.
+    """
+    def __repr__(self):
+        return 'Auto'
+Auto = _Auto()
 
 class Deferred(object):
     """This class is used as a wrapper around a parameter value. It takes a

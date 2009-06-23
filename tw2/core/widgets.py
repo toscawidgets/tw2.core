@@ -509,5 +509,10 @@ class Page(DisplayOnlyWidget):
     @classmethod
     def request(cls, req):
         resp = webob.Response(request=req, content_type="text/html; charset=UTF8")
-        resp.body = cls.display().encode('utf-8')
+        ins = cls.req()
+        ins.fetch_data(req)
+        resp.body = ins.display().encode('utf-8')
         return resp
+
+    def fetch_data(self, req):
+        pass

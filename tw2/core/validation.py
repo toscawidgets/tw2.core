@@ -325,7 +325,7 @@ class DateTimeValidator(DateValidator):
     msgs = {
         'notdate': 'Must follow date/time format $format_str',
     }
-    format = '%d/%m/%Y %h:%m'
+    format = '%d/%m/%Y %H:%m'
 
     def to_python(self, value):
         value = super(DateTimeValidator, self).to_python(value)

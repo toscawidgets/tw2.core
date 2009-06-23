@@ -1,15 +1,12 @@
 tw2.core
-    children_deep / _sub_compound
-        grandchild hiding
     set id on class to class name (rewritten?)
-    detect attempts to modify a widget instance
+    detect attempts to modify a widget instance and raise exception
     csslink auto module name
-    id as default param to Widget.__init__?
-    configurable compound id separator [but this is global]
+    id as default param to Widget.__init__
+    configurable compound id separator
     avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
     params - find a neater way to break param descriptions across lines
     i18n - where to call it?
-    resources - dynamic js calls
     use quotes in all exceptions
     logging - not much to log, but tw has some useful debug info
     do __repr__ functions better
@@ -45,7 +42,6 @@ widget browser
 controllers
     security
     switcher
-
     serving with paste and restart
     transactional middleware (or just do it manually)
 
@@ -92,7 +88,6 @@ dynforms
 
     growing
         repeater
-        initialise controls
             if(x[i].tagName == 'LEGEND') x[i].innerHTML = x[i].innerHTML.replace('$$', number+1);
         make it not depend on customisedform
     customisedform - save prompt
@@ -100,3 +95,9 @@ dynforms
     Consider HidingComponent, CascadingComponent as a display-only widget
     linkcontainer - popup links
     hiding, linkcontainer - better support the back button
+
+
+frameworks
+    pylons / tg2
+        @validate decorator
+    cp3
