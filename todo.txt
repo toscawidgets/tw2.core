@@ -22,7 +22,7 @@ http://bitbucket.org/paj/tw2dynforms/
 
 tw2.forms
     gridlayout validation - use an image with hover
-    auto '' on SingleSelectField
+        and the image is a resource...
 
     refactor LabelHiddenField? - it's just a LabelField with an option set
         maybe LabelField shouldn't have the hidden field, just be used for data grids
@@ -47,9 +47,6 @@ general infrastructure needed
 
     lets go for global middleware
         discuss in design doc ***
-        resources
-            link calculate in post_define
-            only ever prepared once
 
     autoinitialising controllers
         this is important

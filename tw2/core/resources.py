@@ -7,10 +7,10 @@ encoder = simplejson.encoder.JSONEncoder()
 
 
 class Resource(wd.Widget):
-    location = pm.Param('Location on the page where the resource should be placed. This can be one of: head, headbottom, bodytop or bodybottom.')
+    location = pm.Param('Location on the page where the resource should be placed. This can be one of: head, headbottom, bodytop or bodybottom. None means the resource will not be injected, which is still useful, e.g. static images.', default=None)
     id = None
 
-class Link(wd.Widget):
+class Link(Resource):
     '''
     A link to a file.
     '''
@@ -37,14 +37,14 @@ class Link(wd.Widget):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, getattr(self, 'link', '%s/%s'%(self.modname,self.filename)))
 
-class JSLink(Link, Resource):
+class JSLink(Link):
     '''
     A JavaScript source file.
     '''
     location = 'head'
     template = 'genshi:tw2.core.templates.jslink'
 
-class CSSLink(Link, Resource):
+class CSSLink(Link):
     '''
     A CSS style sheet.
     '''

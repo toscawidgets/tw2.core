@@ -111,7 +111,6 @@ class Widget(pm.Parametered):
 
         cls._deferred = [a for a in dir(cls) if isinstance(getattr(cls, a), pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
-        cls.resources = [r.req() for r in cls.resources]
 
         if cls.parent:
             for p in cls.parent._all_params.values():
@@ -181,7 +180,10 @@ class Widget(pm.Parametered):
             if not self.parent:
                 self.prepare()
             if self.resources:
-                core.request_local().setdefault('resources', set()).update(r for r in self.resources)
+                self.resources = WidgetBunch([r.req() for r in self.resources])
+                for r in self.resources:
+                    r.prepare()
+                core.request_local().setdefault('resources', set()).update(self.resources)
             mw = core.request_local().get('middleware')
             if displays_on is None:
                 displays_on = (self.parent.template.split(':')[0] if self.parent
@@ -236,7 +238,7 @@ class LeafWidget(Widget):
     """
 
 
-class WidgetBunch(tuple):
+class WidgetBunch(list):
     def __getattr__(self, id):
         for w in self:
             if w.id == id:
@@ -264,7 +266,6 @@ class CompoundWidget(Widget):
             return
         ids = set()
         joined_cld = []
-        cls.resources = set(cls.resources)
         for c in cls.children:
             if not issubclass(c, Widget):
                 raise pm.ParameterError("All children must be widgets")
@@ -272,8 +273,7 @@ class CompoundWidget(Widget):
                 if c.id in ids:
                     raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)
-            cls.resources.update(c.resources)
-            joined_cld.append(c(parent=cls, resources=[]))
+            joined_cld.append(c(parent=cls))
         cls.children = WidgetBunch(joined_cld)
 
     def __init__(self, **kw):
@@ -390,9 +390,7 @@ class RepeatingWidget(Widget):
             raise pm.ParameterError("Child must be a widget")
         if getattr(cls.child, 'id', None):
             raise pm.ParameterError("Child must have no id")
-        cls.resources = set(cls.resources)
-        cls.resources.update(cls.child.resources)
-        cls.child = cls.child(parent=cls, resources=[])
+        cls.child = cls.child(parent=cls)
         cls.rwbc = RepeatingWidgetBunchCls(parent=cls)
 
     def __init__(self, **kw):
@@ -460,9 +458,6 @@ class DisplayOnlyWidget(Widget):
         if not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
         cls._sub_compound = cls.child._sub_compound
-        if cls.child.resources:
-            cls.resources = set(cls.resources)
-            cls.resources.update(cls.child.resources)
         cls_id = getattr(cls, 'id', None)
         child_id = getattr(cls.child, 'id', None)
         if cls_id and child_id and cls_id != child_id:
@@ -470,7 +465,7 @@ class DisplayOnlyWidget(Widget):
         if not cls_id and child_id:
             cls.id = cls_id or child_id
             cls._gen_compound_id()
-        cls.child = cls.child(id=cls.id, parent=cls, resources=[])
+        cls.child = cls.child(id=cls.id, parent=cls)
 
     @classmethod
     def _compound_id_elem(cls):
