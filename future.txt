@@ -24,6 +24,7 @@ tw2.forms
     named buttons
     form id - ${child.id}:_form
     TableForm - make TableLayout parameters accessible?
+    SSF - do adding an empty row, at post_define time, when possible
 
 unit tests
     validators - doc tests?

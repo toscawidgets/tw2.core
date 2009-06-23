@@ -4,9 +4,12 @@ import core, itertools, copy
 class ParameterError(core.WidgetError):
     "Errors related to parameters."
 
-class Required(object):
+class _Required(object):
     """This class is used to mark a widget parameter as being required, by
     setting the default value to this."""
+    def __repr__(self):
+        return 'Required'
+Required = _Required()
 
 class _Auto(object):
     """
@@ -23,8 +26,11 @@ class Deferred(object):
     def __init__(self, fn):
         self.fn = fn
 
-class Default(object):
+class _Default(object):
     pass
+    def __repr__(self):
+        return 'Default'
+Default = _Default()
 
 _param_seq = itertools.count(0)
 

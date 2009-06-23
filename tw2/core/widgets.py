@@ -365,11 +365,11 @@ class RepeatingWidget(Widget):
     A widget that has a single child, which is repeated an arbitrary number
     of times, such as :class:`tw.forms.GridLayout`.
     """
-    child = pm.Param('Child for this widget. This must be a Widget.')
+    child = pm.Param('Child for this widget. The child must have no id.')
     repetitions = pm.Param('Fixed number of repetitions. If this is None, it dynamically determined, based on the length of the value list.', default=None)
     min_reps = pm.Param('Minimum number of repetitions', default=None)
     max_reps = pm.Param('Maximum number of repetitions', default=None)
-    extra_reps = pm.Param('Number of extra repeitions, beyond the length of the value list.', default=1)
+    extra_reps = pm.Param('Number of extra repeitions, beyond the length of the value list.', default=0)
     children = pm.Param('children specified for this widget will be passed to the child. In the template, children gets the list of repeated childen.', default=[])
 
     repetition = pm.ChildVariable('The repetition of a child widget.')
