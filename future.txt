@@ -14,6 +14,7 @@ tw2.core
     make pkg_resources a soft dependence
     force ids to begin with a letter
     Support "paste.filter_app_factory" entry point
+    better way to do "extra children" - Form.submit is a bit of a hack
 
 tw2.forms
     stop label names being post-to-able
@@ -21,17 +22,22 @@ tw2.forms
         instead? twf.RadioButtonTable(options=twf.BooleanOptions)
     make selection_list and selection_table support grouping
     make selection table configurable how it arranges (horiz/vert)
-    unit tests - what can be done?
     named buttons
     form id - ${child.id}:_form
     TableForm - make TableLayout parameters accessible?
     SSF - do adding an empty row, at post_define time, when possible
+    datagrid
+        you can do pretty well with GridLayout and LabelField - is this necessary?
 
 unit tests
-    validators - doc tests?
-    test compound id with deeply nested widgets
-    nick more tests from tw1, e.g. leaks
-    WidgetTestCase
+    tw2.core needs lots of unit tests
+        validators - doc tests?
+        nick more tests from tw1, e.g. leaks
+        WidgetTestCase
+
+    tw2.forms
+        unit test server-side logic
+        test app for widget usability
 
 validation
     client-side

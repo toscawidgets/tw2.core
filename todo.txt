@@ -1,11 +1,10 @@
+ooops, shouldn't have removed release.py - it shares details between doc and setup.py
+
 tw2.forms
-    refactor LabelHiddenField? - it's just a LabelField with an option set
-        maybe LabelField shouldn't have the hidden field, just be used for data grids
     item_validator
         auto - or a redesign to always store strings could remove the need
         shouldn't have item_validator on SingleSelectField???
-    refactor submit_text, submit_attrs
-    remove textbox maxlength
+    password field leaks data
     FormEncode validators and required CSS
 
 tw2.core
@@ -13,25 +12,21 @@ tw2.core
         grandchild hiding
     resources -expires header
     quickstart - autodetect package from "tw2.package"
-
-validator messages
-    better required messages for select fields, upload fields, etc.
-    change twc.Required behaviour
-    message for whole form
-    per-middleware dict mapping message names to messages
-    also per-validator override of messages
-    and widgets/validators can rewrite message names, e.g. required -> select_required
-    *** but how does tw.forms add validation messages?
-        maybe build up that global dict at runtime
+    the way ids work with displayonlywidget isn't quite right
+    move attr generation to display? would make some other bits easier
 
 auto-registering controllers
     if a widget has a request method, and an id, register it
         this results in lots of registrations for repeating widgets
 
-resources
-    unit tests
-
 validation
+    messages
+        validators can rewrite message names, e.g. required -> select_required
+        widget.validator_msgs
+            better required messages for select fields, upload fields, etc.
+            message for whole form
+        command to extract all validation messages
+    change twc.Required behaviour
     have display detect validated_widget in rl
     MatchField
 
@@ -42,11 +37,6 @@ widget browser
     make tw.core neat
     support rst
     validators __repr__ better
-
-support python 2.4 and 2.6
-    use paste web server?
-
-widget browser
     avoid the dodgy '.samples' entrypoint
     lightweight tab-switcher - no ajax to start with
         Summary / Demo Source / Parameters / Source / Template
@@ -60,5 +50,5 @@ dynforms
         labelhiddenbroken
         webob redirect
 
-move attrs generation to display? would make some other bits easier
-ooops, shouldn't have removed release.py - it shares details between doc and setup.py
+support python 2.4 and 2.6
+    use paste web server?

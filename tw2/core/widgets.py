@@ -6,7 +6,7 @@ try:
 except ImportError:
     formencode = None
 
-reserved_names = ('parent', 'demo_for', 'child')
+reserved_names = ('parent', 'demo_for', 'child', 'submit')
 _widget_seq = itertools.count(0)
 
 class WidgetMeta(pm.ParamMeta):
@@ -117,6 +117,24 @@ class Widget(pm.Parametered):
                 if p.child_param and not hasattr(cls, p.name) and p.default is not pm.Required:
                     setattr(cls, p.name, p.default)
 
+    @classmethod
+    def _gen_compound_id(cls):
+        ancestors = []
+        cur = cls
+        while cur:
+            if cur in ancestors:
+                raise core.WidgetError('Parent loop')
+            ancestors.append(cur)
+            cur = cur.parent
+        elems = reversed(filter(None, [a._compound_id_elem() for a in ancestors]))
+        cls.compound_id = elems and ':'.join(elems) or None
+        cls.attrs = cls.attrs.copy()
+        cls.attrs['id'] = getattr(cls, 'id', None) and cls.compound_id
+
+    @classmethod
+    def _compound_id_elem(cls):
+        return getattr(cls, 'id', None)
+
     def prepare(self):
         """
         This is an instance method, that is called just before the Widget is
@@ -137,29 +155,11 @@ class Widget(pm.Parametered):
             self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
-            self.attrs['id'] = self.compound_id
+            self.attrs['id'] = self.id and self.compound_id
             for a in self._attr:
                 if a in self.attrs:
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[a] = getattr(self, a)
-
-    @classmethod
-    def _gen_compound_id(cls):
-        ancestors = []
-        cur = cls
-        while cur:
-            if cur in ancestors:
-                raise core.WidgetError('Parent loop')
-            ancestors.append(cur)
-            cur = cur.parent
-        elems = reversed(filter(None, [a._compound_id_elem() for a in ancestors]))
-        cls.compound_id = elems and ':'.join(elems) or None
-        cls.attrs = cls.attrs.copy()
-        cls.attrs['id'] = cls.compound_id
-
-    @classmethod
-    def _compound_id_elem(cls):
-        return getattr(cls, 'id', None)
 
     @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
