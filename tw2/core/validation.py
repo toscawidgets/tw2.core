@@ -22,14 +22,14 @@ class ValidationError(core.WidgetError):
     def __init__(self, msg, validator=None, widget=None):
         self.widget = widget
         validator = validator or Validator
-        def rewrite(msg):
-            return re.sub('\$(\w+)',
-                lambda m: str(getattr(validator, m.group(1))), msg)
+        msg = validator.msg_rewrites.get(msg, msg)
         mw = core.request_local().get('middleware')
         if mw and msg in mw.config.validator_msgs:
-            msg = rewrite(mw.config.validator_msgs[msg])
+            msg = mw.config.validator_msgs[msg]
         elif msg in validator.msgs:
-            msg = rewrite(validator.msgs[msg])
+            msg = validator.msgs[msg]
+        msg = re.sub('\$(\w+)',
+                lambda m: str(getattr(validator, m.group(1))), msg)
         super(ValidationError, self).__init__(msg)
 
 
@@ -91,11 +91,18 @@ class ValidatorMeta(type):
     def __new__(meta, name, bases, dct):
         if 'msgs' in dct:
             msgs = {}
+            rewrites = {}
             for b in bases:
                 if hasattr(b, 'msgs'):
                     msgs.update(b.msgs)
             msgs.update(dct['msgs'])
+            for m,d in msgs.items():
+                if isinstance(d, tuple):
+                    msgs[d[0]] = d[1]
+                    rewrites[m] = d[0]
+                    del msgs[m]
             dct['msgs'] = msgs
+            dct['msg_rewrites'] = rewrites
         return type.__new__(meta, name, bases, dct)
 
 
@@ -188,8 +195,8 @@ class StringLengthValidator(LengthValidator):
     """
 
     msgs = {
-        'tooshort': 'Must be at least $min characters',
-        'toolong': 'Cannot be longer than $max characters',
+        'tooshort': ('string_tooshort', 'Must be at least $min characters'),
+        'toolong': ('string_toolong', 'Cannot be longer than $max characters'),
     }
 
 class ListLengthValidator(LengthValidator):
@@ -199,8 +206,8 @@ class ListLengthValidator(LengthValidator):
     """
 
     msgs = {
-        'tooshort': 'Pick at least $min',
-        'toolong': 'Pick no more than $max',
+        'tooshort': ('list_tooshort', 'Select at least $min'),
+        'toolong': ('list_toolong', 'Select no more than $max'),
     }
 
 
@@ -255,6 +262,9 @@ class BoolValidator(RangeValidator):
     Convert a value to a boolean. This is particularly intended to handle
     check boxes.
     """
+    msgs = {
+        'required': ('bool_required', 'You must select this')
+    }
     def to_python(self, value):
         value = super(BoolValidator, self).to_python(value)
         return str(value).lower() in ('on', 'yes', 'true', '1')
@@ -289,9 +299,9 @@ class DateValidator(RangeValidator):
         syntax as the Python strftime function.
     """
     msgs = {
-        'notdate': 'Must follow date format $format_str',
-        'toosmall': 'Cannot be earlier than $min_str',
-        'toobig': 'Cannot be later than $max_str',
+        'baddate': 'Must follow date format $format_str',
+        'toosmall': ('date_toosmall', 'Cannot be earlier than $min_str'),
+        'toobig': ('date_toobig', 'Cannot be later than $max_str'),
     }
     format = '%d/%m/%Y'
 
@@ -315,7 +325,7 @@ class DateValidator(RangeValidator):
             date = time.strptime(value, self.format)
             return datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
         except ValueError:
-            raise ValidationError('notdate', self)
+            raise ValidationError('baddate', self)
 
     def from_python(self, value):
         return value.strftime(self.format)
@@ -326,7 +336,7 @@ class DateTimeValidator(DateValidator):
     Confirm the value is a valid date and time; otherwise just like :class:`DateValidator`.
     """
     msgs = {
-        'notdate': 'Must follow date/time format $format_str',
+        'baddate': ('baddatetime', 'Must follow date/time format $format_str'),
     }
     format = '%d/%m/%Y %H:%m'
 
@@ -349,14 +359,14 @@ class RegexValidator(Validator):
         A Python regular expression object, generated like ``re.compile('^\w+$')``
     """
     msgs = {
-        'regex': 'Value must match regular expression',
+        'badregex': 'Invalid value',
     }
     regex = None
 
     def validate_python(self, value):
         super(RegexValidator, self).validate_python(value)
         if value and not self.regex.search(value):
-            raise ValidationError('regex', self)
+            raise ValidationError('badregex', self)
 
 
 class EmailValidator(RegexValidator):
@@ -364,7 +374,7 @@ class EmailValidator(RegexValidator):
     Confirm the value is a valid email address.
     """
     msgs = {
-        'regex': 'Must be a valid email address',
+        'badregex': ('bademail', 'Must be a valid email address'),
     }
     regex = re.compile('^[\w\-.]+@[\w\-.]+$')
 
@@ -374,7 +384,7 @@ class UrlValidator(RegexValidator):
     Confirm the value is a valid URL.
     """
     msgs = {
-        'regex': 'Must be a valid URL',
+        'regex': ('badurl', 'Must be a valid URL'),
     }
     regex = re.compile('^https?://', re.IGNORECASE)
 
@@ -384,13 +394,13 @@ class IpAddressValidator(Validator):
     Confirm the value is a valid IP4 address.
     """
     msgs = {
-        'ipaddress': 'Must be a valid IP address',
+        'badipaddress': 'Must be a valid IP address',
     }
     regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)$', re.IGNORECASE)
     def validate_python(self, value):
         m = self.regex.search(value)
         if not m or any(not(0 <= int(g) <= 255) for g in m.groups()):
-            raise ValidationError('ipaddress', self)
+            raise ValidationError('badipaddress', self)
 
 class MatchValidator(Validator):
     """
