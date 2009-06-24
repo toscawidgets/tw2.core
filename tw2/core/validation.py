@@ -21,12 +21,15 @@ class ValidationError(core.WidgetError):
     """
     def __init__(self, msg, validator=None, widget=None):
         self.widget = widget
-        if not validator:
-            validator = Validator
-        if msg in validator.msgs:
-            msg = re.sub('\$(\w+)',
-                lambda m: str(getattr(validator, m.group(1))),
-                validator.msgs[msg])
+        validator = validator or Validator
+        def rewrite(msg):
+            return re.sub('\$(\w+)',
+                lambda m: str(getattr(validator, m.group(1))), msg)
+        mw = core.request_local().get('middleware')
+        if mw and msg in mw.config.validator_msgs:
+            msg = rewrite(mw.config.validator_msgs[msg])
+        elif msg in validator.msgs:
+            msg = rewrite(validator.msgs[msg])
         super(ValidationError, self).__init__(msg)
 
 
@@ -117,8 +120,8 @@ class Validator(object):
     __metaclass__ = ValidatorMeta
 
     msgs = {
-        'required': 'Please enter a value',
-        'decode': 'Received in the wrong character set',
+        'required': 'Enter a value',
+        'decode': 'Received in the wrong character set; should be $encoding',
         'corrupt': 'The form submission was received corrupted; please try again',
         'childerror': '' # Children of this widget have errors
     }

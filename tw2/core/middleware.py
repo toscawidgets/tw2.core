@@ -39,6 +39,10 @@ class Config(object):
 
     `debug`
         Whether the app is running in development or production mode.
+
+    `validator_msgs`
+        A dictionary that maps validation message names to messages. This lets
+        you override validation messages on a global basis.
     '''
 
     translator = lambda s: s
@@ -51,6 +55,7 @@ class Config(object):
     bufsize = 4*1024
     params_as_vars = False
     debug = False
+    validator_msgs = {}
 
     def __init__(self, **kw):
         for k, v in kw.items():

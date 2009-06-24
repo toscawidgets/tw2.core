@@ -1,4 +1,5 @@
 tw2.core
+    csrf protection
     set id on class to class name (rewritten?)
     detect attempts to modify a widget instance and raise exception
     csslink auto module name
@@ -33,6 +34,7 @@ unit tests
     WidgetTestCase
 
 validation
+    client-side
     inheriting required, encoding
     non-safe widgets
 
@@ -102,3 +104,27 @@ frameworks
     pylons / tg2
         @validate decorator
     cp3
+
+
+sqlalchemy
+    db migration
+        | [4] http://code.google.com/p/sqlalchemy-migrate/
+        | [5] http://trac.ollix.org/miruku/
+    elixir sessions
+
+    get a simple form working
+    lists
+    fkeyselect
+    Relations
+        skip cols for MTO relations
+        MTO
+            view - label
+            edit - select / ajax
+
+    how to update
+        updating A with B
+        if B is AutoField
+            update A with params B has specified
+        else
+            update B with params A has specified and B not *** this sounds like trouble!
+            ok, for now just use B, any param set to auto is taken from A

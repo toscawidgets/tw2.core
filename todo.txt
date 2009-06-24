@@ -1,59 +1,38 @@
-Hi,
-
-I've done a little more work on tw2, and it's now in a state where it's worth having a go.
-
-
-
-widget browser branding
-try out tutorials
-
-Smaller jobs:
-    Make SelectionList and SelectionTable support option grouping
-    CSRF protection
-    tw2.dynforms Cascading support
-
-Bigger jobs:
-    Framework integration
-    tw2.dojo / jquery / yui
-    multiple template support
-
-
-http://bitbucket.org/paj/tw2dynforms/
-
 tw2.forms
-    gridlayout validation - use an image with hover
-        and the image is a resource...
-
     refactor LabelHiddenField? - it's just a LabelField with an option set
         maybe LabelField shouldn't have the hidden field, just be used for data grids
-    selectionfield - auto item_validator
-    shouldn't have item_validator on SingleSelectField???
-    remove submit_text, submit_attrs
-    remove textbox.size maxlength?
+    item_validator
+        auto - or a redesign to always store strings could remove the need
+        shouldn't have item_validator on SingleSelectField???
+    refactor submit_text, submit_attrs
+    remove textbox maxlength
     FormEncode validators and required CSS
 
 tw2.core
     children_deep / _sub_compound
         grandchild hiding
-    csrf protection
     resources -expires header
     quickstart - autodetect package from "tw2.package"
 
-general infrastructure needed
-    validator messages
-        better required messages for select fields, upload fields, etc.
-        initially - change to twc.Required behaviour *** this is broken anyway
-        message for whole form
+validator messages
+    better required messages for select fields, upload fields, etc.
+    change twc.Required behaviour
+    message for whole form
+    per-middleware dict mapping message names to messages
+    also per-validator override of messages
+    and widgets/validators can rewrite message names, e.g. required -> select_required
+    *** but how does tw.forms add validation messages?
+        maybe build up that global dict at runtime
 
-    lets go for global middleware
-        discuss in design doc ***
+auto-registering controllers
+    if a widget has a request method, and an id, register it
+        this results in lots of registrations for repeating widgets
 
-    autoinitialising controllers
-        this is important
+resources
+    unit tests
 
 validation
     have display detect validated_widget in rl
-    client-side
     MatchField
 
 documentation
@@ -78,32 +57,8 @@ dynforms
     calling a js func to initialise a widget
         need to hook this for growing
     tutorial
-        extra rows
         labelhiddenbroken
         webob redirect
-
-sqlalchemy
-    db migration
-        | [4] http://code.google.com/p/sqlalchemy-migrate/
-        | [5] http://trac.ollix.org/miruku/
-    elixir sessions
-
-    get a simple form working
-    lists
-    fkeyselect
-    Relations
-        skip cols for MTO relations
-        MTO
-            view - label
-            edit - select / ajax
-
-    how to update
-        updating A with B
-        if B is AutoField
-            update A with params B has specified
-        else
-            update B with params A has specified and B not *** this sounds like trouble!
-            ok, for now just use B, any param set to auto is taken from A
 
 move attrs generation to display? would make some other bits easier
 ooops, shouldn't have removed release.py - it shares details between doc and setup.py
