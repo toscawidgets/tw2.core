@@ -102,8 +102,9 @@ class Widget(pm.Parametered):
         cls._gen_compound_id()
         cls._auto_register()
         if cls.validator:
-            if cls.validator is pm.Required: # this is a bit of a hack
-                cls.validator = vd.Validator(required=True)
+            if cls.validator is pm.Required:
+                vld = cls.__mro__[1].validator
+                cls.validator = vld and vld.clone(required=True) or vd.Validator(required=True)
             if isinstance(cls.validator, type) and issubclass(cls.validator, vd.Validator):
                 cls.validator = cls.validator()
             if not isinstance(cls.validator, vd.Validator) and not (

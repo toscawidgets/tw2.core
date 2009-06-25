@@ -1,4 +1,4 @@
-import core, re, util, string, webob, time, datetime
+import core, re, util, string, webob, time, datetime, copy
 try:
     import formencode
 except ImportError:
@@ -162,6 +162,12 @@ class Validator(object):
         _bool = ['False', 'True']
         return ("Validator(required=%s, strip=%s, encoding='%s')" %
             (_bool[int(self.required)], _bool[int(self.strip)], self.encoding))
+
+    def clone(self, **kw):
+        nself = copy.copy(self)
+        for k in kw:
+            setattr(nself, k, kw[k])
+        return nself
 
 class LengthValidator(Validator):
     """

@@ -26,7 +26,6 @@ auto-registering controllers
 validation
     message for whole form
     validator browser
-    change twc.Required behaviour
     have display detect validated_widget in rl
     MatchField
     selection validators
@@ -43,12 +42,9 @@ documentation
             standalone
         tutorials
             appearance
-                fix twc.Required
                 better genshi abs path thingy
             validation
             elixir
-        examples
-            datagrid validation
 
     dynforms - build on forms with sa, standalone
 

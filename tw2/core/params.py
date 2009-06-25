@@ -143,7 +143,7 @@ class ParamMeta(type):
             elif pname in params:
                 params[pname] = copy.copy(params[pname])
                 params[pname].default = prm
-                if prm is Required:
+                if prm is Required and pname != 'validator':
                     del dct[pname]
 
         ins = type.__new__(meta, name, bases, dct)
