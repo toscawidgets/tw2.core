@@ -31,7 +31,8 @@ class WidgetMeta(pm.ParamMeta):
                 bcld = getattr(b, 'children', None)
                 if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
                     children.extend(bcld)
-            children.extend(v(id=d) for v,d in sorted(new_children, key=lambda t: t[0]._seq))
+            new_children = sorted(new_children, key=lambda t: t[0]._seq)
+            children.extend(hasattr(v, 'id') and v or v(id=d) for v,d in new_children)
             if children:
                 dct['children'] = children
         widget = super(WidgetMeta, meta).__new__(meta, name, bases, dct)

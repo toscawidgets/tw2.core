@@ -2,7 +2,6 @@ read on inet
     expires header
     webob redirect
 
-
 ooops, shouldn't have removed release.py - it shares details between doc and setup.py
 
 tw2.core
@@ -13,13 +12,9 @@ tw2.core
     quickstart - autodetect package from "tw2.package"
     the way ids work with displayonlywidget isn't quite right
 
-    declarative tweak
-        don't collect widgets as params
-        compound only specifies id if it doesn't already exist
-
 auto-registering controllers
     add link to widget once registered
-    avoid many registrations for repeating widgets
+    avoid multiple registrations for repeating widgets
     rewrite class name like elixir does
     not in ('Page', 'FormPage') is a hack
 
@@ -36,7 +31,8 @@ validation
     FormEncode validators and required CSS
 
 documentation
-    tw2.forms
+    core
+    forms
         getting started
             with wsgi
             standalone
@@ -45,25 +41,16 @@ documentation
                 better genshi abs path thingy
             validation
             elixir
-
-    dynforms - build on forms with sa, standalone
+    dynforms
+        dyndemo
+    tw branding
 
 widget browser
     make tw.core neat
     support rst
     validators __repr__ better
     avoid the dodgy '.samples' entrypoint
-    lightweight tab-switcher - no ajax to start with
-        Summary / Demo Source / Parameters / Source / Template
     tw branding
-
-dynforms
-    growing repeater
-    calling a js func to initialise a widget
-        need to hook this for growing
-    tutorial
-        labelhiddenbroken
-        webob redirect
 
 support python 2.4 and 2.6
     use paste web server?

@@ -14,6 +14,7 @@ tw2.core
     force ids to begin with a letter
     Support "paste.filter_app_factory" entry point
     better way to do "extra children" - Form.submit is a bit of a hack
+        don't collect widgets as params? (but do if its id=)
     move attr generation to display? would make some other bits easier
 
 tw2.forms
@@ -45,6 +46,8 @@ validation
         global config for encoding would be a start
 
 widget browser
+    lightweight tab-switcher - no ajax to start with
+        Summary / Demo Source / Parameters / Source / Template
     sphinx integration
     browse other things in packages - validators, exceptions, etc.
 
@@ -90,6 +93,9 @@ dynforms
         hiding button
 
     growing
+        growing repeater
+        calling a js func to initialise a widget
+            need to hook this for growing
         repeater
             if(x[i].tagName == 'LEGEND') x[i].innerHTML = x[i].innerHTML.replace('$$', number+1);
         make it not depend on customisedform
