@@ -18,7 +18,6 @@ tw2.core
         compound only specifies id if it doesn't already exist
 
 auto-registering controllers
-    let widget override controllers_app
     add link to widget once registered
     avoid many registrations for repeating widgets
     rewrite class name like elixir does
@@ -38,6 +37,19 @@ validation
     FormEncode validators and required CSS
 
 documentation
+    tw2.forms
+        getting started
+            with wsgi
+            standalone
+        tutorials
+            appearance
+                fix twc.Required
+                better genshi abs path thingy
+            validation
+            elixir
+        examples
+            datagrid validation
+
     dynforms - build on forms with sa, standalone
 
 widget browser

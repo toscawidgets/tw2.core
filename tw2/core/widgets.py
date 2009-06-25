@@ -516,6 +516,7 @@ class Page(DisplayOnlyWidget):
         if not getattr(cls, 'id', None) and cls.__name__ not in ('Page', 'FormPage'):
             cls.id = cls.__name__.lower()
             cls._auto_register()
+            DisplayOnlyWidget.post_define.im_func(cls)
 
     @classmethod
     def request(cls, req):
