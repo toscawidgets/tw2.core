@@ -260,12 +260,12 @@ class WidgetBunch(list):
 class CompoundWidget(Widget):
     """
     A widget that has an arbitrary number of children, this is common for
-    layout components, such as :class:`tw.forms.TableLayout`.
+    layout components, such as :class:`tw2.forms.TableLayout`.
     """
     children = pm.Param('Children for this widget. This must be an interable, each item of which is a Widget')
     c = pm.Variable("Alias for children", default=property(lambda s: s.children))
     children_deep = pm.Variable("Children, including any children from child CompoundWidgets that have no id")
-    template = 'genshi:tw.core.templates.display_children'
+    template = 'genshi:tw2.core.templates.display_children'
 
     @classmethod
     def post_define(cls):
@@ -374,7 +374,7 @@ class RepeatingWidgetBunch(object):
 class RepeatingWidget(Widget):
     """
     A widget that has a single child, which is repeated an arbitrary number
-    of times, such as :class:`tw.forms.GridLayout`.
+    of times, such as :class:`tw2.forms.GridLayout`.
     """
     child = pm.Param('Child for this widget. The child must have no id.')
     repetitions = pm.Param('Fixed number of repetitions. If this is None, it dynamically determined, based on the length of the value list.', default=None)
@@ -385,7 +385,7 @@ class RepeatingWidget(Widget):
 
     repetition = pm.ChildVariable('The repetition of a child widget.')
 
-    template = 'genshi:tw.core.templates.display_children'
+    template = 'genshi:tw2.core.templates.display_children'
 
     @classmethod
     def post_define(cls):
@@ -453,9 +453,9 @@ class DisplayOnlyWidget(Widget):
     """
     A widget that has a single child. The parent widget is only used for display
     purposes; it does not affect value propagation or validation. This is used
-    by widgets like :class:`tw.forms.FieldSet`.
+    by widgets like :class:`tw2.forms.FieldSet`.
     """
-    child = pm.Param('Child for this widget. This must be a widget.')
+    child = pm.Param('Child for this widget.')
     children = pm.Param('children specified for this widget will be passed to the child', default=[])
 
     @classmethod
@@ -497,13 +497,13 @@ class DisplayOnlyWidget(Widget):
                 self.child.value = self.value
             self.child.prepare()
 
+    @vd.catch_errors
     def _validate(self, value):
         self._validated = True
         try:
             return self.child._validate(value)
         except vd.ValidationError, e:
-            e.widget = self
-            raise
+            raise vd.ValidationError('childerror', self.validator, self)
 
 class Page(DisplayOnlyWidget):
     """
