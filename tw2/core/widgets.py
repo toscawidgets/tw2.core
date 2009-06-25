@@ -100,6 +100,7 @@ class Widget(pm.Parametered):
         if getattr(cls, 'id', None) and not cls._valid_id_re.match(cls.id):
             raise pm.ParameterError("Not a valid identifier: '%s'" % cls.id)
         cls._gen_compound_id()
+        cls._auto_register()
         if cls.validator:
             if cls.validator is pm.Required: # this is a bit of a hack
                 cls.validator = vd.Validator(required=True)
@@ -135,6 +136,14 @@ class Widget(pm.Parametered):
     def _compound_id_elem(cls):
         return getattr(cls, 'id', None)
 
+    @classmethod
+    def _auto_register(cls):
+        if hasattr(cls, 'request') and getattr(cls, 'id', None):
+            import middleware
+            capp = getattr(cls.__module__, 'tw2_controllers', middleware.global_controllers)
+            if capp:
+                capp.register(cls, cls.id)
+
     def prepare(self):
         """
         This is an instance method, that is called just before the Widget is
@@ -155,7 +164,7 @@ class Widget(pm.Parametered):
             self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
-            self.attrs['id'] = self.id and self.compound_id
+            self.attrs['id'] = getattr(self, 'id', None) and self.compound_id
             for a in self._attr:
                 if a in self.attrs:
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
@@ -446,7 +455,6 @@ class DisplayOnlyWidget(Widget):
     """
     child = pm.Param('Child for this widget. This must be a widget.')
     children = pm.Param('children specified for this widget will be passed to the child', default=[])
-    id = None
 
     @classmethod
     def post_define(cls):
@@ -463,9 +471,11 @@ class DisplayOnlyWidget(Widget):
         if cls_id and child_id and cls_id != child_id:
             raise pm.ParameterError("Can only specify id on either a DisplayOnlyWidget, or its child, not both: '%s' '%s'" % (cls_id, child_id))
         if not cls_id and child_id:
-            cls.id = cls_id or child_id
+            cls.id = child_id
             cls._gen_compound_id()
-        cls.child = cls.child(id=cls.id, parent=cls)
+            cls.child = cls.child(parent=cls)
+        else:
+            cls.child = cls.child(id=cls_id, parent=cls)
 
     @classmethod
     def _compound_id_elem(cls):
@@ -500,6 +510,12 @@ class Page(DisplayOnlyWidget):
     """
     title = pm.Param('Title for the page')
     template = "genshi:tw2.core.templates.page"
+
+    @classmethod
+    def post_define(cls):
+        if not getattr(cls, 'id', None) and cls.__name__ not in ('Page', 'FormPage'):
+            cls.id = cls.__name__.lower()
+            cls._auto_register()
 
     @classmethod
     def request(cls, req):

@@ -72,12 +72,12 @@ class TwMiddleware(object):
      * Proxy resource requests to ResourcesApp
      * Inject resources
     """
-    def __init__(self, app, **config):
+    def __init__(self, app, controllers=None, **config):
         self.app = app
         self.config = Config(**config)
         self.engines = template.EngineManager()
         self.resources = resources.ResourcesApp(self.config)
-        self.controllers = ControllersApp(self.config)
+        self.controllers = controllers
 
     def __call__(self, environ, start_response):
         rl = core.request_local()
@@ -105,17 +105,22 @@ class ControllersApp(object):
     """
     """
 
-    def __init__(self, config):
+    def __init__(self):
         self._widgets = {}
-        self.config = config
 
     def register(self, widget, path):
         self._widgets[path] = widget
 
     def __call__(self, req):
         try:
-            path = req.path_info[len(self.config.controller_prefix):] or 'index'
+            config = rl = core.request_local()['middleware'].config
+            path = req.path_info[len(config.controller_prefix):] or 'index'
             resp = self._widgets[path].request(req)
         except KeyError:
             resp = wo.Response(status="404 Not Found")
         return resp
+
+global_controllers = ControllersApp()
+
+def make_middleware(app=None, **config):
+    return TwMiddleware(app, controllers=global_controllers, **config)

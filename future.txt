@@ -1,6 +1,5 @@
 tw2.core
     csrf protection
-    set id on class to class name (rewritten?)
     detect attempts to modify a widget instance and raise exception
     csslink auto module name
     id as default param to Widget.__init__
@@ -15,6 +14,7 @@ tw2.core
     force ids to begin with a letter
     Support "paste.filter_app_factory" entry point
     better way to do "extra children" - Form.submit is a bit of a hack
+    move attr generation to display? would make some other bits easier
 
 tw2.forms
     stop label names being post-to-able
@@ -42,7 +42,7 @@ unit tests
 validation
     client-side
     inheriting required, encoding
-    non-safe widgets
+        global config for encoding would be a start
 
 widget browser
     sphinx integration
@@ -52,7 +52,7 @@ controllers
     security
     switcher
     serving with paste and restart
-    transactional middleware (or just do it manually)
+    transactional middleware
 
 template
     mako helper functions
@@ -77,12 +77,6 @@ resources
 django
 jquery, mochikit, dojo, yui
 cool new and different widgets - popup links, photos
-
-sqlalchemy
-    generic function
-    OneToMany - list inline, with add and delete
-    ManyToMany - CheckBoxList (or growing with ajax)
-
 
 dynforms
     cascading
@@ -134,3 +128,8 @@ sqlalchemy
         else
             update B with params A has specified and B not *** this sounds like trouble!
             ok, for now just use B, any param set to auto is taken from A
+
+    later
+        generic function
+        OneToMany - list inline, with add and delete
+        ManyToMany - CheckBoxList (or growing with ajax)

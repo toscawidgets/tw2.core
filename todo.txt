@@ -1,38 +1,41 @@
+read on inet
+    expires header
+    webob redirect
+
+
 ooops, shouldn't have removed release.py - it shares details between doc and setup.py
 
-tw2.forms
-    selection validators
-        "Select a value"
-        auto - or a redesign to always store strings could remove the need
-        shouldn't have item_validator on SingleSelectField???
-        distinguish None and 0
-    password field leaks data
-    FormEncode validators and required CSS
-
 tw2.core
+    rename fetch_data to view_request (also: post_define to define?)
     children_deep / _sub_compound
         grandchild hiding
     resources -expires header
     quickstart - autodetect package from "tw2.package"
     the way ids work with displayonlywidget isn't quite right
-    move attr generation to display? would make some other bits easier
+
+    declarative tweak
+        don't collect widgets as params
+        compound only specifies id if it doesn't already exist
 
 auto-registering controllers
-    if a widget has a request method, and an id, register it
-        this results in lots of registrations for repeating widgets
+    let widget override controllers_app
+    add link to widget once registered
+    avoid many registrations for repeating widgets
+    rewrite class name like elixir does
+    not in ('Page', 'FormPage') is a hack
 
 validation
-    messages
-        validators can rewrite message names, e.g. required -> select_required
-            if msg is a tuple, it's (newname, msg)
-
-        widget.validator_msgs
-            message for whole form
-            multiple select
-        command to extract all validation messages
+    message for whole form
+    validator browser
     change twc.Required behaviour
     have display detect validated_widget in rl
     MatchField
+    selection validators
+        Better required messages - "Select a value"
+        auto - or a redesign to always store strings could remove the need
+        shouldn't have item_validator on SingleSelectField???
+        distinguish None and 0
+    FormEncode validators and required CSS
 
 documentation
     dynforms - build on forms with sa, standalone
