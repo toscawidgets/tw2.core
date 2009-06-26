@@ -186,7 +186,11 @@ class Widget(pm.Parametered):
             parent. Set this to ``string`` to get raw string output.
         """
         if not self:
-            return cls.req(**kw).display(displays_on)
+            vw = core.request_local().get('validated_widget')
+            if vw:
+                return vw.display()
+            else:
+                return cls.req(**kw).display(displays_on)
         else:
             if not self.parent:
                 self.prepare()
@@ -198,13 +202,14 @@ class Widget(pm.Parametered):
             mw = core.request_local().get('middleware')
             if displays_on is None:
                 displays_on = (self.parent.template.split(':')[0] if self.parent
-                                                    else mw.config.default_engine)
+                                                    else (mw and mw.config.default_engine or 'string'))
             vars = {'w':self}
-            if mw.config.params_as_vars:
+            if mw and mw.config.params_as_vars:
                 for p in self._params:
                     if hasattr(self, p):
                         vars[p] = getattr(self, p)
-            return mw.engines.render(self.template, displays_on, vars)
+            eng = mw and mw.engines or template.global_engines
+            return eng.render(self.template, displays_on, vars)
 
     @classmethod
     def validate(cls, params):

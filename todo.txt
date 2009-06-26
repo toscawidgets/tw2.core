@@ -4,6 +4,7 @@ read on inet
 
 tw2.core
     children_deep
+        dupe id
         validation
         grandchild hiding
     resources -expires header
@@ -13,10 +14,10 @@ tw2.core
 auto-registering controllers
     add link to widget once registered
     avoid multiple registrations for repeating widgets
+        only register in the zero-th repetition
     rewrite class name like elixir does
 
 validation
-    have display detect validated_widget in rl
     MatchField
     selection validators
         Better required messages - "Select a value"

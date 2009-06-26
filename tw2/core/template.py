@@ -77,3 +77,5 @@ class EngineManager(dict):
         except KeyError:
             self.load_engine(name)
             return dict.__getitem__(self, name)
+
+global_engines = EngineManager()
