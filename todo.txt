@@ -19,7 +19,6 @@ auto-registering controllers
     not in ('Page', 'FormPage') is a hack
 
 validation
-    message for whole form
     validator browser
     have display detect validated_widget in rl
     MatchField
