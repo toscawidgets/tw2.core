@@ -300,11 +300,15 @@ class CompoundWidget(Widget):
         if not hasattr(self, '_validated'):
             if isinstance(v, dict):
                 for c in self.children:
-                    if c.id in v:
+                    if c._sub_compound:
+                        c.value = v
+                    elif c.id in v:
                         c.value = v[c.id]
             else:
                 for c in self.children:
-                    if hasattr(v, c.id):
+                    if c._sub_compound:
+                        c.value = v
+                    elif hasattr(v, c.id):
                         c.value = getattr(v, c.id)
         for c in self.children:
             c.prepare()

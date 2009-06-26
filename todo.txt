@@ -6,7 +6,8 @@ ooops, shouldn't have removed release.py - it shares details between doc and set
 
 tw2.core
     rename fetch_data to view_request (also: post_define to define?)
-    children_deep / _sub_compound
+    children_deep
+        validation
         grandchild hiding
     resources -expires header
     quickstart - autodetect package from "tw2.package"
@@ -26,7 +27,6 @@ validation
         Better required messages - "Select a value"
         auto - or a redesign to always store strings could remove the need
         shouldn't have item_validator on SingleSelectField???
-        distinguish None and 0
     FormEncode validators and required CSS
 
 documentation
