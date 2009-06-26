@@ -16,6 +16,7 @@ tw2.core
     better way to do "extra children" - Form.submit is a bit of a hack
         don't collect widgets as params? (but do if its id=)
     move attr generation to display? would make some other bits easier
+    rename fetch_data to view_request (also: post_define to define?)
 
 tw2.forms
     stop label names being post-to-able
@@ -29,6 +30,7 @@ tw2.forms
     SSF - do adding an empty row, at post_define time, when possible
     datagrid
         you can do pretty well with GridLayout and LabelField - is this necessary?
+    select fields - strong validation
 
 unit tests
     tw2.core needs lots of unit tests

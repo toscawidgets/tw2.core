@@ -516,10 +516,11 @@ class Page(DisplayOnlyWidget):
     """
     title = pm.Param('Title for the page')
     template = "genshi:tw2.core.templates.page"
+    _no_autoid = True
 
     @classmethod
     def post_define(cls):
-        if not getattr(cls, 'id', None) and cls.__name__ not in ('Page', 'FormPage'):
+        if not getattr(cls, 'id', None) and '_no_autoid' not in cls.__dict__:
             cls.id = cls.__name__.lower()
             cls._auto_register()
             DisplayOnlyWidget.post_define.im_func(cls)

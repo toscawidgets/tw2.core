@@ -2,10 +2,7 @@ read on inet
     expires header
     webob redirect
 
-ooops, shouldn't have removed release.py - it shares details between doc and setup.py
-
 tw2.core
-    rename fetch_data to view_request (also: post_define to define?)
     children_deep
         validation
         grandchild hiding
@@ -17,16 +14,14 @@ auto-registering controllers
     add link to widget once registered
     avoid multiple registrations for repeating widgets
     rewrite class name like elixir does
-    not in ('Page', 'FormPage') is a hack
 
 validation
-    validator browser
     have display detect validated_widget in rl
     MatchField
     selection validators
         Better required messages - "Select a value"
-        auto - or a redesign to always store strings could remove the need
         shouldn't have item_validator on SingleSelectField???
+        auto - or a redesign to always store strings could remove the need
     FormEncode validators and required CSS
 
 documentation
@@ -40,16 +35,20 @@ documentation
                 better genshi abs path thingy
             validation
             elixir
+                webob redirect
     dynforms
         dyndemo
     tw branding
+    shouldn't have removed release.py - it shares details between doc and setup.py
+        is there a standard approach for this?
 
 widget browser
     make tw.core neat
     support rst
+        tsrweb has one approach; maybe sphinx has a better way?
     validators __repr__ better
-    avoid the dodgy '.samples' entrypoint
     tw branding
+    validators - messages
 
 support python 2.4 and 2.6
     use paste web server?
