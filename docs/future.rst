@@ -46,7 +46,7 @@ Widgets as Controllers
 :meth:`controller` is in instance method, so it gets ``self``. This is a different request to where the widget was displayed however, request-local variables are separate. You can use the session to pass state if required.
 
 
-Widget has a method, :meth:`link(**kw)` to generate a link to the controller method, with any desired parameters. When a link is generated, the widget is registered with the ToscaWidgets middleware. Requests to ``/controllers/my_widget`` will result in the controller method being called::
+Widget has a method, :meth:`link(**kw)` to generate a link to the controller method, with any desired parameters. When a link is generated, the widget is registered with the ToscaWidgets middleware. Requests to ``/controllers/my_widget`` will result in the controller method being called.
 
 
 Security Model

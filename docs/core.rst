@@ -57,9 +57,6 @@ Subclasses of Widget can override the following methods. It is not recommended t
 
 .. automethod:: tw2.core.widgets.Widget.post_define
 .. automethod:: tw2.core.widgets.Widget.prepare
-.. automethod:: tw2.core.widgets.Widget.request
-.. automethod:: tw2.core.widgets.Widget.fetch_data
-.. automethod:: tw2.core.widgets.Widget.validated_request
 
 
 Widget Hierarchy

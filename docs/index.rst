@@ -26,7 +26,6 @@ Contents:
    tutorial
    core
    validation
-   devtools
    history
    future
 
