@@ -8,6 +8,7 @@ tw2.core
         make compound_id always use the last element?
     problem with colons as id separator - doesn't work in css, it thinks they're pseudo classes
     resources - caching
+        resp.cache_control = {'max_age': int(self.config.res_max_age)}
         I can generate expires/max-age, but it doesn't make it cache
 
 auto-registering controllers
@@ -53,11 +54,15 @@ widget browser
 support python 2.4 and 2.6
     use paste web server?
 
+tw2.dynforms
+    unique column in growinggrid
+    make onload trigger onchange
+    cascadingajaxlookup triggering onchange
+    growingtextarea
 
 
 yui
     core changes
-        serve whole dir tree
         keep order of resources
         generating links to ajax resources
 

@@ -37,6 +37,15 @@ class Link(Resource):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, getattr(self, 'link', '%s/%s'%(self.modname,self.filename)))
 
+class DirLink(Link):
+    link = pm.Variable()
+    filename = pm.Required
+
+    def prepare(self):
+        resources = core.request_local()['middleware'].resources
+        self.link = resources.register(self.modname, self.filename, whole_dir=True)
+
+
 class JSLink(Link):
     '''
     A JavaScript source file.
@@ -96,9 +105,10 @@ class ResourcesApp(object):
 
     def __init__(self, config):
         self._paths = {}
+        self._dirs = []
         self.config = config
 
-    def register(self, modname, filename):
+    def register(self, modname, filename, whole_dir=False):
         """Register a file for static serving, and return the web path.
 
         After this method has been called, for say ('tw2.forms',
@@ -107,7 +117,9 @@ class ResourcesApp(object):
         correctly for zipped eggs.
 
         *Security Consideration* - This file will be readable by users of the
-        application, so make sure it contains no confidential data.
+        application, so make sure it contains no confidential data. For
+        DirLink resources, the whole directory, and subdirectories will be
+        readable.
 
         `modname`
             The python module that contains the file to publish. You can also
@@ -121,19 +133,28 @@ class ResourcesApp(object):
         if isinstance(modname, pr.Requirement):
             modname = os.path.basename(pr.working_set.find(modname).location)
         modname = modname or ''
-        path = modname + '/' + filename.strip('/')
-        if path not in self._paths:
-            ct, enc = mimetypes.guess_type(os.path.basename(filename))
-            self._paths[path] = (modname, filename, ct, enc)
+        if whole_dir:
+            path = modname + '/' + filename.lstrip('/')
+            if path not in self._dirs:
+                self._dirs.append(path)
+        else:
+            path = modname + '/' + filename.strip('/')
+            if path not in self._paths:
+                self._paths[path] = (modname, filename)
         return self.config.res_prefix + path
 
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
         try:
             path = req.path_info[len(self.config.res_prefix):]
-            if path not in self._paths:
-                raise IOError()
-            (modname, filename, ct, enc) = self._paths[path]
+            if path not in self._paths or '../' in path: # protect against directory traversal
+                for d in self._dirs:
+                    if path.startswith(d):
+                        break
+                else:
+                    raise IOError()
+            modname, filename = path.lstrip('/').split('/', 1)
+            ct, enc = mimetypes.guess_type(os.path.basename(filename))
             if modname:
                 stream = pr.resource_stream(modname, filename)
             else:
@@ -145,8 +166,6 @@ class ResourcesApp(object):
             resp = wo.Response(request=req, app_iter=stream, content_type=ct)
             if enc:
                 resp.content_type_params['charset'] = enc
-            expires = int(req.environ.get('toscawidgets.resources_expire', 0))
-            resp.cache_expires(expires)
         return resp(environ, start_response)
 
 
