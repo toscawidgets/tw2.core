@@ -1,22 +1,25 @@
 tw2.core
+    make pkg_resources a soft dependence
+    avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
     csrf protection
-    detect attempts to modify a widget instance and raise exception
     csslink auto module name
+        cls.__module.__name__ ??
+
+    detect attempts to modify a widget instance and raise exception
     id as default param to Widget.__init__
     configurable compound id separator
-    avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
     params - find a neater way to break param descriptions across lines
     i18n - where to call it?
     use quotes in all exceptions
     logging - not much to log, but tw has some useful debug info
-    do __repr__ functions better
-    make pkg_resources a soft dependence
     force ids to begin with a letter
     Support "paste.filter_app_factory" entry point
     better way to do "extra children" - Form.submit is a bit of a hack
         don't collect widgets as params? (but do if its id=)
     move attr generation to display? would make some other bits easier
     rename fetch_data to view_request (also: post_define to define?)
+    capitals for name2label - ID, IP, URL
+    make resource injector work correctly with pylons cacheing
 
 tw2.forms
     stop label names being post-to-able
@@ -25,7 +28,7 @@ tw2.forms
     make selection_list and selection_table support grouping
     make selection table configurable how it arranges (horiz/vert)
     named buttons
-    form id - ${child.id}:_form
+    form id - ${w.compound_id}:form
     TableForm - make TableLayout parameters accessible?
     SSF - do adding an empty row, at post_define time, when possible
     datagrid
@@ -34,7 +37,7 @@ tw2.forms
 
 unit tests
     tw2.core needs lots of unit tests
-        validators - doc tests?
+        validators - finish off test_validators.txt
         nick more tests from tw1, e.g. leaks
         WidgetTestCase
 
@@ -48,16 +51,14 @@ validation
         global config for encoding would be a start
 
 widget browser
-    lightweight tab-switcher - no ajax to start with
+    more detail - need tabs (no ajax to start with)
         Summary / Demo Source / Parameters / Source / Template
     sphinx integration
-    browse other things in packages - validators, exceptions, etc.
 
 controllers
     security
     switcher
     serving with paste and restart
-    transactional middleware
 
 template
     mako helper functions
@@ -79,8 +80,11 @@ resources
     paste command to grab resources, for serving with a web server
     'afterwidget' as a location?
 
-django
-jquery, mochikit, dojo, yui
+js libraries
+    jquery
+    mochikit
+    dojo
+
 cool new and different widgets - popup links, photos
 
 dynforms
@@ -96,30 +100,25 @@ dynforms
 
     growing
         growing repeater
+            putting numbers in legends
         calling a js func to initialise a widget
             need to hook this for growing
-        repeater
-            if(x[i].tagName == 'LEGEND') x[i].innerHTML = x[i].innerHTML.replace('$$', number+1);
         make it not depend on customisedform
-    customisedform - save prompt
-    HidingComponentMixin - has JS optimisation that should be on general resources
-    Consider HidingComponent, CascadingComponent as a display-only widget
-    linkcontainer - popup links
-    hiding, linkcontainer - better support the back button
+
+    much later:
+        customisedform - save prompt
+        HidingComponentMixin - has JS optimisation that should be on general resources
+        Consider HidingComponent, CascadingComponent as a display-only widget
 
 
 frameworks
-    pylons / tg2
-        @validate decorator
+    pylons
+    tg2 - percious has done some work
     cp3
+    django
 
 
 sqlalchemy
-    db migration
-        | [4] http://code.google.com/p/sqlalchemy-migrate/
-        | [5] http://trac.ollix.org/miruku/
-    elixir sessions
-
     get a simple form working
     lists
     fkeyselect

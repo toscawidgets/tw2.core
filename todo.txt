@@ -1,15 +1,14 @@
-read on inet
-    expires header
-    webob redirect
-
 tw2.core
     children_deep
         dupe id
         validation
         grandchild hiding
-    resources -expires header
     quickstart - autodetect package from "tw2.package"
     the way ids work with displayonlywidget isn't quite right
+        make compound_id always use the last element?
+    problem with colons as id separator - doesn't work in css, it thinks they're pseudo classes
+    resources - caching
+        I can generate expires/max-age, but it doesn't make it cache
 
 auto-registering controllers
     add link to widget once registered
@@ -18,7 +17,7 @@ auto-registering controllers
     rewrite class name like elixir does
 
 validation
-    MatchField
+    MatchField - relies on state
     selection validators
         Better required messages - "Select a value"
         shouldn't have item_validator on SingleSelectField???
@@ -53,3 +52,64 @@ widget browser
 
 support python 2.4 and 2.6
     use paste web server?
+
+
+
+yui
+    core changes
+        serve whole dir tree
+        keep order of resources
+        generating links to ajax resources
+
+    data controls:
+        data source
+            json - this is hard!
+        autocomplete
+             margin-bottom:2em;
+        data table
+
+    plan
+        1) make autocomplete work reasonably
+        2) simple data table
+        3) get tw2.core changes committed
+        4) widget browser *** just need skin
+        -> this gives a reasonable alpha
+
+        move script out of templates - just use PlainWidget for most of them
+            this depends a lot on the growing work
+        rename options? it clashes with SelectionField.options
+
+    later
+        autocomplete: experiment with force_select
+        container - dialogs, tooltips
+        Menu
+        Paginator
+        ImageCropper
+        carousel - picking images
+        Resize
+        YUI CSS base
+
+    // Use a LocalDataSource
+    var oDS = new YAHOO.util.LocalDataSource(YAHOO.example.Data.arrayStates);
+    // Optional to define fields for single-dimensional array
+    oDS.responseSchema = {fields : ["state"]};
+
+        twc.JSLink(modname=__name__, filename="static/data.js"),
+
+
+
+Writing a good widget library:
+    1) Widget browser
+        This is the main documentation for the library, and it needs to give a good introduction to a new user. Evey widget should have a demo, and a clear description of the widget and parameters.
+
+    2) Example application
+        There should be a simple example application that demonstrates the widgets in action. Ideally this should just be a single python file that works standalone.
+
+    3) Parameters
+
+        Good set that lets you do what you need
+
+    4) Validation
+        All widgets need to work correctly with validation. When a form is submitted and there is a validation failure, all widgets should maintain the same appearance.
+
+    5) Growing
