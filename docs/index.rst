@@ -8,7 +8,7 @@ ToscaWidgets aims to be a practical and useful widgets framework that helps peop
 ToscaWidgets comes in two main packages:
 
  * tw2.core - the core functionality needed to use widgets in an app
- * tw2.devtools - documentation, unit tests, widget browser, library template, resource collator
+ * tw2.devtools - widget browser, library template, (and resource collator, not yet implemented)
 
 The idea is that only tw2.core needs to be installed on a server. It has minimal dependencies, while tw2.devtools has more, e.g. sphinx.
 
@@ -16,6 +16,7 @@ In addition, widget library packages follow the same naming convention, for exam
 
  * tw2.forms - Basic forms library
  * tw2.dynforms - Dynamic forms - client-side and Ajax
+ * tw2.yui - TW wrappers around Yahoo User Interface widgets
 
 
 Contents:
@@ -26,6 +27,7 @@ Contents:
    tutorial
    core
    validation
+   devtools
    history
    future
 

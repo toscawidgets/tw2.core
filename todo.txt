@@ -72,18 +72,12 @@ yui
              margin-bottom:2em;
         data table
 
-    plan
-        1) make autocomplete work reasonably
-        2) simple data table
-        3) get tw2.core changes committed
-        4) widget browser *** just need skin
-        -> this gives a reasonable alpha
+    widget browser - need skin
 
+    later
         move script out of templates - just use PlainWidget for most of them
             this depends a lot on the growing work
         rename options? it clashes with SelectionField.options
-
-    later
         autocomplete: experiment with force_select
         container - dialogs, tooltips
         Menu
