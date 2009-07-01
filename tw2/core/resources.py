@@ -166,6 +166,7 @@ class ResourcesApp(object):
             resp = wo.Response(request=req, app_iter=stream, content_type=ct)
             if enc:
                 resp.content_type_params['charset'] = enc
+        resp.cache_control = {'max_age': int(self.config.res_max_age)}
         return resp(environ, start_response)
 
 

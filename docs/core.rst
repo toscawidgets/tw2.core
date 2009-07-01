@@ -277,3 +277,8 @@ tw2.core aims to take advantage of pkg_resources where it is available, but not 
 
 ToscaWidgets is designed to be standalone WSGI middeware and not have any framework interactions. However, when using ToscaWidgets with a framework, there are some configuration settings that need to be consistent with the framework, for correct interaction. Future vesions of ToscaWidgets may include framework-specific hooks to automatically gather this configuration.
 
+**Unit Tests**
+
+To run the tests, in ``tw2.devtools/tests`` issue::
+
+    nosetests --with-doctest --doctest-extension=.txt

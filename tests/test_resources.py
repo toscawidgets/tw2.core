@@ -88,6 +88,11 @@ class TestResources(object):
         mw.resources.register('webtest', '__init__.py')
         assert(tst_mw.get('/resources/webtest/__init__.py').body.startswith('# (c) 2005 Ian'))
 
+    def test_cache_header(self):
+        mw.resources.register('tw2.tests', 'templates/simple_genshi.html')
+        cache = tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').headers['Cache-Control']
+        assert(cache == 'max_age=3600')
+
     #--
     # Links register resources
     #--

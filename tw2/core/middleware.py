@@ -23,6 +23,10 @@ class Config(object):
         The prefix under which static resources are served. This must start
         and end with a slash. (default: /resources/)
 
+    `res_max_age`
+        The maximum time a cache can hold the resource. This is used to
+        generate a Cache-control header. (default: 3600)
+
     `serve_controllers`
         Whether to serve controller methods on widgets. (default: True)
 
@@ -50,6 +54,7 @@ class Config(object):
     inject_resources = True
     serve_resources = True
     res_prefix = '/resources/'
+    res_max_age = 3600
     serve_controllers = True
     controller_prefix = '/controllers/'
     bufsize = 4*1024
