@@ -1,0 +1,14 @@
+>>> import tw2.core as twc
+>>> class Myclass(twc.Page):
+...   pass
+...
+>>> Myclass.id
+'myclass'
+>>> class Myclass(twc.Page):
+...   _no_autoid = True
+...
+>>> Myclass.id
+Traceback (most recent call last):
+    ...
+AttributeError: type object 'Myclass' has no attribute 'id'
+

@@ -1,0 +1,95 @@
+>>> import tw2.core as twc
+>>> twc.Validator().validate_python('')
+>>> twc.Validator(required=True).validate_python('')
+Traceback (most recent call last):
+    ...
+ValidationError: Enter a value
+
+>>> twc.Validator().to_python(' a ')
+u'a'
+>>> twc.Validator(strip=False).to_python(' a ')
+u' a '
+
+>>> twc.Validator().to_python(u'\u1234'.encode('utf-8'))
+u'\u1234'
+>>> twc.Validator().to_python(chr(128))
+Traceback (most recent call last):
+    ...
+ValidationError: Received in the wrong character set; should be utf-8
+
+>>> twc.LengthValidator(min=1).validate_python([])
+Traceback (most recent call last):
+    ...
+ValidationError: Value is too short
+>>> twc.LengthValidator(min=1).validate_python([1])
+>>> twc.LengthValidator(max=2).validate_python([1,2])
+>>> twc.LengthValidator(max=2).validate_python([1,2,3])
+Traceback (most recent call last):
+    ...
+ValidationError: Value is too long
+
+>>> twc.StringLengthValidator(min=1).validate_python('')
+Traceback (most recent call last):
+    ...
+ValidationError: Must be at least 1 characters
+>>> twc.StringLengthValidator(min=1).validate_python('a')
+>>> twc.StringLengthValidator(max=2).validate_python('aa')
+>>> twc.StringLengthValidator(max=2).validate_python('aaa')
+Traceback (most recent call last):
+    ...
+ValidationError: Cannot be longer than 2 characters
+
+>>> twc.ListLengthValidator(min=1).validate_python([])
+Traceback (most recent call last):
+    ...
+ValidationError: Select at least 1
+>>> twc.ListLengthValidator(min=1).validate_python([1])
+>>> twc.ListLengthValidator(max=2).validate_python([1,2])
+>>> twc.ListLengthValidator(max=2).validate_python([1,2,3])
+Traceback (most recent call last):
+    ...
+ValidationError: Select no more than 2
+
+>>> twc.IntValidator().to_python('123')
+123
+>>> twc.IntValidator().to_python(' 123 ')
+123
+>>> twc.IntValidator().to_python('x')
+Traceback (most recent call last):
+    ...
+ValidationError: Must be an integer
+>>> twc.IntValidator().to_python('') is None
+True
+>>> twc.IntValidator().to_python(0)
+0
+>>> twc.IntValidator(required=True).validate_python(None)
+Traceback (most recent call last):
+    ...
+ValidationError: Enter a value
+>>> twc.IntValidator(required=True).validate_python(0)
+
+>>> twc.IntValidator(min=5).validate_python(4)
+Traceback (most recent call last):
+    ...
+ValidationError: Must be at least 5
+>>> twc.IntValidator(min=5).validate_python(5)
+>>> twc.IntValidator(max=5).validate_python(5)
+>>> twc.IntValidator(max=5).validate_python(6)
+Traceback (most recent call last):
+    ...
+ValidationError: Cannot be more than 5
+
+>>> twc.BoolValidator().to_python('')
+False
+>>> twc.BoolValidator().to_python('on')
+True
+>>> twc.BoolValidator(required=True).validate_python(False)
+Traceback (most recent call last):
+    ...
+ValidationError: You must select this
+
+>>> twc.EmailValidator().validate_python('paj@pajhome.org.uk')
+>>> twc.EmailValidator().validate_python('paj')
+Traceback (most recent call last):
+    ...
+ValidationError: Must be a valid email address
