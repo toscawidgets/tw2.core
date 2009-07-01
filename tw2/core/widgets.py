@@ -212,7 +212,7 @@ class Widget(pm.Parametered):
             return eng.render(self.template, displays_on, vars)
 
     @classmethod
-    def validate(cls, params):
+    def validate(cls, params, state=None):
         """
         Validate form input. This should always be called on a class. It
         either returns the validated data, or raises a
