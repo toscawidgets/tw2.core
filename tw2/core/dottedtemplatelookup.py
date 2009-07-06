@@ -93,18 +93,14 @@ class DottedTemplateLookup(object):
         # make sure the template loading from filesystem is only done
         # one thread at a time to avoid bad clashes...
         self._mutex.acquire()
+        template_name = filename
         try:
             try:
-                # try returning from cache one more time in case
-                # concurrent thread already loaded
-                return self.template_cache[filename]
+                if not template_name.endswith('.mak'):
+                    split = template_name.rsplit('.', 1)
+                    filename = rm.resource_filename(split[0], split[1]+'.mak')
 
-            except KeyError:
-                # not in cache yet... we can continue normally
-                pass
-
-            try:
-                self.template_cache[filename] = Template(open(filename).read(),
+                self.template_cache[template_name] = Template(open(filename).read(),
                     filename=filename,
                     input_encoding=self.input_encoding,
                     output_encoding=self.output_encoding,
@@ -113,10 +109,10 @@ class DottedTemplateLookup(object):
                     lookup=self)
 
                 
-                return self.template_cache[filename]
+                return self.template_cache[template_name]
 
             except:
-                self.template_cache.pop(filename, None)
+                self.template_cache.pop(template_name, None)
                 raise
 
         finally:
@@ -130,9 +126,6 @@ class DottedTemplateLookup(object):
         """this is the emulated method that must return a template
         instance based on a given template name
         """
-        if not template_name.endswith('.mak'):
-            split = template_name.rsplit('.', 1)
-            template_name = rm.resource_filename(split[0], split[1]+'.mak')
 
         if not self.template_cache.has_key(template_name):
             # the template string is not yet loaded into the cache.
