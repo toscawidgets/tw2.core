@@ -10,6 +10,7 @@ import stat
 from mako.template import Template
 from pkg_resources import ResourceManager
 import core
+from mako import exceptions
 
 rm = ResourceManager()
 try:
@@ -95,26 +96,19 @@ class DottedTemplateLookup(object):
         self._mutex.acquire()
         template_name = filename
         try:
-            try:
-                if not template_name.endswith('.mak'):
-                    split = template_name.rsplit('.', 1)
-                    filename = rm.resource_filename(split[0], split[1]+'.mak')
+            if not template_name.endswith('.mak'):
+                split = template_name.rsplit('.', 1)
+                filename = rm.resource_filename(split[0], split[1]+'.mak')
 
-                self.template_cache[template_name] = Template(open(filename).read(),
-                    filename=filename,
-                    input_encoding=self.input_encoding,
-                    output_encoding=self.output_encoding,
-                    default_filters=self.default_filters,
-                    imports=self.imports,
-                    lookup=self)
+            self.template_cache[template_name] = Template(open(filename).read(),
+                filename=filename,
+                input_encoding=self.input_encoding,
+                output_encoding=self.output_encoding,
+                default_filters=self.default_filters,
+                imports=self.imports,
+                lookup=self)
 
-                
-                return self.template_cache[template_name]
-
-            except:
-                self.template_cache.pop(template_name, None)
-                raise
-
+            return self.template_cache[template_name]
         finally:
             # _always_ release the lock once done to avoid
             # "thread lock" effect
