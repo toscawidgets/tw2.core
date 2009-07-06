@@ -9,7 +9,7 @@ import stat
 
 from mako.template import Template
 from pkg_resources import ResourceManager
-#from paste.deploy.converters import asbool
+import core
 
 rm = ResourceManager()
 try:
@@ -133,7 +133,7 @@ class DottedTemplateLookup(object):
             self.__load(template_name)
 
         #TODO: make this work with wsgi
-        if True: #asbool(tg.config.get('templating.mako.reloadfromdisk', 'false')):
+        if core.request_local().get('middleware').config.auto_reload_templates:
             # AUTO RELOADING will be activated only if user has
             # explicitly asked for it in the configuration
             # return the template, but first make sure it's not outdated
