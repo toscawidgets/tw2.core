@@ -145,7 +145,7 @@ class TestResources(object):
         testapi.request(1)
         mw.resources.register('tw2.tests', 'templates/simple_genshi.html')
         fcont = open(os.path.join(os.path.dirname(tw2.tests.__file__), 'templates/simple_genshi.html')).read()
-        print tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').body
+#        print tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').body
         assert(tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').body == fcont)
 
     def test_mw_clear_rl(self):

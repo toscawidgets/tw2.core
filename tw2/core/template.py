@@ -16,28 +16,33 @@ class EngineManager(dict):
         in ``displays_on``.
         """
         engine_name, template_path = template.split(':', 1)
-        adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on)
         if engine_name == 'genshi' and (template_path.startswith('/') or template_path[1] == ':'):
             engine_name = 'genshi_abs'
-        template = (template_path if engine_name == 'cheetah'
-            else self[engine_name].load_template(template_path))
+        template = template_path 
+        if engine_name != 'cheetah':
+            template = self[engine_name].load_template(template_path)
+        adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on, template)
+        if engine_name == 'mako':
+            return template.render(**dct)
         output = adaptor_renderer(template=template, info=dct)
         if isinstance(output, str):
             output = output.decode('utf-8')
         return output
 
-    def _get_adaptor_renderer(self, src, dst):
+    def _get_adaptor_renderer(self, src, dst, template):
         """Return a function that will that processes a template appropriately,
         given the source and destination engine names.
         """
         if src == dst and src in ('kid', 'genshi'):
             return self[src].transform
+        elif src == 'mako':
+            return template.render
         elif src == 'kid' and dst == 'genshi':
             from genshi.input import ET
             return lambda **kw: ET(self[src].transform(**kw))
         elif dst == 'genshi':
-            from genshi.input import HTML
-            return lambda **kw: HTML(self[src].render(**kw))
+            from genshi.core import Markup
+            return lambda **kw: Markup(self[src].render(**kw))
         elif dst == 'kid':
             from kid import XML
             return lambda **kw: XML(self[src].render(**kw))
@@ -59,12 +64,20 @@ class EngineManager(dict):
             raise EngineError("No template engine available for '%s'" % name)
 
         if name == 'mako':
-            options = options.copy()
+#            options = options.copy()
             # emulate Kid and Genshi's dotted-path notation lookup
-            options.setdefault('mako.directories', []).extend(sys.path)
+#            options.setdefault('mako.directories', []).extend(sys.path)
             # make sure mako produces utf-8 output so we can decode it and use
             # unicode internally
-            options['mako.output_encoding'] = 'utf-8'
+#            options['mako.output_encoding'] = 'utf-8'
+
+            from dottedtemplatelookup import DottedTemplateLookup
+            if name not in self:
+                self[name] = DottedTemplateLookup(input_encoding='utf-8', 
+                                                       output_encoding='utf-8',
+                                                       imports=[],
+                                                       default_filters=[])
+            return self[name]
 
         self[orig_name] = factory(extra_vars_func, options)
 

@@ -203,6 +203,7 @@ class Widget(pm.Parametered):
             if displays_on is None:
                 displays_on = (self.parent.template.split(':')[0] if self.parent
                                                     else (mw and mw.config.default_engine or 'string'))
+#            print self, displays_on
             vars = {'w':self}
             if mw and mw.config.params_as_vars:
                 for p in self._params:
