@@ -126,7 +126,6 @@ class DottedTemplateLookup(object):
             # Do so now
             self.__load(template_name)
 
-        #TODO: make this work with wsgi
         if core.request_local().get('middleware').config.auto_reload_templates:
             # AUTO RELOADING will be activated only if user has
             # explicitly asked for it in the configuration
@@ -134,7 +133,6 @@ class DottedTemplateLookup(object):
             # and if outdated, refresh the cache.
             return self.__check(self.template_cache[template_name])
 
-        #else:
         return self.template_cache[template_name]
     
     load_template = get_template
