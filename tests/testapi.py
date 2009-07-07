@@ -11,6 +11,7 @@ def request_local_tst():
         return rl_data
 
 twc.core.request_local = request_local_tst
+_request_local = {}
 
 def setup():
     global _request_local, _request_id

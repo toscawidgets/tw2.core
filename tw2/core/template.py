@@ -1,4 +1,4 @@
-import pkg_resources as pk, sys, core
+import pkg_resources as pk, sys, core,  os
 try:
     from dottedtemplatelookup import DottedTemplateLookup
     dotted_template_lookup = DottedTemplateLookup(input_encoding='utf-8', 
@@ -12,12 +12,19 @@ class EngineError(core.WidgetError):
     "Errors inside ToscaWidgets, related to template engines."
     pass
 
+
+rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
+rm = pk.ResourceManager()
+
 class EngineManager(dict):
     """Manages template engines. An instance is automatically created on each
     :class:`tw.core.TwMiddleware` instance. Users should not access
     this class directly.
     """
-    
+    def __init__(self, *args, **kw):
+        super(EngineManager, self).__init__(self, *args, **kw)
+        self._engine_name_cache = {}
+
     def render(self, template, displays_on, dct):
         """Render a template (passed in the form "engine_name:template_path")
         in a suitable way for inclusion in a template of the engine specified
@@ -28,10 +35,10 @@ class EngineManager(dict):
         except ValueError:
             #if the engine name is not specified, find the best possible engine
             engine_name = self._get_engine_name(template)
+            template_path = template
         
         if engine_name == 'genshi' and (template_path.startswith('/') or template_path[1] == ':'):
             engine_name = 'genshi_abs'
-
 
         if engine_name != 'cheetah':
             template = self[engine_name].load_template(template_path)
@@ -45,10 +52,40 @@ class EngineManager(dict):
         if isinstance(output, str):
             output = output.decode('utf-8')
         return output
-
-    #def _get_engine_name(self, template_name):
-        
     
+    def _template_available(self, template_name, engine_name):
+        ext = rendering_extension_lookup[engine_name]
+        split = template_name.rsplit('.', 1)
+        return os.path.isfile(rm.resource_filename(split[0], '.'.join((split[1], ext))))
+
+    def _get_engine_name(self, template_name):
+        try:
+            return self._engine_name_cache[template_name]
+        except KeyError:
+            pass
+        try:
+            rl = core.request_local()
+            pref_rend_eng = rl['middleware'].config.preferred_rendering_engines
+        except (KeyError, AttributeError):
+            pref_rend_eng = ['mako', 'genshi', 'cheetah', 'kid']
+        #find the first file in the preffered engines that is available for templating
+        for engine_name in pref_rend_eng:
+            if self._template_available(template_name, engine_name):
+                self._engine_name_cache[template_name] = engine_name
+                return engine_name
+        if not rl['middleware'].config.strict_engine_selection:
+            pref_rend_eng = ['mako', 'genshi', 'cheetah', 'kid']
+            for engine_name in pref_rend_eng:
+                print engine_name
+                if self._template_available(template_name, engine_name):
+                    self._engine_name_cache[template_name] = engine_name
+                    return engine_name
+        raise EngineError("""Could not find template for: %s. 
+You may need to specify a template engine name in the widget like mako:%s, or change the middleware
+setup to include the template's templating language in your preferred_template_engines configuration.
+As a last resort, you may set strict_template_selection to false which will grab whatever template
+it finds if there one of your preferred template engines is not found."""%(template_name, template_name))
+        
     def _get_adaptor_renderer(self, src, dst, template):
         """Return a function that will that processes a template appropriately,
         given the source and destination engine names.

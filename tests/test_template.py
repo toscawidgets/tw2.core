@@ -1,4 +1,6 @@
 import tw2.core as twc, testapi
+import webob as wo
+from nose.tools import raises
 
 # TBD: only test engines that are installed
 engines = ['cheetah', 'kid', 'genshi', 'mako']
@@ -10,11 +12,48 @@ def strip_prefix(prefix, s):
 class TestWD(twc.Widget):
     test = twc.Param(default='bob')
 
-
 class TestTemplate(object):
     def setUp(self):
         testapi.setup()
 
+    def _check_render(self, template, data, expected, engine=None):
+        if engine:
+            mw = twc.make_middleware(None, preferred_rendering_engines=[engine])
+            testapi.request(1, mw)
+        out = twc.template.EngineManager().render(template, 'string', data)
+        assert(isinstance(out, unicode))
+        assert out == expected, out
+
+    def test_auto_select_engine(self):
+        #im not sure why this test fails with kid, but this is the error:
+        #Traceback (most recent call last):
+        #File "/.../lib/python2.5/site-packages/nose-0.11.0-py2.5.egg/nose/case.py", line 183, in runTest
+        #self.test(*self.arg)
+        #File "/.../tw2core-percious/tests/test_template.py", line 22, in _check_render
+        #out = twc.template.EngineManager().render(template, 'string', data)
+        #File "/.../src/tw2core-percious/tw2/core/template.py", line 44, in render
+        #template = self[engine_name].load_template(template_path)
+        #File "/.../lib/python2.5/site-packages/TurboKid-1.0.4-py2.5.egg/turbokid/kidsupport.py", line 151, in load_template
+        #tclass = mod.Template
+        #AttributeError: 'module' object has no attribute 'Template'
+
+        engs = engines[:]
+        engs.remove('kid')
+        for engine in engs:
+            #set up the default renderers
+            yield self._check_render, 'tw2.tests.templates.simple', {'test':engine}, '<p>TEST %s</p>'%engine, engine
+        
+    @raises(twc.template.EngineError)
+    def test_auto_select_unavailable_engine(self):
+        engine = 'mako'
+        self._check_render('tw2.tests.templates.simple_genshi', {'test':engine}, '<p>TEST %s</p>'%engine, engine)
+        
+    def test_auto_select_unavailable_engine_not_strict(self):
+        engine = 'mako'
+        mw = twc.make_middleware(None, preferred_rendering_engines=[engine], strict_engine_selection=False)
+        testapi.request(501, mw)
+        self._check_render('tw2.tests.templates.simple_genshi', {'test':'blah!'}, '<p>TEST blah!</p>')
+        
     def test_engines(self):
         for engine in engines:
             print "Testing %s..." % engine

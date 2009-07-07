@@ -58,6 +58,11 @@ class Config(object):
         
     `preferred_rendering_engines`
        List of rendering engines in order of preference.  (default: ['mako','genshi','kid','cheetah'])
+       
+    `strict_engine_selection`
+       If set to true, TW2 will only select rendering engines from within your preferred_rendering_engines,
+       otherwise, it will try the default list if it does not find a template within your preferred list.
+       (default: True)
     '''
 
     translator = lambda s: s
@@ -74,15 +79,15 @@ class Config(object):
     validator_msgs = {}
     auto_reload_templates = True
     preferred_rendering_engines = ['mako', 'genshi', 'cheetah', 'kid']
+    strict_engine_selection = True
 
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
-        
+
         self.available_rendering_engines = {}
         for e in iter_entry_points("python.templating.engines"):
-            if e.name in self.preferred_rendering_engines:
-                print e
+            if not self.strict_engine_selection or e.name in self.preferred_rendering_engines:
                 try: 
                     self.available_rendering_engines[e.name] = e.load()
                 except DistributionNotFound:
