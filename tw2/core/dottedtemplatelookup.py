@@ -126,13 +126,15 @@ class DottedTemplateLookup(object):
             # Do so now
             self.__load(template_name)
 
-        rl = core.request_local()
-        if rl.get('middleware', False) and getattr(rl['middleware'].config, 'auto_reload_templates', False):
+        try:
             # AUTO RELOADING will be activated only if user has
             # explicitly asked for it in the configuration
             # return the template, but first make sure it's not outdated
             # and if outdated, refresh the cache.
-            return self.__check(self.template_cache[template_name])
+            if getattr(core.request_local()['middleware'].config, 'auto_reload_templates', False):
+                return self.__check(self.template_cache[template_name])
+        except (AttributeError, KeyError):
+            pass
 
         return self.template_cache[template_name]
     

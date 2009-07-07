@@ -1,4 +1,5 @@
 import webob as wo, core, resources, template
+from pkg_resources import iter_entry_points, DistributionNotFound
 
 class Config(object):
     '''
@@ -54,6 +55,9 @@ class Config(object):
         server.  In production, it is better to have this set to false, because
         it means that TW does not have to look for file changes and can assume
         a cached template is fine.  (default:True)
+        
+    `preferred_rendering_engines`
+       List of rendering engines in order of preference.  (default: ['mako','genshi','kid','cheetah'])
     '''
 
     translator = lambda s: s
@@ -69,12 +73,31 @@ class Config(object):
     debug = False
     validator_msgs = {}
     auto_reload_templates = True
+    preferred_rendering_engines = ['mako', 'genshi', 'cheetah', 'kid']
 
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
+        
+        self.available_rendering_engines = {}
+        for e in iter_entry_points("python.templating.engines"):
+            if e.name in self.preferred_rendering_engines:
+                print e
+                try: 
+                    self.available_rendering_engines[e.name] = e.load()
+                except DistributionNotFound:
+                    pass
 
-
+        #test to see if the rendering engines are available for the preferred engines selected
+        for engine_name in self.preferred_rendering_engines:
+            if engine_name == 'mako':
+                try:
+                    import mako
+                except ImportError:
+                    self.preferred_rendering_engines.remove(engine_name)
+            if engine_name not in self.available_rendering_engines:
+                self.preferred_rendering_engines.remove(engine_name)
+        
 class TwMiddleware(object):
     """ToscaWidgets middleware
 

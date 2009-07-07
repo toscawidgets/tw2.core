@@ -27,7 +27,6 @@ class EngineManager(dict):
             engine_name, template_path = template.split(':', 1)
         except ValueError:
             #if the engine name is not specified, find the best possible engine
-            template_path = template
             engine_name = self._get_engine_name(template)
         
         if engine_name == 'genshi' and (template_path.startswith('/') or template_path[1] == ':'):
@@ -47,6 +46,9 @@ class EngineManager(dict):
             output = output.decode('utf-8')
         return output
 
+    #def _get_engine_name(self, template_name):
+        
+    
     def _get_adaptor_renderer(self, src, dst, template):
         """Return a function that will that processes a template appropriately,
         given the source and destination engine names.
@@ -76,22 +78,24 @@ class EngineManager(dict):
     def load_engine(self, name, options={}, extra_vars_func=None):
         if name in self:
             raise EngineError("Template engine '%s' is already loaded" % name)
+        if name == 'mako':
+            self[name] = dotted_template_lookup
+            return self[name]
+
         orig_name = name
         if name == 'genshi_abs':
             name = 'genshi'
             options.update({'genshi.search_path': '/'})
-        for entrypoint in pk.iter_entry_points("python.templating.engines"):
-            print entrypoint
-            if entrypoint.name == name:
-                factory = entrypoint.load()
-                break
-        else:
-            raise EngineError("No template engine available for '%s'" % name)
-
-        if name == 'mako':
-            if name not in self:
-                self[name] = dotted_template_lookup
-            return self[name]
+        
+        try:
+            factory = core.request_local()['middleware'].config.available_rendering_engines[name]
+        except (KeyError, AttributeError):
+            for entrypoint in pk.iter_entry_points("python.templating.engines"):
+                if entrypoint.name == name:
+                    factory = entrypoint.load()
+                    break
+            else:
+                raise EngineError("No template engine available for '%s'" % name)
 
         self[orig_name] = factory(extra_vars_func, options)
 
