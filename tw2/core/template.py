@@ -24,9 +24,7 @@ class EngineManager(dict):
         adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on, template)
         
         if engine_name == 'mako':
-            
-            
-            output = template.render(**dct)
+            output = adaptor_renderer(**dct)
 
         else: output = adaptor_renderer(template=template, info=dct)
         if isinstance(output, str):
@@ -40,15 +38,14 @@ class EngineManager(dict):
         if src == dst and src in ('kid', 'genshi'):
             return self[src].transform
         elif src == 'mako' and dst == 'kid':
-            print 'here2'
             from kid import XML
             return lambda **kw: XML(template.render(**kw))
-        elif dst=='kid' and src=='mako':
-            from cgi import escape
-            return lambda **kw: escape(self[src].transform(**kw))
-
+        elif src=='mako' and dst=='genshi':
+            from genshi.core import Markup
+            return lambda **kw: Markup(template.render(**kw))
         elif src == 'mako':
             return template.render
+
 #        elif src == 'kid' and dst == 'mako':
 #            from kid import XML
 #            return lambda **kw: XML(template.render(**kw))

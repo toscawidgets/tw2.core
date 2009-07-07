@@ -63,8 +63,6 @@ class TestTemplate(object):
                 print 'Testing %s on %s' % (inner, outer)
                 test = eng.render('%s:tw2.tests.templates.simple_%s' % (inner, inner), outer, {'test':'test1'})
                 test = strip_prefix(kid_prefix, test)
-                print '*'*80
-                print test
                 out = eng.render('%s:tw2.tests.templates.simple_%s' % (outer, outer), 'string', {'test':test})
                 out = strip_prefix(kid_prefix, out)
                 print out

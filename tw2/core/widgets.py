@@ -203,13 +203,13 @@ class Widget(pm.Parametered):
             if displays_on is None:
                 displays_on = (self.parent.template.split(':')[0] if self.parent
                                                     else (mw and mw.config.default_engine or 'string'))
-            vars = {'w':self}
+            v = {'w':self}
             if mw and mw.config.params_as_vars:
                 for p in self._params:
                     if hasattr(self, p):
-                        vars[p] = getattr(self, p)
+                        v[p] = getattr(self, p)
             eng = mw and mw.engines or template.global_engines
-            return eng.render(self.template, displays_on, vars)
+            return eng.render(self.template, displays_on, v)
 
     @classmethod
     def validate(cls, params, state=None):

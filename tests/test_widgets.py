@@ -60,8 +60,10 @@ class TestWidgets(object):
         try:
             MyTest.display()
             assert(False)
-        except NameError:
+        except TypeError:
+            # this will raise a type error because "Undefined" is found (not a string)
             pass
+            
 
     def test_meta_forceid(self):
         class MyTest(twc.CompoundWidget):
