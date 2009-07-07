@@ -47,6 +47,13 @@ class Config(object):
     `validator_msgs`
         A dictionary that maps validation message names to messages. This lets
         you override validation messages on a global basis.
+
+    `auto_reload_templates`
+        Set this to true if your templates are being changed to the developer.
+        This will allow the templates to change without having to restart the
+        server.  In production, it is better to have this set to false, because
+        it means that TW does not have to look for file changes and can assume
+        a cached template is fine.  (default:True)
     '''
 
     translator = lambda s: s
@@ -61,6 +68,7 @@ class Config(object):
     params_as_vars = False
     debug = False
     validator_msgs = {}
+    auto_reload_templates = True
 
     def __init__(self, **kw):
         for k, v in kw.items():

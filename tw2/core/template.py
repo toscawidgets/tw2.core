@@ -1,4 +1,12 @@
 import pkg_resources as pk, sys, core
+try:
+    from dottedtemplatelookup import DottedTemplateLookup
+    dotted_template_lookup = DottedTemplateLookup(input_encoding='utf-8', 
+                                                       output_encoding='utf-8',
+                                                       imports=[],
+                                                       default_filters=[])
+except ImportError:
+    pass
 
 class EngineError(core.WidgetError):
     "Errors inside ToscaWidgets, related to template engines."
@@ -9,24 +17,32 @@ class EngineManager(dict):
     :class:`tw.core.TwMiddleware` instance. Users should not access
     this class directly.
     """
-
+    
     def render(self, template, displays_on, dct):
         """Render a template (passed in the form "engine_name:template_path")
         in a suitable way for inclusion in a template of the engine specified
         in ``displays_on``.
         """
-        engine_name, template_path = template.split(':', 1)
+        try:
+            engine_name, template_path = template.split(':', 1)
+        except ValueError:
+            #if the engine name is not specified, find the best possible engine
+            template_path = template
+            engine_name = self._get_engine_name(template)
+        
         if engine_name == 'genshi' and (template_path.startswith('/') or template_path[1] == ':'):
             engine_name = 'genshi_abs'
-        template = template_path 
+
+
         if engine_name != 'cheetah':
             template = self[engine_name].load_template(template_path)
+
         adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on, template)
-        
+
         if engine_name == 'mako':
             output = adaptor_renderer(**dct)
-
-        else: output = adaptor_renderer(template=template, info=dct)
+        else: 
+            output = adaptor_renderer(template=template_path, info=dct)
         if isinstance(output, str):
             output = output.decode('utf-8')
         return output
@@ -45,11 +61,6 @@ class EngineManager(dict):
             return lambda **kw: Markup(template.render(**kw))
         elif src == 'mako':
             return template.render
-
-#        elif src == 'kid' and dst == 'mako':
-#            from kid import XML
-#            return lambda **kw: XML(template.render(**kw))
-        
         elif src == 'kid' and dst == 'genshi':
             from genshi.input import ET
             return lambda **kw: ET(self[src].transform(**kw))
@@ -70,6 +81,7 @@ class EngineManager(dict):
             name = 'genshi'
             options.update({'genshi.search_path': '/'})
         for entrypoint in pk.iter_entry_points("python.templating.engines"):
+            print entrypoint
             if entrypoint.name == name:
                 factory = entrypoint.load()
                 break
@@ -77,19 +89,8 @@ class EngineManager(dict):
             raise EngineError("No template engine available for '%s'" % name)
 
         if name == 'mako':
-#            options = options.copy()
-            # emulate Kid and Genshi's dotted-path notation lookup
-#            options.setdefault('mako.directories', []).extend(sys.path)
-            # make sure mako produces utf-8 output so we can decode it and use
-            # unicode internally
-#            options['mako.output_encoding'] = 'utf-8'
-
-            from dottedtemplatelookup import DottedTemplateLookup
             if name not in self:
-                self[name] = DottedTemplateLookup(input_encoding='utf-8', 
-                                                       output_encoding='utf-8',
-                                                       imports=[],
-                                                       default_filters=[])
+                self[name] = dotted_template_lookup
             return self[name]
 
         self[orig_name] = factory(extra_vars_func, options)
