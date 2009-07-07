@@ -170,7 +170,7 @@ class Widget(pm.Parametered):
             for a in self._attr:
                 if a in self.attrs:
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
-                self.attrs[a] = getattr(self, a)
+                self.attrs[self._params[a].view_name] = getattr(self, a)
 
     @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
@@ -203,7 +203,6 @@ class Widget(pm.Parametered):
             if displays_on is None:
                 displays_on = (self.parent.template.split(':')[0] if self.parent
                                                     else (mw and mw.config.default_engine or 'string'))
-#            print self, displays_on
             vars = {'w':self}
             if mw and mw.config.params_as_vars:
                 for p in self._params:

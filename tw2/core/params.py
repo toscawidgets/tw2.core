@@ -65,13 +65,15 @@ class Param(object):
     internal = False
     name = None
     defined_on = None
+    view_name = None
 
-    def __init__(self, description=Default, default=Default, request_local=Default, attribute=Default):
+    def __init__(self, description=Default, default=Default, request_local=Default, attribute=Default, view_name=Default):
         self._seq = _param_seq.next()
         self.description = description if description is not Default else None
         self.default = default if default is not Default else Required
         self.request_local = request_local if request_local is not Default else True
         self.attribute = attribute if attribute is not Default else False
+        self.view_name = view_name if view_name is not Default else None
 
         self.specified = []
         for arg in ['description', 'default', 'request_local', 'attribute']:
@@ -133,6 +135,8 @@ class ParamMeta(type):
                         setattr(prm, a, getattr(newprm, a))
                 else:
                     prm.name = pname
+                    if prm.view_name is None:
+                        prm.view_name = pname
                     prm.defined_on = name
 
                 params[pname] = prm
