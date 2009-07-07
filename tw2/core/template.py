@@ -80,11 +80,12 @@ class EngineManager(dict):
                 if self._template_available(template_name, engine_name):
                     self._engine_name_cache[template_name] = engine_name
                     return engine_name
-        raise EngineError("""Could not find template for: %s. 
-You may need to specify a template engine name in the widget like mako:%s, or change the middleware
-setup to include the template's templating language in your preferred_template_engines configuration.
-As a last resort, you may set strict_template_selection to false which will grab whatever template
-it finds if there one of your preferred template engines is not found."""%(template_name, template_name))
+        raise EngineError("Could not find template for: %s.  You may need to specify\
+a template engine name in the widget like mako:%s, or change the middleware setup\
+to include the template's templating language in your preferred_template_engines\
+configuration. As a last resort, you may set strict_template_selection to false\
+which will grab whatever template it finds if there one of your preferred template\
+engines is not found."""%(template_name, template_name))
         
     def _get_adaptor_renderer(self, src, dst, template):
         """Return a function that will that processes a template appropriately,

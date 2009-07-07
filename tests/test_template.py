@@ -47,6 +47,17 @@ class TestTemplate(object):
     def test_auto_select_unavailable_engine(self):
         engine = 'mako'
         self._check_render('tw2.tests.templates.simple_genshi', {'test':engine}, '<p>TEST %s</p>'%engine, engine)
+
+    def test_auto_select_cache_works(self):
+        engine='genshi'
+        args = 'tw2.tests.templates.simple_genshi', 'string', {'test':engine}
+        em = twc.template.EngineManager()
+        out = em.render(*args)
+        assert(isinstance(out, unicode))
+        assert out == '<p>TEST genshi</p>', out
+        out = em.render(*args)
+        assert(isinstance(out, unicode))
+        assert out == '<p>TEST genshi</p>', out
         
     def test_auto_select_unavailable_engine_not_strict(self):
         engine = 'mako'
