@@ -48,7 +48,7 @@ class TestTemplate(object):
 
     def test_extra_vars(self):
         eng = twc.template.EngineManager()
-        for engine in engines:
+        for engine in engines[:3]: #mako is exempt
             print "Testing %s..." % engine
             eng.load_engine(engine, extra_vars_func=lambda: {'test':'wobble'})
             out = eng.render('%s:tw2.tests.templates.simple_%s' % (engine, engine), 'string', {})
@@ -63,6 +63,8 @@ class TestTemplate(object):
                 print 'Testing %s on %s' % (inner, outer)
                 test = eng.render('%s:tw2.tests.templates.simple_%s' % (inner, inner), outer, {'test':'test1'})
                 test = strip_prefix(kid_prefix, test)
+                print '*'*80
+                print test
                 out = eng.render('%s:tw2.tests.templates.simple_%s' % (outer, outer), 'string', {'test':test})
                 out = strip_prefix(kid_prefix, out)
                 print out

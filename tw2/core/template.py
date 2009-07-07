@@ -22,9 +22,13 @@ class EngineManager(dict):
         if engine_name != 'cheetah':
             template = self[engine_name].load_template(template_path)
         adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on, template)
+        
         if engine_name == 'mako':
-            return template.render(**dct)
-        output = adaptor_renderer(template=template, info=dct)
+            
+            
+            output = template.render(**dct)
+
+        else: output = adaptor_renderer(template=template, info=dct)
         if isinstance(output, str):
             output = output.decode('utf-8')
         return output
@@ -35,8 +39,20 @@ class EngineManager(dict):
         """
         if src == dst and src in ('kid', 'genshi'):
             return self[src].transform
+        elif src == 'mako' and dst == 'kid':
+            print 'here2'
+            from kid import XML
+            return lambda **kw: XML(template.render(**kw))
+        elif dst=='kid' and src=='mako':
+            from cgi import escape
+            return lambda **kw: escape(self[src].transform(**kw))
+
         elif src == 'mako':
             return template.render
+#        elif src == 'kid' and dst == 'mako':
+#            from kid import XML
+#            return lambda **kw: XML(template.render(**kw))
+        
         elif src == 'kid' and dst == 'genshi':
             from genshi.input import ET
             return lambda **kw: ET(self[src].transform(**kw))
