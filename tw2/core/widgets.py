@@ -1,6 +1,7 @@
 import copy, weakref, re, itertools, webob
 import template, core, util, validation as vd, params as pm
 
+
 try:
     import formencode
 except ImportError:
@@ -542,3 +543,4 @@ class Page(DisplayOnlyWidget):
 
     def fetch_data(self, req):
         pass
+

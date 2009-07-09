@@ -1,4 +1,4 @@
-import tw2.core as twc, testapi
+import tw2.core as twc, testapi, tw2.core.testbase as tb, tw2.core.widgets as wd
 
 class Test6(twc.Widget):
     test = twc.Param(attribute=True)
@@ -71,3 +71,13 @@ class TestWidgets(object):
             b = twc.Widget()
         assert(MyTest.children[0].id == 'fred')
         assert(MyTest.children[1].id == 'b')
+
+class TestFormPage(tb.WidgetTest):
+    widget = wd.Page
+    attrs = {#'child':
+             'title':'some title'
+             }
+    expected = """<html>
+<head><title>some title</title></head>
+<body><h1>some title</h1></body>
+</html>"""
