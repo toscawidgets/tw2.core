@@ -170,6 +170,7 @@ class WidgetTest(object):
     params = {}
     expected = ""
     declarative = False
+    validate_params = None
     
     def request(self, requestid, mw=None):
         if mw is None:
@@ -215,3 +216,15 @@ class WidgetTest(object):
     def test_display(self):
         for engine in self._get_all_possible_engines():
             yield self._check_rendering_vs_expected, engine, self.attrs, self.params, self.expected
+            
+    def _check_validation(self, attrs, params, expected):
+        r = self.widget(**attrs).validate(params)
+        assert r == expected, r
+        
+    def test_validate(self):
+        if self.validate_params is not None:
+            for params in self.validate_params:
+                if params[0] is None:
+                    params[0] = self.attrs
+                yield self._check_validation, params[0], params[1], params[2]
+    
