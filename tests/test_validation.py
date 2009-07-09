@@ -1,11 +1,9 @@
 import tw2.core as twc, testapi
 import tw2.core.testbase as tb
 from tw2.core.validation import *
-
-try:
-    import formencode
-except ImportError:
-    formencoe = None
+import re
+from datetime import datetime
+import formencode
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -208,10 +206,43 @@ class TestValidation(object):
         for i,w in enumerate(widgets):
             assert(w.value == 'test%d' % i)
 
+class TestDatetimeValidator(tb.ValidatorTest):
+    validator = DateTimeValidator
+    to_python_attrs =    [{}, {}]
+    to_python_params =   ['01/01/2009 01:00', 'asdf']
+    to_python_expected = [datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M'), ValidationError]
+    
+    from_python_attrs = [{}, {}]
+    from_python_params = [datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M')]
+    from_python_expected = ['01/01/2009 01:00']
+
+class TestRegexValidator(tb.ValidatorTest):
+    validator = RegexValidator
+    attrs =    [{'regex':re.compile("asdf")}, {'regex':re.compile("qwer")}]
+    params =   ['asdf', 'asdf']
+    expected = [None, ValidationError]
+
+class TestEmailValidator(tb.ValidatorTest):
+    validator = EmailValidator
+    attrs =    [{}, {}]
+    params =   ['someone@somewhere.com', 'asdf']
+    expected = [None, ValidationError]
+
+class TestUrlValidator(tb.ValidatorTest):
+    validator = UrlValidator
+    attrs =    [{}, {}]
+    params =   ['http://www.google.com', 'asdf']
+    expected = [None, ValidationError]
+
+class TestIPAddressValidator(tb.ValidatorTest):
+    validator = IpAddressValidator
+    attrs =    [{}, {}]
+    params =   ['123.123.123.123', 'asdf']
+    expected = [None, ValidationError]
 class TestMatchValidator(tb.ValidatorTest):
-    
     validator = MatchValidator
-    
     attrs =    [{'field1':'field1', 'field2':'field2'}, {'field1':'field1', 'field2':'field2'}]
     params =   [{'field1':'a', 'field2':'a'},           {'field1':'a', 'field2':'b'}]
     expected = [None,                                   ValidationError]
+    
+    

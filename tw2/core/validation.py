@@ -356,14 +356,13 @@ class DateTimeValidator(DateValidator):
     msgs = {
         'baddate': ('baddatetime', 'Must follow date/time format $format_str'),
     }
-    format = '%d/%m/%Y %H:%m'
+    format = '%d/%m/%Y %H:%M'
 
     def to_python(self, value):
-        value = super(DateTimeValidator, self).to_python(value)
         try:
-            return datetime.strptime(value, self.format)
+            return datetime.datetime.strptime(value, self.format)
         except ValueError:
-            raise ValidationError('notdate', self)
+            raise ValidationError('baddate', self)
 
     def from_python(self, value):
         return value.strftime(self.format)

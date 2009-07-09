@@ -37,6 +37,8 @@ setup(
         'WebOb',
         'simplejson >= 2.0',
         ],
+    tests_require = ['BeautifulSoup', 'formencode'],
+    test_suite = 'nose.collector',
     extras_require = {
         'cheetah': _extra_cheetah,
         'kid': _extra_kid,
@@ -45,7 +47,7 @@ setup(
         },
     url = "http://toscawidgets.org/",
     download_url = "http://toscawidgets.org/download/",
-    author='Paul Johnston, Alberto Valverde & contributors',
+    author='Paul Johnston, Christopher Perkins, Alberto Valverde & contributors',
     author_email='paj@pajhome.org.uk',
     license='MIT',
     packages = ['tw2', 'tw2.core'],

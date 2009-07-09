@@ -8,6 +8,7 @@ from tw2.core.middleware import make_middleware
 from tw2.core.template import global_engines, reset_engine_name_cache
 from BeautifulSoup import BeautifulSoup as bs
 from itertools import izip
+from nose.tools import eq_
 
 #try:
 import xml.etree.ElementTree as etree
@@ -240,18 +241,24 @@ class WidgetTest(object):
 
 class ValidatorTest(object):
     validator = None
-    attrs = {}
-    params = {}
-    expected = []
+    attrs = None
+    params = None
+    expected = None
+    from_python_params = None
+    from_python_attrs = None
+    from_python_expected = None
+    to_python_params = None
+    to_python_attrs = None
+    to_python_expected = None
 
     def __init__(self, *args, **kw):
         super(ValidatorTest, self).__init__(*args, **kw)
-        if not isinstance(self.attrs, list):
-            self.attrs = [self.attrs]
-        if not isinstance(self.params, list):
-            self.params = [self.params]
-        if not isinstance(self.expected, list):
-            self.expected = [self.expected]
+        for attr in ['attrs', 'params', 'expected', 
+                     'from_python_attrs', 'from_python_params', 'from_python_expected', 
+                     'to_python_attrs', 'to_python_params', 'to_python_expected']:
+            value = getattr(self, attr)
+            if value is not None and not isinstance(value, list):
+                setattr(self, attr, [value,])
 
     def request(self, requestid, mw=None):
         if mw is None:
@@ -270,18 +277,28 @@ class ValidatorTest(object):
         self.mw = make_middleware(None)
         return self.request(1)
 
-    def _check_validation(self, attrs, params, expected):
+    def _check_validation(self, attrs, params, expected, method='validate_python'):
         if isinstance(expected, type) and issubclass(expected, (twc.ValidationError, fe.Invalid)):
             try:
-                r = self.validator(**attrs).validate_python(params)
+                r = getattr(self.validator(**attrs), method)(params)
             except expected:
                 #XXX:figure out a way to test that the validation message matches
                 pass
             return
-        r = self.validator(**attrs).validate_python(params)
-        assert r == expected, r
-        
-    def test_validate(self): 
-        for attrs, params, expected in izip(self.attrs, self.params, self.expected):
-            yield self._check_validation, attrs, params, expected
+        r = getattr(self.validator(**attrs), method)(params)
+        eq_(r, expected)
     
+    def test_validate(self): 
+        if self.expected:
+            for attrs, params, expected in izip(self.attrs, self.params, self.expected):
+                yield self._check_validation, attrs, params, expected
+    
+    def test_from_python(self): 
+        if self.from_python_expected:
+            for attrs, params, expected in izip(self.from_python_attrs, self.from_python_params, self.from_python_expected):
+                yield self._check_validation, attrs, params, expected, 'from_python'
+
+    def test_to_python(self): 
+        if self.to_python_expected:
+            for attrs, params, expected in izip(self.to_python_attrs, self.to_python_params, self.to_python_expected):
+                yield self._check_validation, attrs, params, expected, 'to_python'
