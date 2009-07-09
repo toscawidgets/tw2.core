@@ -522,7 +522,7 @@ class Page(DisplayOnlyWidget):
     the page.
     """
     title = pm.Param('Title for the page')
-    template = "genshi:tw2.core.templates.page"
+    template = "tw2.core.templates.page"
     _no_autoid = True
 
     @classmethod

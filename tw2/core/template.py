@@ -17,7 +17,6 @@ rm = pk.ResourceManager()
 def template_available(template_name, engine_name):
     ext = rendering_extension_lookup[engine_name]
     split = template_name.rsplit('.', 1)
-    print rm.resource_filename(split[0], '.'.join((split[1], ext)))
     return os.path.isfile(rm.resource_filename(split[0], '.'.join((split[1], ext))))
  
 engine_name_cache = {}
@@ -46,7 +45,6 @@ def get_engine_name(template_name, mw=None):
         pref_rend_eng = ['mako', 'genshi', 'cheetah', 'kid']
     #find the first file in the preffered engines that is available for templating
     for engine_name in pref_rend_eng:
-        print engine_name
         if template_available(template_name, engine_name):
             engine_name_cache[template_name] = engine_name
             return engine_name
