@@ -195,6 +195,8 @@ class WidgetTest(object):
         return self.request(1)
     
     def _get_all_possible_engines(self):
+        if self.widget is None:
+            return
         template = self.widget.template
         try:
             engine, template_name = template.split(':', 1)
@@ -210,7 +212,6 @@ class WidgetTest(object):
         reset_engine_name_cache()
         mw = make_middleware(None, preferred_rendering_engines=[engine])
         self.request(1, mw)
-            
         r = self.widget(**attrs).display(**params)
         # reset the cache as not to affect other tests
         assert_eq_xml(expected, r)

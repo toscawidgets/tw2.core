@@ -16,6 +16,14 @@ repeating_widget = twc.RepeatingWidget(id='a', child=
     twc.Widget(validator=twc.Validator(required=True))
 )
 
+class TestValidationError(tb.WidgetTest):
+    def test_validator_msg(self):
+        twc.core.request_local = tb.request_local_tst
+        self.mw.config.validator_msgs['f1'] = 's1'
+        self.request(1, self.mw)
+        e = ValidationError('f1')
+        eq_(e.message,'s1')
+
 
 def _test_stupid_fe_import_requirement():
     "i tried, but seriously, sometimes 100% coverage aint worth it"
