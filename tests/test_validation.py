@@ -4,7 +4,8 @@ from tw2.core.validation import *
 import re
 import datetime
 import formencode
-from nose.tools import eq_
+from nose.tools import eq_, raises
+from webob import MultiDict
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -14,6 +15,36 @@ compound_widget = twc.CompoundWidget(id='a', children=[
 repeating_widget = twc.RepeatingWidget(id='a', child=
     twc.Widget(validator=twc.Validator(required=True))
 )
+
+
+def _test_stupid_fe_import_requirement():
+    "i tried, but seriously, sometimes 100% coverage aint worth it"
+    import sys
+    removed_items = []
+    pre = sys.path[:]
+    pre_mod = copy.copy(sys.modules)
+    del sys.modules['formencode']
+    del sys.modules['tw2']
+    for item in pre:
+        if 'formencode' in item.lower():
+            sys.path.remove(item)
+            removed_items = item
+    import tw2.core.validation
+    sys.path = pre
+    sys.modules = pre_mod
+
+def test_safe_validate():
+    v = Validator(required="true")
+    r = safe_validate(v, "asdf")
+    eq_(r, "asdf")
+
+def test_safe_validate_invalid():
+    v = Validator(required=True, encoding="ascii")
+    r = safe_validate(v, u'\ua000')
+
+def test_unflatten_params_multi_dict():
+    params = unflatten_params(MultiDict((('asdf:f1', 's1'), ('asdf:f2', 's2'))))
+    eq_(params, {'asdf': {'f1': 's1', 'f2': 's2'}})
 
 class TestValidation(object):
     def setUp(self):
@@ -207,7 +238,33 @@ class TestValidation(object):
         for i,w in enumerate(widgets):
             assert(w.value == 'test%d' % i)
 
+class TestValidator(tb.ValidatorTest):
+    validator = Validator
+    attrs =    [{}, {'required':True}]
+    params =   ['', '']
+    expected = [None, ValidationError]
+    
+    from_python_attrs =    [{}, {'required':True}]
+    from_python_params =   ['', 'asdf']
+    from_python_expected = ['', 'asdf']
 
+    def test_clone(self):
+        v = Validator()
+        assert v.required == False
+        v2 = v.clone(required=True)
+        assert v2.required == True
+    
+    def test_repr_(self):
+        v = Validator()
+        r = repr(v)
+        eq_(r, "Validator(required=False, strip=True, encoding='utf-8')")
+
+class TestLengthValidator(tb.ValidatorTest):
+    validator = LengthValidator
+    attrs =    [{}, {}, {'max':3}, {'max':3}, {'max':3}, {'min':3}, {'min':3}, {'min':3}]
+    params =   ['', 'asdf', 'as', 'asd', 'asdf', 'as', 'asd', 'asdf']
+    expected = [None, None, None, None, ValidationError, ValidationError, None, None]
+    
 class TestIntValidator(tb.ValidatorTest):
     validator = IntValidator
     to_python_attrs =    [{}, {}, {}, {}]

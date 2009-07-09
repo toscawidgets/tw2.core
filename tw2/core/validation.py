@@ -145,7 +145,7 @@ class Validator(object):
             try:
                 if self.encoding:
                     value = value.decode(self.encoding)
-            except UnicodeDecodeError, e:
+            except UnicodeEncodeError, e:
                 raise ValidationError('decode', self)
             if self.strip:
                 value = value.strip()
