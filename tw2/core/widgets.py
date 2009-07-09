@@ -201,8 +201,10 @@ class Widget(pm.Parametered):
                 core.request_local().setdefault('resources', set()).update(self.resources)
             mw = core.request_local().get('middleware')
             if displays_on is None:
-                displays_on = (self.parent.template.split(':')[0] if self.parent
-                                                    else (mw and mw.config.default_engine or 'string'))
+                if self.parent is None:
+                    displays_on = mw and mw.config.default_engine or 'string'
+                else:
+                    displays_on = template.get_engine_name(self.parent.template, mw)
             v = {'w':self}
             if mw and mw.config.params_as_vars:
                 for p in self._params:

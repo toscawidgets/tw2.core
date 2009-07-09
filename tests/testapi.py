@@ -1,4 +1,5 @@
 import tw2.core as twc
+from tw2.core.template import reset_engine_name_cache
 
 def request_local_tst():
 #    if _request_id is None:
@@ -17,6 +18,8 @@ def setup():
     global _request_local, _request_id
     _request_local = {}
     _request_id = None
+    reset_engine_name_cache()
+
 
 def request(requestid, mw=None):
     global _request_id
