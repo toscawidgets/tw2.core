@@ -217,7 +217,13 @@ class WidgetTest(object):
         for engine in self._get_all_possible_engines():
             yield self._check_rendering_vs_expected, engine, self.attrs, self.params, self.expected
             
-    def _check_validation(self, attrs, params, expected):
+    def _check_validation(self, attrs, params, expected, raises=None):
+        if raises is not None:
+            try:
+                r = self.widget(**attrs).validate(params)
+            except raises:
+                pass
+            return
         r = self.widget(**attrs).validate(params)
         assert r == expected, r
         
@@ -226,5 +232,7 @@ class WidgetTest(object):
             for params in self.validate_params:
                 if params[0] is None:
                     params[0] = self.attrs
-                yield self._check_validation, params[0], params[1], params[2]
+                if len(params)<4:
+                    params.append(None)
+                yield self._check_validation, params[0], params[1], params[2], params[3]
     
