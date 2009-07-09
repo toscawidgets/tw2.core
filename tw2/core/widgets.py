@@ -541,6 +541,5 @@ class Page(DisplayOnlyWidget):
         resp.body = ins.display().encode('utf-8')
         return resp
 
-    def fetch_data(self, req):
-        pass
+    def fetch_data(self, req): pass
 
