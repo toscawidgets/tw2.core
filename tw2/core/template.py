@@ -1,5 +1,6 @@
 import pkg_resources as pk, sys, core,  os
 try:
+    from tw2.core import mako_util
     from dottedtemplatelookup import DottedTemplateLookup
     dotted_template_lookup = DottedTemplateLookup(input_encoding='utf-8', 
                                                        output_encoding='utf-8',

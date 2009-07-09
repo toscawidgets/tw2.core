@@ -1,4 +1,7 @@
 import tw2.core as twc, testapi
+import tw2.core.testbase as tb
+from tw2.core.validation import *
+
 try:
     import formencode
 except ImportError:
@@ -204,3 +207,11 @@ class TestValidation(object):
 
         for i,w in enumerate(widgets):
             assert(w.value == 'test%d' % i)
+
+class TestMatchValidator(tb.ValidatorTest):
+    
+    validator = MatchValidator
+    
+    attrs =    [{'field1':'field1', 'field2':'field2'}, {'field1':'field1', 'field2':'field2'}]
+    params =   [{'field1':'a', 'field2':'a'},           {'field1':'a', 'field2':'b'}]
+    expected = [None,                                   ValidationError]

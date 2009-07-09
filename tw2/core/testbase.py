@@ -1,4 +1,5 @@
 import os, re, pkg_resources as pk
+import formencode as fe
 from copy import copy
 from difflib import unified_diff
 from cStringIO import StringIO
@@ -6,6 +7,7 @@ from cgi import FieldStorage
 from tw2.core.middleware import make_middleware
 from tw2.core.template import global_engines, reset_engine_name_cache
 from BeautifulSoup import BeautifulSoup as bs
+from itertools import izip
 
 #try:
 import xml.etree.ElementTree as etree
@@ -235,4 +237,51 @@ class WidgetTest(object):
                 if len(params)<4:
                     params.append(None)
                 yield self._check_validation, params[0], params[1], params[2], params[3]
+
+class ValidatorTest(object):
+    validator = None
+    attrs = {}
+    params = {}
+    expected = []
+
+    def __init__(self, *args, **kw):
+        super(ValidatorTest, self).__init__(*args, **kw)
+        if not isinstance(self.attrs, list):
+            self.attrs = [self.attrs]
+        if not isinstance(self.params, list):
+            self.params = [self.params]
+        if not isinstance(self.expected, list):
+            self.expected = [self.expected]
+
+    def request(self, requestid, mw=None):
+        if mw is None:
+            mw = self.mw
+        global _request_id
+        _request_id = requestid
+        rl = request_local()
+        rl.clear()
+        rl['middleware'] = mw
+        return request_local_tst()
+    
+    def setup(self):
+        global _request_id, _request_local
+        _request_local = {}
+        _request_id = None
+        self.mw = make_middleware(None)
+        return self.request(1)
+
+    def _check_validation(self, attrs, params, expected):
+        if isinstance(expected, type) and issubclass(expected, (twc.ValidationError, fe.Invalid)):
+            try:
+                r = self.validator(**attrs).validate_python(params)
+            except expected:
+                #XXX:figure out a way to test that the validation message matches
+                pass
+            return
+        r = self.validator(**attrs).validate_python(params)
+        assert r == expected, r
+        
+    def test_validate(self): 
+        for attrs, params, expected in izip(self.attrs, self.params, self.expected):
+            yield self._check_validation, attrs, params, expected
     
