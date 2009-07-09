@@ -263,13 +263,11 @@ class IntValidator(RangeValidator):
             raise ValidationError('notint', self)
 
     def validate_python(self, value):
+        value = self.to_python(value)
         # avoid calling Validator.validate_python, as it sees int(0) as missing
         if self.required and value is None:
             raise ValidationError('required', self)
-        if self.min and value < self.min:
-            raise ValidationError('toosmall', self)
-        if self.max and value > self.max:
-            raise ValidationError('toobig', self)
+        RangeValidator.validate_python(self, value)
 
     def from_python(self, value):
         return str(value)

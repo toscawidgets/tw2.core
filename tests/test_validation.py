@@ -2,8 +2,9 @@ import tw2.core as twc, testapi
 import tw2.core.testbase as tb
 from tw2.core.validation import *
 import re
-from datetime import datetime
+import datetime
 import formencode
+from nose.tools import eq_
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -206,14 +207,63 @@ class TestValidation(object):
         for i,w in enumerate(widgets):
             assert(w.value == 'test%d' % i)
 
+
+class TestIntValidator(tb.ValidatorTest):
+    validator = IntValidator
+    to_python_attrs =    [{}, {}, {}, {}]
+    to_python_params =   [1, '1', '1.5', '']
+    to_python_expected = [1, 1, ValidationError, None]
+
+    from_python_attrs =    [{}, {}, {}]
+    from_python_params =   [1, '1', '1.5']
+    from_python_expected = ['1', '1', ValidationError]
+
+    attrs =    [{}, {}, {}, {}, {'max':12}, {'max':12},{'min':12}, {'min':12}, ]
+    params =   [1,    '1', '1.5',           'asdf', '11', '13', '11', '13']
+    expected = [None, None, ValidationError, ValidationError, None, ValidationError, ValidationError, None]
+
+
+
+class TestBoolValidator(tb.ValidatorTest):
+    validator = BoolValidator
+    to_python_attrs =    [{}, {}, {}, {}, {}, {}, {}, {}, {},]
+    to_python_params =   ['on', 'yes', 'true', '1', 1, True, 'Yes', 'True', 'off']
+    to_python_expected = [True, True, True, True, True, True, True, True, False]
+
+class TestOneOfValidator(tb.ValidatorTest):
+    validator = OneOfValidator
+    attrs =    [{'values':['a', 'b', 'c']}, {'values':['a', 'b', 'c']}]
+    params =   ['a', 'd']
+    expected = [None, ValidationError]
+    
+class TestDateValidator(tb.ValidatorTest):
+    validator = DateValidator
+    to_python_attrs =    [{}, {}]
+    to_python_params =   ['01/01/2009', 'asdf']
+    to_python_expected = [datetime.date(2009, 1, 1), ValidationError]
+    
+    from_python_attrs = [{}, {}]
+    from_python_params = [datetime.date(2009, 1, 1)]
+    from_python_expected = ['01/01/2009']
+    
+    def test_max_str(self):
+        expected = '31/12/2009'
+        r = DateValidator(max=datetime.date(2009, 12, 31)).max_str
+        eq_(r, expected)
+
+    def test_min_str(self):
+        expected = '31/12/2009'
+        r = DateValidator(min=datetime.date(2009, 12, 31)).min_str
+        eq_(r, expected)
+
 class TestDatetimeValidator(tb.ValidatorTest):
     validator = DateTimeValidator
     to_python_attrs =    [{}, {}]
     to_python_params =   ['01/01/2009 01:00', 'asdf']
-    to_python_expected = [datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M'), ValidationError]
+    to_python_expected = [datetime.datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M'), ValidationError]
     
     from_python_attrs = [{}, {}]
-    from_python_params = [datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M')]
+    from_python_params = [datetime.datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M')]
     from_python_expected = ['01/01/2009 01:00']
 
 class TestRegexValidator(tb.ValidatorTest):
