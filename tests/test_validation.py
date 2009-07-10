@@ -287,6 +287,10 @@ class TestIntValidator(tb.ValidatorTest):
     params =   [1,    '1', '1.5',           'asdf', '11', '13', '11', '13']
     expected = [None, None, ValidationError, ValidationError, None, ValidationError, ValidationError, None]
 
+    @raises(ValidationError)
+    def test_required(self):
+        v = IntValidator(required=True)
+        v.validate_python('')
 
 
 class TestBoolValidator(tb.ValidatorTest):

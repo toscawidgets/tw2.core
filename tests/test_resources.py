@@ -1,4 +1,5 @@
-import webob as wo, webtest as wt, tw2.core as twc, tw2.tests, os, testapi
+import webob as wo, webtest as wt, tw2.core as twc, tw2.tests, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb
+from nose.tools import eq_
 
 js = twc.JSLink(link='paj')
 css = twc.CSSLink(link='joe')
@@ -162,3 +163,49 @@ class TestResources(object):
         testapi.request(1, mw)
         assert(tst_mw.get('/plain').body == html)
 
+class TestJSLink(tb.WidgetTest):
+    widget = twr.JSLink
+    attrs = {'link':'something'}
+    expected = '<script type="text/javascript" src="something"></script>'
+
+class TestCssLink(tb.WidgetTest):
+    widget = twr.CSSLink
+    attrs = {'link':'something'}
+    expected = '<link rel="stylesheet" type="text/css" href="something" media="all">'
+
+
+class TestJsSource(tb.WidgetTest):
+    widget = twr.JSSource
+    attrs = {'src':'something'}
+    expected = '<script type="text/javascript">something</script>'
+
+    def _test_repr_(self):
+        #not sure how to test resources.py:79
+        r = repr(self.widget(**self.attrs)) 
+        assert r == "<class 'tw2.core.params.JSSource_s'>", r
+        
+
+class TestJsFuncall(tb.WidgetTest):
+    widget = twr.JSFuncCall
+    attrs = {'function':'foo', 'args':['a', 'b']}
+    expected = None
+    
+    def test_display(self):
+        r = self.widget(**self.attrs).display(**self.params)
+        assert r == """<script type="text/javascript">foo("a", "b")</script>""", r
+
+from pkg_resources import Requirement
+class TestResourcesApp:
+
+    def setup(self):
+        class Config(object):pass
+        config = Config()
+        config.res_prefix = ""
+        self.app = twr.ResourcesApp(config)
+    
+    def test_register_requirement(self):
+        req = Requirement.parse('tw2.core>1.0')
+        self.app.register(req, 'something.txt')
+
+def test_find_charset():
+    eq_(twc.resources.find_charset('charset=iso-8859-1'), 'iso-8859-1')
