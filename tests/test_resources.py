@@ -1,5 +1,5 @@
-import webob as wo, webtest as wt, tw2.core as twc, tw2.tests, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb
-from nose.tools import eq_
+import webob as wo, webtest as wt, tw2.core as twc, tw2.tests, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
+from nose.tools import eq_, raises
 
 js = twc.JSLink(link='paj')
 css = twc.CSSLink(link='joe')
@@ -163,10 +163,20 @@ class TestResources(object):
         testapi.request(1, mw)
         assert(tst_mw.get('/plain').body == html)
 
+class __TestDirLink(tb.WidgetTest):
+    """seems like dirlink is not implemented yet"""
+    widget = twr.DirLink
+    attrs = {'template':'something'}
+    expected = '<script type="text/javascript" src="something"></script>'
+
 class TestJSLink(tb.WidgetTest):
     widget = twr.JSLink
     attrs = {'link':'something'}
     expected = '<script type="text/javascript" src="something"></script>'
+
+    @raises(pm.ParameterError)
+    def test_no_filename(self):
+        twr.JSLink().display()
 
 class TestCssLink(tb.WidgetTest):
     widget = twr.CSSLink

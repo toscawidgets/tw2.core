@@ -28,6 +28,7 @@ class Link(Resource):
     def prepare(self):
         super(Link, self).prepare()
         if not hasattr(self, 'link'):
+            #shouldn't we test for this in __new__ ?
             if not self.filename:
                 raise pm.ParameterError("Either 'link' or 'filename' must be specified")
             resources = core.request_local()['middleware'].resources
