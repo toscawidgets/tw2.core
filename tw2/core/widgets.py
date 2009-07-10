@@ -274,7 +274,7 @@ class CompoundWidget(Widget):
     children = pm.Param('Children for this widget. This must be an interable, each item of which is a Widget')
     c = pm.Variable("Alias for children", default=property(lambda s: s.children))
     children_deep = pm.Variable("Children, including any children from child CompoundWidgets that have no id")
-    template = 'genshi:tw2.core.templates.display_children'
+    template = 'tw2.core.templates.display_children'
 
     @classmethod
     def post_define(cls):
@@ -287,7 +287,7 @@ class CompoundWidget(Widget):
         ids = set()
         joined_cld = []
         for c in cls.children:
-            if not issubclass(c, Widget):
+            if not isinstance(c, type) or not issubclass(c, Widget):
                 raise pm.ParameterError("All children must be widgets")
             if getattr(c, 'id', None):
                 if c.id in ids:
@@ -340,7 +340,8 @@ class CompoundWidget(Widget):
                     if val is not vd.EmptyField:
                         data[c.id] = val
             except vd.ValidationError:
-                data[c.id] = vd.Invalid
+                if not c._sub_compound:
+                    data[c.id] = vd.Invalid
                 any_errors = True
         if self.validator:
             data = self.validator.to_python(data)

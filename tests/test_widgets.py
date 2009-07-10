@@ -101,6 +101,43 @@ class AlwaysValidateFalseWidget(wd.Widget):
     validator = AlwaysValidateFalseValidator()
     template = "mako:tw2.tests.templates.always_validate_false_widget"
 
+class CompoundTestWidget(wd.CompoundWidget):
+    children = [AlwaysValidateFalseWidget(id="something"),]
+
+class SubCompoundTestWidget(wd.CompoundWidget):
+    children = [CompoundTestWidget()]
+
+
+class TestSubCompoundWidget(tb.WidgetTest):
+    widget = SubCompoundTestWidget
+    attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
+    expected = """<p>Test Widget</p>"""
+    validate_params = [[None, {'rw':''}, None, vd.ValidationError]]
+    
+    def test_string_value(self):
+        w = self.widget(**self.attrs)()
+        w.value = "value"
+        r = w.display("value")
+        eq_(r.strip(), self.expected)
+        
+    @raises(twc.WidgetError)
+    def test_duplicate_ids(self):
+        class CompoundTestWidget(wd.CompoundWidget):
+            children = [AlwaysValidateFalseWidget(id="something"), AlwaysValidateFalseWidget(id="something")]
+        CompoundTestWidget()
+
+    @raises(pm.ParameterError)
+    def test_child_not_widget(self):
+        class CompoundTestWidget(wd.CompoundWidget):
+            children = ["", AlwaysValidateFalseWidget(id="something")]
+        CompoundTestWidget()
+        
+class TestCompoundWidget(tb.WidgetTest):
+    widget = CompoundTestWidget
+    attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
+    expected = """<p>Test Widget</p>"""
+    validate_params = [[None, {'rw':''}, None, vd.ValidationError], [None, {'rw':'asdf'}, None, vd.ValidationError]]
+
 class RepeatingTestWidget(wd.RepeatingWidget):
     child = AlwaysValidateFalseWidget
 
