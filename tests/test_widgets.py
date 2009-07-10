@@ -1,6 +1,8 @@
-import tw2.core as twc, testapi, tw2.core.testbase as tb, tw2.core.widgets as wd
+import tw2.core as twc, testapi, tw2.core.testbase as tb
+import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
 from nose.tools import eq_
 from webob import Request
+from nose.tools import raises
 
 class Test6(twc.Widget):
     test = twc.Param(attribute=True)
@@ -73,6 +75,93 @@ class TestWidgets(object):
             b = twc.Widget()
         assert(MyTest.children[0].id == 'fred')
         assert(MyTest.children[1].id == 'b')
+
+class TestRepeatingWidgetBunchCls():
+    
+    def setup(self):
+        self.bunch = wd.RepeatingWidgetBunchCls('')
+    
+    @raises(KeyError)
+    def test_bad_getitem(self):
+        self.bunch['asdf']
+        
+class TestRepeatingWidgetBunch():
+    
+    def setup(self):
+        self.bunch = wd.RepeatingWidgetBunch('', '')
+    
+    @raises(KeyError)
+    def test_bad_getitem(self):
+        self.bunch['asdf']
+
+class AlwaysValidateFalseValidator(vd.Validator):
+    def validate_python(self, params):
+        raise vd.ValidationError('I always throw up on roller coasters.')
+class AlwaysValidateFalseWidget(wd.Widget):
+    validator = AlwaysValidateFalseValidator()
+    template = "mako:tw2.tests.templates.always_validate_false_widget"
+
+class RepeatingTestWidget(wd.RepeatingWidget):
+    child = AlwaysValidateFalseWidget
+
+class TestRepeatingWidget(tb.WidgetTest):
+    widget = RepeatingTestWidget
+    attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
+    expected = """<p>Test Widget</p>"""
+    validate_params = [[None, {'rw':''}, None, vd.ValidationError]]
+
+    @raises(pm.ParameterError)
+    def test_child_must_have_no_id(self):
+        class DummyRepeatingTestWidget(wd.RepeatingWidget):
+            child = AlwaysValidateFalseWidget(id="something")
+        DummyRepeatingTestWidget()
+
+    @raises(pm.ParameterError)
+    def test_child_is_not_widget(self):
+        class DummyRepeatingTestWidget(wd.RepeatingWidget):
+            child = ""
+        DummyRepeatingTestWidget()
+
+    def test_class_with_children(self):
+        class DummyWidget(wd.Widget): pass
+        class DummyRepeatingTestWidget(wd.RepeatingWidget):
+            child=DummyWidget()
+            children=[DummyWidget()]
+        w = DummyRepeatingTestWidget()
+
+class DisplayOnlyTestWidget(wd.DisplayOnlyWidget):
+    child = twc.Variable(default=AlwaysValidateFalseWidget)
+    template = "tw2.tests.templates.display_only_test_widget"
+
+class TestDisplayOnlyWidget(tb.WidgetTest):
+    widget = DisplayOnlyTestWidget
+    attrs = {'id':"dotw"}
+    expected = """<p>Test Widget</p>"""
+    validate_params = [[None, {'dotw':''}, None, vd.ValidationError]]
+
+    @raises(pm.ParameterError)
+    def test_post_init_fail(self):
+        class DummyWidget(wd.Widget): pass
+        class DummyDOTestWidget(wd.DisplayOnlyWidget):
+            template = "tw2.tests.templates.display_only_test_widget"
+            child=DummyWidget(id="lala")
+        w = DummyDOTestWidget(id="something")
+
+    @raises(pm.ParameterError)
+    def test_childclass_not_widget_fail(self):
+        class DummyWidget(wd.Widget): pass
+        class DummyDOTestWidget(wd.DisplayOnlyWidget):
+            template = "tw2.tests.templates.display_only_test_widget"
+            child="something"
+        w = DummyDOTestWidget(id="something")
+
+    def test_class_with_children(self):
+        class DummyWidget(wd.Widget): pass
+        class DummyDOTestWidget(wd.DisplayOnlyWidget):
+            template = "tw2.tests.templates.display_only_test_widget"
+            child=DummyWidget(id="something")
+            children=[DummyWidget(id="something_else")]
+        w = DummyDOTestWidget(id="something")
 
 class TestPage(tb.WidgetTest):
     widget = wd.Page

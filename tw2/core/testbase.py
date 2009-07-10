@@ -225,7 +225,7 @@ class WidgetTest(object):
         if raises is not None:
             try:
                 r = self.widget(**attrs).validate(params)
-            except raises:
+            except raises, e:
                 pass
             return
         r = self.widget(**attrs).validate(params)

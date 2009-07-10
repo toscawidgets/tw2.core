@@ -1,5 +1,6 @@
 import copy, weakref, re, itertools, webob
 import template, core, util, validation as vd, params as pm
+import inspect
 
 
 try:
@@ -397,7 +398,7 @@ class RepeatingWidget(Widget):
 
     repetition = pm.ChildVariable('The repetition of a child widget.')
 
-    template = 'genshi:tw2.core.templates.display_children'
+    template = 'tw2.core.templates.display_children'
 
     @classmethod
     def post_define(cls):
@@ -409,8 +410,8 @@ class RepeatingWidget(Widget):
         if getattr(cls, 'children', None):
             cls.child = cls.child(children = cls.children)
             cls.children = []
-        if not issubclass(cls.child, Widget):
-            raise pm.ParameterError("Child must be a widget")
+        if not isinstance(cls.child, type) or not issubclass(cls.child, Widget):
+            raise pm.ParameterError("Child must be a Widget")
         if getattr(cls.child, 'id', None):
             raise pm.ParameterError("Child must have no id")
         cls.child = cls.child(parent=cls)
@@ -477,7 +478,7 @@ class DisplayOnlyWidget(Widget):
         if getattr(cls, 'children', None):
             cls.child = cls.child(children = cls.children)
             cls.children = []
-        if not issubclass(cls.child, Widget):
+        if not isinstance(cls.child, type) or not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
         cls._sub_compound = cls.child._sub_compound
         cls_id = getattr(cls, 'id', None)
