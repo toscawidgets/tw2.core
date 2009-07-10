@@ -3,6 +3,7 @@ import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
 from nose.tools import eq_
 from webob import Request
 from nose.tools import raises
+import formencode as fe
 
 class Test6(twc.Widget):
     test = twc.Param(attribute=True)
@@ -104,6 +105,49 @@ class AlwaysValidateFalseWidget(wd.Widget):
 class CompoundTestWidget(wd.CompoundWidget):
     children = [AlwaysValidateFalseWidget(id="something"),]
 
+class TWidget(wd.Widget):
+    template = "tw2.tests.templates.display_only_test_widget"
+
+class TestWidget(tb.WidgetTest):
+    widget = TWidget
+    attrs = {'id':"w", 'validator':AlwaysValidateFalseValidator}
+    expected = """<p>Test Widget</p>"""
+    validate_params = [[None, {'w':''}, None, vd.ValidationError],[None, {}, None, vd.ValidationError]]
+
+    def test_fe_validator(self):
+        class FEWidget(wd.Widget):
+            validator = fe.validators.Int()
+        FEWidget(id="s").validate({'s':'3'})
+    
+    @raises(twc.WidgetError)
+    def test_only_parent_validation(self):
+        CompoundTestWidget().children[0].validate({})
+
+    def _test_safe_modify(self):
+        # i am stumped on this one
+        # widgets.py:250-252
+        w = self.widget()
+        w.safe_parameter = {'a':1}
+        w.safe_modify(w, 'safe_parameter')
+    
+    def _test_request_local_validated_widget(self):
+        # this seems like it's on the right track, but i dunno, it Seg. Faults 
+        # widgets.py:193
+        rl = twc.core.request_local()
+        rl['validated_widget'] = TWidget()
+        self.widget().display()
+        
+    @raises(pm.ParameterError)
+    def test_bad_validator(self):
+        class MWidget(wd.Widget):
+            validator = 'asdf'
+        MWidget()
+    
+    def test_required_vd(self):
+        class MWidget(wd.Widget):
+            validator = pm.Required
+        MWidget()
+        
 class SubCompoundTestWidget(wd.CompoundWidget):
     children = [CompoundTestWidget()]
 
