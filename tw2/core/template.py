@@ -12,7 +12,6 @@ except ImportError:
 class EngineError(core.WidgetError):
     "Errors inside ToscaWidgets, related to template engines."
 
-#rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
 rm = pk.ResourceManager()
 
 def template_available(template_name, engine_name, mw=None):

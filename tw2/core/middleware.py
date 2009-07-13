@@ -65,8 +65,8 @@ class Config(object):
        (default: True)
        
     `rendering_engine_lookup`
-    A dictionary of file extensions you expect to use for each type of template engine.
-    (default: {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'})
+        A dictionary of file extensions you expect to use for each type of template engine.
+        (default: {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'})
     '''
 
     translator = lambda s: s
