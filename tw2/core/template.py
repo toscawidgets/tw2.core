@@ -12,10 +12,15 @@ except ImportError:
 class EngineError(core.WidgetError):
     "Errors inside ToscaWidgets, related to template engines."
 
-rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
+#rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
 rm = pk.ResourceManager()
 
-def template_available(template_name, engine_name):
+def template_available(template_name, engine_name, mw=None):
+    try:
+        rendering_extension_lookup = mw.config.rendering_extension_lookup
+    except (KeyError, AttributeError):
+        rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
+
     ext = rendering_extension_lookup[engine_name]
     split = template_name.rsplit('.', 1)
     return os.path.isfile(rm.resource_filename(split[0], '.'.join((split[1], ext))))
@@ -46,7 +51,7 @@ def get_engine_name(template_name, mw=None):
         pref_rend_eng = ['mako', 'genshi', 'cheetah', 'kid']
     #find the first file in the preffered engines that is available for templating
     for engine_name in pref_rend_eng:
-        if template_available(template_name, engine_name):
+        if template_available(template_name, engine_name, mw):
             engine_name_cache[template_name] = engine_name
             return engine_name
     if not mw.config.strict_engine_selection:

@@ -63,6 +63,10 @@ class Config(object):
        If set to true, TW2 will only select rendering engines from within your preferred_rendering_engines,
        otherwise, it will try the default list if it does not find a template within your preferred list.
        (default: True)
+       
+    `rendering_engine_lookup`
+    A dictionary of file extensions you expect to use for each type of template engine.
+    (default: {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'})
     '''
 
     translator = lambda s: s
@@ -80,6 +84,7 @@ class Config(object):
     auto_reload_templates = True
     preferred_rendering_engines = ['mako', 'genshi', 'cheetah', 'kid']
     strict_engine_selection = True
+    rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
 
     def __init__(self, **kw):
         for k, v in kw.items():
