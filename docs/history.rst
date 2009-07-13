@@ -23,16 +23,27 @@ Some minor differences to be aware of:
 
  * There is no automatic calling of parameters; you must explicitly use :class:`tw2.core.Deferred` for this.
  * A widget does not automatically get the ``resources`` from its base class.
- * engine_name is compulsory for templates, and there are no inline templates (yet, may be added later).
- * ToscaWidgets 2 requires Python 2.5. Suppot for 2.4 and 2.6 is planned.
- * tw.api has been removed; just use tw2.core
+ * The *id* is always the short id; *compound_id* has the full id.
  * The compound ID separator is now a colon (:) and IDs may not contain colons.
+ * engine_name is compulsory for templates, and there are no inline templates (yet, may be added later).
+ * ToscaWidgets 2 requires Python 2.5. Support for 2.4 and 2.6 is planned.
+ * tw.api has been removed; just use tw2.core
  * The toscasidgets simple template engine has been removed.
  * Widget.__call__ is no longer an alias for display, as this causes problems for Cheetah.
 
-In tw2.forms
+**tw2.forms**
+
+ * Layouts are separated, so for a TableForm, you have a Form which contains a TableLayout.
  * name is always identical to id
- * Simpler inheritence tree
+ * CalendarDatePicker is moved to tw2.dynforms
+
+**tw2.dynforms**
+
+ * WriteOnlyTextField is removed; tw2.forms PasswordField has similar functionality
+ * AjaxLookupField is removed; there are better widgets like this in libraries like YUI
+ * Growing - the main widget is GrowingGridLayout, instead of GrowingTableFieldSet, etc.
+
+
 
 
 Dynamic Parameters
@@ -44,4 +55,4 @@ In ToscaWidgets 0.9, widget instances existed for the life of the app. It was im
 
 The first attempt at ToscaWidgets 2 also had widget instances exist for the life of the app. However, instrumentation of the class made some parameters request local. This makes accessing parameters much more convenient. However, you still need to create singleton instances of every widget, and it is still a potential peformance problem.
 
-The second attempt at ToscaWidgets 2 has widget instances exist only for the life of a request. All fixed parameters are set by subclassing widgets. This keeps parameters easy to access, and avoids the need to create singletons. Whether it is a performance problem is still being established.
+The second attempt at ToscaWidgets 2 has widget instances exist only for the life of a request. All fixed parameters are set by subclassing widgets. This keeps parameters easy to access, and avoids the need to create singletons. Initial performance testing suggests this gives around a two-fold performance improvement.

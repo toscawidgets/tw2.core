@@ -13,7 +13,7 @@ Checks that apply to the whole form can only be done onsubmit. It's best not to 
 
 Some checks cannot be done client-side, e.g. checking if a user name is taken. In these cases, onblur checking is possible, using an Ajx request. Ajax checking at onsubmit is not done - it's better to just submit, and rely on server-side validation.
 
-TBD: how to implement this?
+One important principle is that the JavaScript validator should always behave exactly the same as the Python validator. This may be difficult to achieve with date/time fields.
 
 
 Performance
@@ -134,3 +134,59 @@ How an application using this could look::
                 return CustomerListManager
             else:
                 return CustomerListRegular
+
+tw2.auth
+========
+
+The aim is to have an authentication system that takes a more "batteries included" approach than libraries like repoze.who. Features to include are:
+
+ * User registration, with email verification
+ * Forgotten password
+ * Account lockouts to prevent brute force attacks
+ * Change password, with password strength checking
+ * "Remember me"
+ * Post-login messages
+ * Single sign-on - OpenID, Windows domain authentication, etc.
+ * User is informed of the previous login time
+ * Administrator can disable accounts
+
+**Security Policies**
+
+We want to provide sensible defaults for all the options. However, different sites will have different security requirements. One approach is to have two basic security policies:
+
+`Regular`
+    This would be appropriate for most sites that do not process money or especially sensitive data. Potential defaults:
+
+     * Six character passwords, without complexity checking
+     * "Forgotten password" only requires email verification.
+     * Two hours inactivity timeout.
+     * "Remember me" is allowed
+
+`High`
+    This would be appropriate for more sensitive sites. Of course, highly sensitive sites, such as online banking, would consider the individual options carefully and not just use the defaults. Potential defaults:
+
+    * Eight character passwords, with complexity checking
+    * "Forgotten password" uses personal questions (e.g. "Mother's maiden name") as well as email verification.
+    * 15 minutes inactivity timeout
+    * "Remember me" is not allowed; login form has "autocomplete=False".
+
+
+**Extra Security Features**
+
+The library could provide features for higher security:
+
+`Challenge passwords`
+    At login, the user is asked to enter, say, characters 1, 3 and 7 from the password. This stops someone being able to capture the whole password from a single login.
+
+`Password rotation`
+    Users are forced to change password periodically, perhaps every six months.
+
+`End device compliance checking`
+    Before login is allowed, the site checks that the client is secure. Simple checks could be performed using JavaScript, to determine is the browser is up-to-date. More complex checks could be performed using Flash/Java/ActiveX to confirm the operating system is up-to-date, anti-virus is installed, etc.
+
+`Extra login checks`
+    This could include source IP address, SSL client certificates, or long-lived cookies. For example, administrator logins could be restricted to a particular source IP address. Or an application could be restricted to company-owned clients, by installing a long-lived cookie on the clients, which is required for login.
+
+`Geolocation`
+    When a login comes from a country that the user does not normally login from, extra security checks are performed.
+
