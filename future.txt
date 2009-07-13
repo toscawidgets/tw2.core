@@ -17,9 +17,10 @@ tw2.core
     better way to do "extra children" - Form.submit is a bit of a hack
         don't collect widgets as params? (but do if its id=)
     move attr generation to display? would make some other bits easier
-    rename fetch_data to view_request (also: post_define to define?)
+    rename fetch_data to view_request? (also: post_define to define?)
     capitals for name2label - ID, IP, URL
     make resource injector work correctly with pylons cacheing
+    nick more unit tests from tw1, e.g. leaks
 
 tw2.forms
     stop label names being post-to-able
@@ -34,16 +35,6 @@ tw2.forms
     datagrid
         you can do pretty well with GridLayout and LabelField - is this necessary?
     select fields - strong validation
-
-unit tests
-    tw2.core needs lots of unit tests
-        validators - finish off test_validators.txt
-        nick more tests from tw1, e.g. leaks
-        WidgetTestCase
-
-    tw2.forms
-        unit test server-side logic
-        test app for widget usability
 
 validation
     client-side
@@ -61,9 +52,6 @@ controllers
     serving with paste and restart
 
 template
-    mako helper functions
-    multiple templates for widget (different engines)
-    cacheing
     inline templates
     disable kid's doctype header on inner widgets
     only test engines that are installed
@@ -73,7 +61,7 @@ template
         safe vars
         extra vars
         -> to do a proper job of this, I have to find out what the options are for each template engine
-    genshi template optimiser
+    template optimiser
 
 resources
     optimisation
@@ -95,7 +83,6 @@ dynforms
 
     look at jquery / dojo first
         filtering grid
-        ajax lookup
         hiding button
 
     growing
@@ -105,10 +92,9 @@ dynforms
             need to hook this for growing
         make it not depend on customisedform
 
-    much later:
-        customisedform - save prompt
-        HidingComponentMixin - has JS optimisation that should be on general resources
-        Consider HidingComponent, CascadingComponent as a display-only widget
+    customisedform - save prompt
+    HidingComponentMixin - has JS optimisation that should be on general resources
+    Consider HidingComponent, CascadingComponent as a display-only widget
 
 
 frameworks

@@ -9,9 +9,11 @@ tw2.core
     problem with colons as id separator - doesn't work in css, it thinks they're pseudo classes
     resources - caching
         I can generate expires/max-age, but it doesn't make it cache
+    check resource dir trav with backslash *****
+    the "extra children" thing for datasrc (and submit) - avoid reserved_names
 
 auto-registering controllers
-    add link to widget once registered
+    add link to widget once registered ****
     avoid multiple registrations for repeating widgets
         only register in the zero-th repetition
     rewrite class name like elixir does
@@ -26,6 +28,8 @@ validation
 
 documentation
     core
+        explain mutables and safe_modify
+        explain global_config/middleware, etc.
     forms
         getting started
             with wsgi
@@ -54,20 +58,19 @@ support python 2.4 and 2.6
     use paste web server?
 
 tw2.dynforms
+    OtherSingleSelectField
     unique column in growinggrid
     make onload trigger onchange
-    cascadingajaxlookup triggering onchange
     growingtextarea
+    text field with suggestion
 
 
 yui
     core changes
         keep order of resources
-        generating links to ajax resources
 
     data controls:
         data source
-            json - this is hard!
         autocomplete
              margin-bottom:2em;
         data table
@@ -93,21 +96,3 @@ yui
     oDS.responseSchema = {fields : ["state"]};
 
         twc.JSLink(modname=__name__, filename="static/data.js"),
-
-
-
-Writing a good widget library:
-    1) Widget browser
-        This is the main documentation for the library, and it needs to give a good introduction to a new user. Evey widget should have a demo, and a clear description of the widget and parameters.
-
-    2) Example application
-        There should be a simple example application that demonstrates the widgets in action. Ideally this should just be a single python file that works standalone.
-
-    3) Parameters
-
-        Good set that lets you do what you need
-
-    4) Validation
-        All widgets need to work correctly with validation. When a form is submitted and there is a validation failure, all widgets should maintain the same appearance.
-
-    5) Growing

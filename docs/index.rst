@@ -3,6 +3,9 @@
 ToscaWidgets 2 Documentation
 ============================
 
+.. warning::
+    All the tw2 branches are currently (July 2009) experimental. Work is progressing well, but this should still be considered alpha software.
+
 ToscaWidgets aims to be a practical and useful widgets framework that helps people build interactive websites with compelling features, faster and easier. Widgets are re-usable web components that can include a template, server-side code and JavaScripts/CSS resources. The library aims to be: flexible, reliable, documented, performant, and as simple as possible.
 
 ToscaWidgets comes in two main packages:
