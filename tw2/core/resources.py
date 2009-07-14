@@ -27,12 +27,17 @@ class Link(Resource):
 
     def prepare(self):
         super(Link, self).prepare()
+        rl = core.request_local()
         if not hasattr(self, 'link'):
             #shouldn't we test for this in __new__ ?
             if not self.filename:
                 raise pm.ParameterError("Either 'link' or 'filename' must be specified")
-            resources = core.request_local()['middleware'].resources
+            resources = rl['middleware'].resources
             self.link = resources.register(self.modname, self.filename)
+
+        #register the resource with the request_local
+        core.request_local().setdefault('resources', set()).update(self.resources)
+        
 
     def __hash__(self):
         return hash(hasattr(self, 'link') and self.link or ((self.modname or '') + self.filename))
