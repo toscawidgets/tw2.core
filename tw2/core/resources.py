@@ -34,13 +34,12 @@ class Link(Resource):
                 raise pm.ParameterError("Either 'link' or 'filename' must be specified")
             resources = rl['middleware'].resources
             self.link = resources.register(self.modname, self.filename)
-
-        #register the resource with the request_local
-        core.request_local().setdefault('resources', set()).update(self.resources)
-        
+        #register the resource with the request_local (handles the case where the link is injected by it's lonesome)
+        core.request_local().setdefault('resources', set()).add(self)
 
     def __hash__(self):
         return hash(hasattr(self, 'link') and self.link or ((self.modname or '') + self.filename))
+
     def __eq__(self, other):
         return (getattr(self, 'link', None) == getattr(other, 'link', None)
                 and getattr(self, 'modname', None) == getattr(other, 'modname', None)
@@ -251,10 +250,11 @@ class _ResourceInjector(util.MultipleReplacer):
 
         """
         if resources is None:
-            resources = core.request_local().pop('resources', None)
+            resources = core.request_local().get('resources', None)
         if resources:
             encoding = encoding or find_charset(html) or 'utf-8'
             html = util.MultipleReplacer.__call__(self, html, resources, encoding)
+            core.request_local().pop('resources', None)
         return html
 
 

@@ -35,7 +35,8 @@ class TestResources(object):
         for r in rl['resources']:
             assert(any(isinstance(r, b) for b in [js,css]))
         rl = testapi.request(2)
-        assert(len(rl.get('resources', [])) == 0)
+        r = rl.get('resources', [])
+        assert len(r) == 0, r
 
     def test_res_nodupe(self):
         wa = TestWidget(id='a', resources=[js])
@@ -133,11 +134,13 @@ class TestResources(object):
     def test_detect_clear(self):
         widget = twc.Widget(id='a', template='genshi:tw2.tests.templates.inner_genshi', test='test', resources=[js])
         rl = testapi.request(1, mw)
-        assert(len(rl.get('resources', [])) == 0)
+        eq_(rl.get('resources', []), [])
         widget.display()
         assert(len(rl.get('resources', [])) == 1)
         out = twc.inject_resources(html)
-        assert(len(rl.get('resources', [])) == 0)
+        print 'after inject_res'
+        print rl
+        eq_(rl.get('resources', []), [])
 
     #--
     # General middleware
@@ -157,7 +160,7 @@ class TestResources(object):
 
     def test_mw_inject(self):
         testapi.request(1, mw)
-        assert(tst_mw.get('/').body == '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
+        eq_(tst_mw.get('/').body, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
 
     def test_mw_inject_html_only(self):
         testapi.request(1, mw)

@@ -201,7 +201,6 @@ class Widget(pm.Parametered):
                 self.resources = WidgetBunch([r.req() for r in self.resources])
                 for r in self.resources:
                     r.prepare()
-                core.request_local().setdefault('resources', set()).update(self.resources)
             mw = core.request_local().get('middleware')
             if displays_on is None:
                 if self.parent is None:
