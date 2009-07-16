@@ -44,26 +44,26 @@ class Config(object):
 
     `debug`
         Whether the app is running in development or production mode.
+        (default: False)
 
     `validator_msgs`
         A dictionary that maps validation message names to messages. This lets
-        you override validation messages on a global basis.
+        you override validation messages on a global basis. (default: {})
 
     `auto_reload_templates`
-        Set this to true if your templates are being changed to the developer.
-        This will allow the templates to change without having to restart the
-        server.  In production, it is better to have this set to false, because
-        it means that TW does not have to look for file changes and can assume
-        a cached template is fine.  (default:True)
-        
+        Whether to automatically reload changed templates. Set this to False in
+        production for efficiency. If this is None, it takes the same value as
+        debug. (default: None)
+
     `preferred_rendering_engines`
-       List of rendering engines in order of preference.  (default: ['mako','genshi','kid','cheetah'])
-       
+        List of rendering engines in order of preference.
+        (default: ['mako','genshi','kid','cheetah'])
+
     `strict_engine_selection`
-       If set to true, TW2 will only select rendering engines from within your preferred_rendering_engines,
-       otherwise, it will try the default list if it does not find a template within your preferred list.
-       (default: True)
-       
+        If set to true, TW2 will only select rendering engines from within your
+        preferred_rendering_engines, otherwise, it will try the default list if
+        it does not find a template within your preferred list. (default: True)
+
     `rendering_engine_lookup`
         A dictionary of file extensions you expect to use for each type of template engine.
         (default: {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'})
@@ -81,7 +81,7 @@ class Config(object):
     params_as_vars = False
     debug = False
     validator_msgs = {}
-    auto_reload_templates = True
+    auto_reload_templates = None
     preferred_rendering_engines = ['mako', 'genshi', 'cheetah', 'kid']
     strict_engine_selection = True
     rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
@@ -89,11 +89,13 @@ class Config(object):
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
+        if self.auto_reload_templates is None:
+            self.auto_reload_templates = self.debug
 
         self.available_rendering_engines = {}
         for e in iter_entry_points("python.templating.engines"):
             if not self.strict_engine_selection or e.name in self.preferred_rendering_engines:
-                try: 
+                try:
                     self.available_rendering_engines[e.name] = e.load()
                 except DistributionNotFound:
                     pass
@@ -107,7 +109,7 @@ class Config(object):
                     self.preferred_rendering_engines.remove(engine_name)
             if engine_name not in self.available_rendering_engines:
                 self.preferred_rendering_engines.remove(engine_name)
-        
+
 class TwMiddleware(object):
     """ToscaWidgets middleware
 
