@@ -33,7 +33,6 @@ class Link(Resource):
     filename = pm.Param('Path to file, relative to module base.', default=None)
 
     def prepare(self):
-        super(Link, self).prepare()
         rl = core.request_local()
         if not hasattr(self, 'link'):
             # TBD shouldn't we test for this in __new__ ?
@@ -41,6 +40,7 @@ class Link(Resource):
                 raise pm.ParameterError("Either 'link' or 'filename' must be specified")
             resources = rl['middleware'].resources
             self.link = resources.register(self.modname, self.filename)
+        super(Link, self).prepare()
 
     def __hash__(self):
         return hash(hasattr(self, 'link') and self.link or ((self.modname or '') + self.filename))
