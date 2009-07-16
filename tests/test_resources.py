@@ -138,6 +138,7 @@ class TestResources(object):
         rl = testapi.request(1, mw)
         eq_(rl.get('resources', []), [])
         widget.display()
+        rl = twc.core.request_local()
         assert(len(rl.get('resources', [])) == 1)
         out = twc.inject_resources(html)
         print 'after inject_res'
@@ -158,6 +159,7 @@ class TestResources(object):
         rl = testapi.request(1)
         rl['blah'] = 'lah'
         tst_mw.get('/')
+        rl = twc.core.request_local()
         assert(rl == {})
 
     def test_mw_inject(self):

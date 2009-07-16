@@ -18,7 +18,6 @@ tw2.core
     better dev server - paste, auto reload, weberror
     move tw2.tests from devtools to core (maybe core.test_templates?)
 
-
 auto-registering controllers
     add link to widget once registered
     avoid multiple registrations for repeating widgets
