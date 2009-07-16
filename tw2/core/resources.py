@@ -233,8 +233,6 @@ class _ResourceInjector(util.MultipleReplacer):
 
     def _injector_for_location(self, key, after=True):
         def inject(group, resources, encoding):
-            for r in resources:
-                r.prepare()
             inj = u'\n'.join([r.display(displays_on='string') for r in resources if r.location == key])
             inj = inj.encode(encoding)
             if after:
