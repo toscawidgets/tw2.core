@@ -55,6 +55,11 @@ class Param(object):
         Should the parameter be automatically included as an attribute?
         (default: False)
 
+    `view_name`
+        The name used for the attribute. This is useful for attributes like
+        *class* which are reserved names in Python. If this is None, the name
+        is used. (default: None)
+
     The class takes care to record which arguments have been explictly
     specifed, even if to their default value. If a parameter from a base
     class is updated in a subclass, arguments that have been explicitly
@@ -76,7 +81,7 @@ class Param(object):
         self.view_name = view_name if view_name is not Default else None
 
         self.specified = []
-        for arg in ['description', 'default', 'request_local', 'attribute']:
+        for arg in ['description', 'default', 'request_local', 'attribute', 'view_name']:
             if locals()[arg] is not Default:
                 self.specified.append(arg)
 

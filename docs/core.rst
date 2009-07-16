@@ -58,6 +58,10 @@ Subclasses of Widget can override the following methods. It is not recommended t
 .. automethod:: tw2.core.widgets.Widget.post_define
 .. automethod:: tw2.core.widgets.Widget.prepare
 
+**Mutable Members**
+
+If a widget's :meth:`prepare` method modifies a mutable member on the widget, it must take care not to modify a class member, as this is not thread safe. In general, the code should call :attr:`self.safe_modify(member_name)`, which detects class members and creates a copy on the instance. Users of widgets should be aware that if a mutable is set on an instance, the widget may modify this. The most common case of a mutable member is :attr:`attrs`. While this arrangement is thread-safe and reasonably simple, copying may be bad for performance. In some cases, widgets may deliberately decide not to call :meth:`safe_modify`, if the implications of this are understood.
+
 
 Widget Hierarchy
 ================
@@ -119,6 +123,7 @@ For instance, you might have a form.mak and a form.html template (mako and gensh
 TW2 will render the mako template if mako is listed ahead of genshi in the middleware config's ``preferred_rendering_engines``.  See the docs regarding :ref:`middleware` for more information on how to set up your middleware for desired output.
 
 .. autoclass:: tw2.core.template.EngineManager
+   :members: render, _get_adaptor_renderer
 
 
 Resources

@@ -1,26 +1,23 @@
 tw2.core
-    make pkg_resources a soft dependence
-    avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
+    make pkg_resources a soft dependency
     csrf protection
-    csslink auto module name
-        cls.__module.__name__ ??
-
-    detect attempts to modify a widget instance and raise exception
+    better way to do "extra children" - Form.submit is a bit of a hack
+        don't collect widgets as params? (but do if its id=)
     id as default param to Widget.__init__
-    configurable compound id separator
+
+    avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
+    detect attempts to modify a widget instance and raise exception
     params - find a neater way to break param descriptions across lines
     i18n - where to call it?
     use quotes in all exceptions
     logging - not much to log, but tw has some useful debug info
-    force ids to begin with a letter
     Support "paste.filter_app_factory" entry point
-    better way to do "extra children" - Form.submit is a bit of a hack
-        don't collect widgets as params? (but do if its id=)
     move attr generation to display? would make some other bits easier
     rename fetch_data to view_request? (also: post_define to define?)
     capitals for name2label - ID, IP, URL
     make resource injector work correctly with pylons cacheing
     nick more unit tests from tw1, e.g. leaks
+    resource link auto module name
 
 tw2.forms
     stop label names being post-to-able
@@ -38,8 +35,7 @@ tw2.forms
 
 validation
     client-side
-    inheriting required, encoding
-        global config for encoding would be a start
+    inheriting required
 
 widget browser
     more detail - need tabs (no ajax to start with)
@@ -49,7 +45,6 @@ widget browser
 controllers
     security
     switcher
-    serving with paste and restart
 
 template
     inline templates
@@ -68,20 +63,18 @@ resources
     paste command to grab resources, for serving with a web server
     'afterwidget' as a location?
 
-js libraries
+new widgets
     jquery
-    mochikit
-    dojo
-
-cool new and different widgets - popup links, photos
+    popup links
 
 dynforms
+    dyndemo
     cascading
         this is where I need to think about ajax properly, which needs client validation
         There's some general things for all ajax requests
             extra - siblings (parent?) of this widget, include value in req
 
-    look at jquery / dojo first
+    look at js libs first
         filtering grid
         hiding button
 
@@ -92,6 +85,9 @@ dynforms
             need to hook this for growing
         make it not depend on customisedform
 
+    growingtextarea
+    text field with suggestion
+    wymeditor?
     customisedform - save prompt
     HidingComponentMixin - has JS optimisation that should be on general resources
     Consider HidingComponent, CascadingComponent as a display-only widget
@@ -126,3 +122,17 @@ sqlalchemy
         generic function
         OneToMany - list inline, with add and delete
         ManyToMany - CheckBoxList (or growing with ajax)
+
+
+yui
+    move script out of templates - just use PlainWidget for most of them
+        this depends a lot on the growing work
+    rename options? it clashes with SelectionField.options
+    autocomplete: experiment with force_select
+    container - dialogs, tooltips
+    Menu
+    Paginator
+    ImageCropper
+    carousel - picking images
+    Resize
+    YUI CSS base
