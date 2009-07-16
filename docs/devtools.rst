@@ -12,7 +12,7 @@ To keep tw2.core as minimal as possible, features needed only for development ar
 Widget Browser
 --------------
 
-The browser essentially enumerates the ``tw2.widgets`` entrypoint.
+The browser essentially enumerates the ``tw2.widgets`` entrypoint. When browsing a module, it iterates through the public names in the module, and displays any that is a Widget subclass. It also imports ``samples.py`` for demo widgets. This can contain :attr:`page_options` - a dict that gives attributes for the body tag in the containing page.
 
 The parameters that are displayed are: all the required parameters, plus non-required parameters that are defined on anything other than the Widget base class. Variables are never shown.
 

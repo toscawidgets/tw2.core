@@ -28,7 +28,6 @@ class TestWidgets(object):
         test.prepare()
         assert(test.attrs['test'] == 'wibble')
 
-    # this behaviour is removed
     def test_attribute_clash(self):
         test = Test6(id='test', template='test', test='wibble').req()
         test.attrs = {'test':'blah'}
@@ -68,7 +67,7 @@ class TestWidgets(object):
         except TypeError:
             # this will raise a type error because "Undefined" is found (not a string)
             pass
-            
+
 
     def test_meta_forceid(self):
         class MyTest(twc.CompoundWidget):
@@ -78,19 +77,19 @@ class TestWidgets(object):
         assert(MyTest.children[1].id == 'b')
 
 class TestRepeatingWidgetBunchCls():
-    
+
     def setup(self):
         self.bunch = wd.RepeatingWidgetBunchCls('')
-    
+
     @raises(KeyError)
     def test_bad_getitem(self):
         self.bunch['asdf']
-        
+
 class TestRepeatingWidgetBunch():
-    
+
     def setup(self):
         self.bunch = wd.RepeatingWidgetBunch('', '')
-    
+
     @raises(KeyError)
     def test_bad_getitem(self):
         self.bunch['asdf']
@@ -118,7 +117,7 @@ class TestWidget(tb.WidgetTest):
         class FEWidget(wd.Widget):
             validator = fe.validators.Int()
         FEWidget(id="s").validate({'s':'3'})
-    
+
     @raises(twc.WidgetError)
     def test_only_parent_validation(self):
         CompoundTestWidget().children[0].validate({})
@@ -129,25 +128,25 @@ class TestWidget(tb.WidgetTest):
         w = self.widget()
         w.safe_parameter = {'a':1}
         w.safe_modify(w, 'safe_parameter')
-    
+
     def _test_request_local_validated_widget(self):
-        # this seems like it's on the right track, but i dunno, it Seg. Faults 
+        # this seems like it's on the right track, but i dunno, it Seg. Faults
         # widgets.py:193
         rl = twc.core.request_local()
         rl['validated_widget'] = TWidget()
         self.widget().display()
-        
+
     @raises(pm.ParameterError)
     def test_bad_validator(self):
         class MWidget(wd.Widget):
             validator = 'asdf'
         MWidget()
-    
+
     def test_required_vd(self):
         class MWidget(wd.Widget):
             validator = pm.Required
         MWidget()
-        
+
 class SubCompoundTestWidget(wd.CompoundWidget):
     children = [CompoundTestWidget()]
 
@@ -157,13 +156,13 @@ class TestSubCompoundWidget(tb.WidgetTest):
     attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
     expected = """<p>Test Widget</p>"""
     validate_params = [[None, {'rw':''}, None, vd.ValidationError]]
-    
+
     def test_string_value(self):
         w = self.widget(**self.attrs)()
         w.value = "value"
         r = w.display("value")
         eq_(r.strip(), self.expected)
-        
+
     @raises(twc.WidgetError)
     def test_duplicate_ids(self):
         class CompoundTestWidget(wd.CompoundWidget):
@@ -175,7 +174,7 @@ class TestSubCompoundWidget(tb.WidgetTest):
         class CompoundTestWidget(wd.CompoundWidget):
             children = ["", AlwaysValidateFalseWidget(id="something")]
         CompoundTestWidget()
-        
+
 class TestCompoundWidget(tb.WidgetTest):
     widget = CompoundTestWidget
     attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
@@ -253,17 +252,16 @@ class TestPage(tb.WidgetTest):
 <head><title>some title</title></head>
 <body><h1>some title</h1></body>
 </html>"""
-    
-    def _test_fetch_data(self):
-        #not sure what causes this to fail
-        r = self.widget(**self.attrs).fetch_data(None)
+
+    def test_fetch_data(self):
+        r = self.widget(**self.attrs).req().fetch_data(None)
         eq_(r, None)
-        
+
     def test_request_post(self):
         environ = {'REQUEST_METHOD': 'POST',
                    }
         req=Request(environ)
-        r = self.widget(**self.attrs)().request(req)
+        r = self.widget(_no_autoid=True, **self.attrs).request(req)
         tb.assert_eq_xml(r.body, """<html>
 <head><title>some title</title></head>
 <body><h1>some title</h1></body>

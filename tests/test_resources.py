@@ -30,6 +30,7 @@ class TestResources(object):
         wa = TestWidget(id='a')
         wb = TestWidget(id='b', resources=[js,css])
         wa.display()
+        rl = twc.core.request_local()
         assert(len(rl.get('resources', [])) == 0)
         wb.display()
         for r in rl['resources']:
@@ -48,6 +49,7 @@ class TestResources(object):
         rl = testapi.request(1, mw)
         wa.display()
         wb.display()
+        rl = twc.core.request_local()
         r = rl['resources']
         assert(len(rl['resources']) == 1)
         wc.display()
@@ -194,15 +196,15 @@ class TestJsSource(tb.WidgetTest):
 
     def _test_repr_(self):
         #not sure how to test resources.py:79
-        r = repr(self.widget(**self.attrs)) 
+        r = repr(self.widget(**self.attrs))
         assert r == "<class 'tw2.core.params.JSSource_s'>", r
-        
+
 
 class TestJsFuncall(tb.WidgetTest):
     widget = twr.JSFuncCall
     attrs = {'function':'foo', 'args':['a', 'b']}
     expected = None
-    
+
     def test_display(self):
         r = self.widget(**self.attrs).display(**self.params)
         assert r == """<script type="text/javascript">foo("a", "b")</script>""", r
@@ -215,7 +217,7 @@ class TestResourcesApp:
         config = Config()
         config.res_prefix = ""
         self.app = twr.ResourcesApp(config)
-    
+
     def test_register_requirement(self):
         req = Requirement.parse('tw2.core>1.0')
         self.app.register(req, 'something.txt')

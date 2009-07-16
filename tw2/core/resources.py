@@ -1,5 +1,5 @@
 import widgets as wd
-import util as util 
+import util as util
 import core as core
 import params as pm
 import threading, re, logging, wsgiref.util as wru, itertools, heapq, operator
@@ -16,6 +16,13 @@ class Resource(wd.Widget):
                         'useful, e.g. static images.', default=None)
     id = None
 
+    def prepare(self):
+        super(Resource, self).prepare()
+        res = core.request_local().setdefault('resources', [])
+        if self not in res:
+            res.append(self)
+
+
 class Link(Resource):
     '''
     A link to a file.
@@ -29,13 +36,11 @@ class Link(Resource):
         super(Link, self).prepare()
         rl = core.request_local()
         if not hasattr(self, 'link'):
-            #shouldn't we test for this in __new__ ?
+            # TBD shouldn't we test for this in __new__ ?
             if not self.filename:
                 raise pm.ParameterError("Either 'link' or 'filename' must be specified")
             resources = rl['middleware'].resources
             self.link = resources.register(self.modname, self.filename)
-        #register the resource with the request_local (handles the case where the link is injected by it's lonesome)
-        core.request_local().setdefault('resources', set()).add(self)
 
     def __hash__(self):
         return hash(hasattr(self, 'link') and self.link or ((self.modname or '') + self.filename))

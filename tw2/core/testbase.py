@@ -1,13 +1,8 @@
-import os, re, pkg_resources as pk
-import formencode as fe
-from copy import copy
+import os, re, copy, middleware as tmw, template
+import formencode as fe, itertools as it, pkg_resources as pk, HTMLParser as hp
 from difflib import unified_diff
 from cStringIO import StringIO
-from cgi import FieldStorage
-from tw2.core.middleware import make_middleware
-from tw2.core.template import global_engines, reset_engine_name_cache
 from BeautifulSoup import BeautifulSoup as bs
-from itertools import izip
 from nose.tools import eq_
 
 #try:
@@ -20,13 +15,10 @@ rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', '
 rm = pk.ResourceManager()
 
 # code from Tom Lynn on #pythonpaste
-
-import HTMLParser
-
 SELF_CLOSING_TAGS = ['br', 'hr', 'input', 'img', 'meta',
                      'spacer', 'link', 'frame', 'base']
 
-class Parser(HTMLParser.HTMLParser):
+class Parser(hp.HTMLParser):
     def __init__(self, self_closing=SELF_CLOSING_TAGS):
         HTMLParser.HTMLParser.__init__(self)
         self.tags = []
@@ -57,7 +49,7 @@ def validate_html(html):
 # end Tom Lynn code
 
 def remove_whitespace_nodes(node):
-    new_node = copy(node)
+    new_node = copy.copy(node)
     new_node._children = []
     if new_node.text and new_node.text.strip() == '':
         new_node.text = ''
@@ -110,7 +102,7 @@ def fix_xml(needle):
     try:
         needle_node = etree.fromstring(needle)
     except ExpatError:
-        raise ExpatError('Could not parse %s into xml.'%needle) 
+        raise ExpatError('Could not parse %s into xml.'%needle)
     needle_node = remove_whitespace_nodes(needle_node)
     remove_namespace(needle_node)
     needle_s = etree.tostring(needle_node)
@@ -137,7 +129,7 @@ def assert_in_xml(needle, haystack):
 def assert_eq_xml(needle, haystack):
     assert eq_xml(needle, haystack), "%s does not equal %s"%(needle, haystack)
 
-    
+
 import tw2.core as twc
 
 def request_local_tst():
@@ -165,7 +157,7 @@ def TW2WidgetBuilder(widget, **attrs):
     return MyTestWidget
 
 class WidgetTest(object):
-    
+
     template_engine = 'string'
     params_as_vars = True
     widget = None
@@ -174,7 +166,7 @@ class WidgetTest(object):
     expected = ""
     declarative = False
     validate_params = None
-    
+
     def request(self, requestid, mw=None):
         if mw is None:
             mw = self.mw
@@ -189,11 +181,11 @@ class WidgetTest(object):
         global _request_id, _request_local
         _request_local = {}
         _request_id = None
-        self.mw = make_middleware(None, default_engine=self.template_engine)
+        self.mw = tmw.make_middleware(None, default_engine=self.template_engine)
         if self.declarative:
             self.widget = TW2WidgetBuilder(self.widget, **self.attrs)
         return self.request(1)
-    
+
     def _get_all_possible_engines(self):
         if self.widget is None:
             return
@@ -209,18 +201,18 @@ class WidgetTest(object):
 
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
         _request_id = None
-        reset_engine_name_cache()
-        mw = make_middleware(None, preferred_rendering_engines=[engine])
+        template.reset_engine_name_cache()
+        mw = tmw.make_middleware(None, preferred_rendering_engines=[engine])
         self.request(1, mw)
-        r = self.widget(**attrs).display(**params)
+        r = self.widget(_no_autoid=True, **attrs).display(**params)
         # reset the cache as not to affect other tests
         assert_eq_xml(expected, r)
 
-            
+
     def test_display(self):
         for engine in self._get_all_possible_engines():
             yield self._check_rendering_vs_expected, engine, self.attrs, self.params, self.expected
-            
+
     def _check_validation(self, attrs, params, expected, raises=None):
         if raises is not None:
             try:
@@ -230,7 +222,7 @@ class WidgetTest(object):
             return
         r = self.widget(**attrs).validate(params)
         assert r == expected, r
-        
+
     def test_validate(self):
         if self.validate_params is not None:
             for params in self.validate_params:
@@ -254,8 +246,8 @@ class ValidatorTest(object):
 
     def __init__(self, *args, **kw):
         super(ValidatorTest, self).__init__(*args, **kw)
-        for attr in ['attrs', 'params', 'expected', 
-                     'from_python_attrs', 'from_python_params', 'from_python_expected', 
+        for attr in ['attrs', 'params', 'expected',
+                     'from_python_attrs', 'from_python_params', 'from_python_expected',
                      'to_python_attrs', 'to_python_params', 'to_python_expected']:
             value = getattr(self, attr)
             if value is not None and not isinstance(value, list):
@@ -270,12 +262,12 @@ class ValidatorTest(object):
         rl.clear()
         rl['middleware'] = mw
         return request_local_tst()
-    
+
     def setup(self):
         global _request_id, _request_local
         _request_local = {}
         _request_id = None
-        self.mw = make_middleware(None)
+        self.mw = tmw.make_middleware(None)
         return self.request(1)
 
     def _check_validation(self, attrs, params, expected, method='validate_python'):
@@ -288,18 +280,18 @@ class ValidatorTest(object):
             return
         r = getattr(self.validator(**attrs), method)(params)
         eq_(r, expected)
-    
-    def test_validate(self): 
+
+    def test_validate(self):
         if self.expected:
-            for attrs, params, expected in izip(self.attrs, self.params, self.expected):
+            for attrs, params, expected in it.izip(self.attrs, self.params, self.expected):
                 yield self._check_validation, attrs, params, expected
-    
-    def test_from_python(self): 
+
+    def test_from_python(self):
         if self.from_python_expected:
-            for attrs, params, expected in izip(self.from_python_attrs, self.from_python_params, self.from_python_expected):
+            for attrs, params, expected in it.izip(self.from_python_attrs, self.from_python_params, self.from_python_expected):
                 yield self._check_validation, attrs, params, expected, 'from_python'
 
-    def test_to_python(self): 
+    def test_to_python(self):
         if self.to_python_expected:
-            for attrs, params, expected in izip(self.to_python_attrs, self.to_python_params, self.to_python_expected):
+            for attrs, params, expected in it.izip(self.to_python_attrs, self.to_python_params, self.to_python_expected):
                 yield self._check_validation, attrs, params, expected, 'to_python'

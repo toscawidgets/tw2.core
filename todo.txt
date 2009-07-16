@@ -1,8 +1,8 @@
 tw2.core
+    check resource dir trav with backslash
     the way ids work with displayonlywidget isn't quite right
         make compound_id always use the last element?
     force ids to begin with a letter
-    check resource dir trav with backslash *****
 
     children_deep
         dupe id
@@ -16,6 +16,8 @@ tw2.core
         make the static file server support http 1.1 stuff like if-modified-since
     the "extra children" thing for datasrc (and submit) - avoid reserved_names
     better dev server - paste, auto reload, weberror
+    move tw2.tests from devtools to core (maybe core.test_templates?)
+
 
 auto-registering controllers
     add link to widget once registered
@@ -66,9 +68,6 @@ tw2.dynforms
 
 
 yui
-    core changes
-        keep order of resources
-
     data controls:
         data source
         autocomplete

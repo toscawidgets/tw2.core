@@ -200,11 +200,9 @@ class Widget(pm.Parametered):
                 self.prepare()
             if self.resources:
                 self.resources = WidgetBunch([r.req() for r in self.resources])
-                res = core.request_local().setdefault('resources', [])
                 for r in self.resources:
                     r.prepare()
-                    if r not in res:
-                        res.append(r)
+
             mw = core.request_local().get('middleware')
             if displays_on is None:
                 displays_on = (self.parent.template.split(':')[0] if self.parent
@@ -289,7 +287,7 @@ class CompoundWidget(Widget):
         ids = set()
         joined_cld = []
         for c in cls.children:
-            if not issubclass(c, Widget):
+            if not isinstance(c, WidgetMeta):
                 raise pm.ParameterError("All children must be widgets")
             if getattr(c, 'id', None):
                 if c.id in ids:
@@ -412,7 +410,7 @@ class RepeatingWidget(Widget):
         if getattr(cls, 'children', None):
             cls.child = cls.child(children = cls.children)
             cls.children = []
-        if not issubclass(cls.child, Widget):
+        if not isinstance(cls.child, WidgetMeta):
             raise pm.ParameterError("Child must be a widget")
         if getattr(cls.child, 'id', None):
             raise pm.ParameterError("Child must have no id")
@@ -480,7 +478,7 @@ class DisplayOnlyWidget(Widget):
         if getattr(cls, 'children', None):
             cls.child = cls.child(children = cls.children)
             cls.children = []
-        if not issubclass(cls.child, Widget):
+        if not isinstance(cls.child, WidgetMeta):
             raise pm.ParameterError("Child must be a widget")
         cls._sub_compound = cls.child._sub_compound
         cls_id = getattr(cls, 'id', None)
