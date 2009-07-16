@@ -1,6 +1,5 @@
 import copy, weakref, re, itertools, webob
 import template, core, util, validation as vd, params as pm
-
 try:
     import formencode
 except ImportError:
@@ -52,6 +51,7 @@ class Widget(pm.Parametered):
     template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
     validator = pm.Param('Validator for the widget.', default=None, request_local=False)
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
+    css_class = pm.Param('Css Class Name', default=None, attribute=True, view_name='class')
     value = pm.Param("The value for the widget.", default=None)
     resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a :class:`Resource` subclass.", default=[], request_local=False)
 
@@ -122,24 +122,20 @@ class Widget(pm.Parametered):
 
     @classmethod
     def _gen_compound_id(cls):
-        cls.compound_id = cls._compound_id()
-        cls.attrs = cls.attrs.copy()
-        cls.attrs['id'] = getattr(cls, 'id', None) and cls.compound_id
-
-    @classmethod
-    def _compound_id(cls, base=False):
         ancestors = []
-        cur = cls.parent
+        cur = cls
         while cur:
             if cur in ancestors:
                 raise core.WidgetError('Parent loop')
             ancestors.append(cur)
             cur = cur.parent
-        elems = list(reversed(filter(None, [getattr(cls, 'id', None)] + [a._compound_id_elem(base) for a in ancestors])))
-        return elems and ':'.join(elems) or None
+        elems = reversed(filter(None, [a._compound_id_elem() for a in ancestors]))
+        cls.compound_id = elems and ':'.join(elems) or None
+        cls.attrs = cls.attrs.copy()
+        cls.attrs['id'] = getattr(cls, 'id', None) and cls.compound_id
 
     @classmethod
-    def _compound_id_elem(cls, base=False):
+    def _compound_id_elem(cls):
         return getattr(cls, 'id', None)
 
     @classmethod
@@ -148,7 +144,7 @@ class Widget(pm.Parametered):
             import middleware
             capp = getattr(cls.__module__, 'tw2_controllers', middleware.global_controllers)
             if capp:
-                capp.register(cls, cls.compound_id)
+                capp.register(cls, cls.id)
 
     def prepare(self):
         """
@@ -174,7 +170,7 @@ class Widget(pm.Parametered):
             for a in self._attr:
                 if a in self.attrs:
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
-                self.attrs[a] = getattr(self, a)
+                self.attrs[self._params[a].view_name] = getattr(self, a)
 
     @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
@@ -202,21 +198,22 @@ class Widget(pm.Parametered):
                 self.resources = WidgetBunch([r.req() for r in self.resources])
                 for r in self.resources:
                     r.prepare()
-
             mw = core.request_local().get('middleware')
             if displays_on is None:
-                displays_on = (self.parent.template.split(':')[0] if self.parent
-                                                    else (mw and mw.config.default_engine or 'string'))
-            vars = {'w':self}
+                if self.parent is None:
+                    displays_on = mw and mw.config.default_engine or 'string'
+                else:
+                    displays_on = template.get_engine_name(self.parent.template, mw)
+            v = {'w':self}
             if mw and mw.config.params_as_vars:
                 for p in self._params:
                     if hasattr(self, p):
-                        vars[p] = getattr(self, p)
+                        v[p] = getattr(self, p)
             eng = mw and mw.engines or template.global_engines
-            return eng.render(self.template, displays_on, vars)
+            return eng.render(self.template, displays_on, v)
 
     @classmethod
-    def validate(cls, params):
+    def validate(cls, params, state=None):
         """
         Validate form input. This should always be called on a class. It
         either returns the validated data, or raises a
@@ -274,7 +271,7 @@ class CompoundWidget(Widget):
     children = pm.Param('Children for this widget. This must be an interable, each item of which is a Widget')
     c = pm.Variable("Alias for children", default=property(lambda s: s.children))
     children_deep = pm.Variable("Children, including any children from child CompoundWidgets that have no id")
-    template = 'genshi:tw2.core.templates.display_children'
+    template = 'tw2.core.templates.display_children'
 
     @classmethod
     def post_define(cls):
@@ -287,7 +284,7 @@ class CompoundWidget(Widget):
         ids = set()
         joined_cld = []
         for c in cls.children:
-            if not isinstance(c, WidgetMeta):
+            if not isinstance(c, type) or not issubclass(c, Widget):
                 raise pm.ParameterError("All children must be widgets")
             if getattr(c, 'id', None):
                 if c.id in ids:
@@ -340,7 +337,8 @@ class CompoundWidget(Widget):
                     if val is not vd.EmptyField:
                         data[c.id] = val
             except vd.ValidationError:
-                data[c.id] = vd.Invalid
+                if not c._sub_compound:
+                    data[c.id] = vd.Invalid
                 any_errors = True
         if self.validator:
             data = self.validator.to_python(data)
@@ -398,7 +396,7 @@ class RepeatingWidget(Widget):
 
     repetition = pm.ChildVariable('The repetition of a child widget.')
 
-    template = 'genshi:tw2.core.templates.display_children'
+    template = 'tw2.core.templates.display_children'
 
     @classmethod
     def post_define(cls):
@@ -410,8 +408,8 @@ class RepeatingWidget(Widget):
         if getattr(cls, 'children', None):
             cls.child = cls.child(children = cls.children)
             cls.children = []
-        if not isinstance(cls.child, WidgetMeta):
-            raise pm.ParameterError("Child must be a widget")
+        if not isinstance(cls.child, type) or not issubclass(cls.child, Widget):
+            raise pm.ParameterError("Child must be a Widget")
         if getattr(cls.child, 'id', None):
             raise pm.ParameterError("Child must have no id")
         cls.child = cls.child(parent=cls)
@@ -478,7 +476,7 @@ class DisplayOnlyWidget(Widget):
         if getattr(cls, 'children', None):
             cls.child = cls.child(children = cls.children)
             cls.children = []
-        if not isinstance(cls.child, WidgetMeta):
+        if not isinstance(cls.child, type) or not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
         cls._sub_compound = cls.child._sub_compound
         cls_id = getattr(cls, 'id', None)
@@ -493,7 +491,7 @@ class DisplayOnlyWidget(Widget):
             cls.child = cls.child(id=cls_id, parent=cls)
 
     @classmethod
-    def _compound_id_elem(cls, base=False):
+    def _compound_id_elem(cls):
         return None
 
     def __init__(self, **kw):
@@ -524,14 +522,13 @@ class Page(DisplayOnlyWidget):
     the page.
     """
     title = pm.Param('Title for the page')
-    template = "genshi:tw2.core.templates.page"
+    template = "tw2.core.templates.page"
     _no_autoid = True
 
     @classmethod
     def post_define(cls):
         if not getattr(cls, 'id', None) and '_no_autoid' not in cls.__dict__:
             cls.id = cls.__name__.lower()
-            cls._gen_compound_id()
             cls._auto_register()
             DisplayOnlyWidget.post_define.im_func(cls)
 
