@@ -124,13 +124,13 @@ class Widget(pm.Parametered):
     @classmethod
     def _gen_compound_id(cls):
         ancestors = []
-        cur = cls
+        cur = cls.parent
         while cur:
             if cur in ancestors:
                 raise core.WidgetError('Parent loop')
             ancestors.append(cur)
             cur = cur.parent
-        elems = reversed(filter(None, [a._compound_id_elem() for a in ancestors]))
+        elems = reversed(filter(None, [getattr(cls, 'id', None)] + [a._compound_id_elem() for a in ancestors]))
         cls.compound_id = elems and ':'.join(elems) or None
         cls.attrs = cls.attrs.copy()
         cls.attrs['id'] = getattr(cls, 'id', None) and cls.compound_id
@@ -145,7 +145,7 @@ class Widget(pm.Parametered):
             import middleware
             capp = getattr(cls.__module__, 'tw2_controllers', middleware.global_controllers)
             if capp:
-                capp.register(cls, cls.id)
+                capp.register(cls, cls.compound_id)
 
     def prepare(self):
         """
@@ -487,7 +487,8 @@ class DisplayOnlyWidget(Widget):
             raise pm.ParameterError("Can only specify id on either a DisplayOnlyWidget, or its child, not both: '%s' '%s'" % (cls_id, child_id))
         if not cls_id and child_id:
             cls.id = child_id
-            cls._gen_compound_id()
+            DisplayOnlyWidget.post_define.im_func(cls)
+            Widget.post_define.im_func(cls)
             cls.child = cls.child(parent=cls)
         else:
             cls.child = cls.child(id=cls_id, parent=cls)
@@ -531,8 +532,8 @@ class Page(DisplayOnlyWidget):
     def post_define(cls):
         if not getattr(cls, 'id', None) and '_no_autoid' not in cls.__dict__:
             cls.id = cls.__name__.lower()
-            cls._auto_register()
             DisplayOnlyWidget.post_define.im_func(cls)
+            Widget.post_define.im_func(cls)
 
     @classmethod
     def request(cls, req):

@@ -9,7 +9,7 @@ tw2.core
     detect attempts to modify a widget instance and raise exception
     params - find a neater way to break param descriptions across lines
     i18n - where to call it?
-    use quotes in all exceptions
+    use quotes in all exceptions, also inclue widget id?
     logging - not much to log, but tw has some useful debug info
     Support "paste.filter_app_factory" entry point
     move attr generation to display? would make some other bits easier

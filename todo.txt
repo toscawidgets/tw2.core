@@ -61,23 +61,17 @@ support python 2.4 and 2.6
     use paste web server?
 
 tw2.dynforms
+    fix widget browser
     OtherSingleSelectField
     unique column in growinggrid
     make onload trigger onchange
 
-
 yui
-    data controls:
-        data source
-        autocomplete
-             margin-bottom:2em;
-        data table
-
-    widget browser - need skin
-
-    // Use a LocalDataSource
-    var oDS = new YAHOO.util.LocalDataSource(YAHOO.example.Data.arrayStates);
-    // Optional to define fields for single-dimensional array
-    oDS.responseSchema = {fields : ["state"]};
-
-        twc.JSLink(modname=__name__, filename="static/data.js"),
+    autocomplete example with ajax
+        register with compound id
+            needs to always include the last element
+            nearly working, need to explicitly set id on formpage
+            *** update docs
+        referencing the controller
+            to start with, have a get_link function?
+    data table
