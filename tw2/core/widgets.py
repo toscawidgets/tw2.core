@@ -112,6 +112,7 @@ class Widget(pm.Parametered):
                     formencode and isinstance(cls.validator, formencode.Validator)):
                 raise pm.ParameterError("Validator must be either a tw2 or FormEncode validator")
 
+        cls.resources = [r(parent=cls) for r in cls.resources]
         cls._deferred = [a for a in dir(cls) if isinstance(getattr(cls, a), pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
 
@@ -168,9 +169,10 @@ class Widget(pm.Parametered):
             self.attrs = self.attrs.copy()
             self.attrs['id'] = getattr(self, 'id', None) and self.compound_id
             for a in self._attr:
-                if a in self.attrs:
+                view_name = self._params[a].view_name
+                if view_name in self.attrs:
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
-                self.attrs[self._params[a].view_name] = getattr(self, a)
+                self.attrs[view_name] = getattr(self, a)
 
     @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
