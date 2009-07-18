@@ -86,6 +86,13 @@ class TestResources(object):
         mw.resources.register('tw2.tests', 'templates/')
         assert(tst_mw.get('/resources/tw2.tests/__init__.py', expect_errors=True).status == '404 Not Found')
         assert(tst_mw.get('/resources/tw2.tests/templates/../__init__.py', expect_errors=True).status == '404 Not Found')
+        assert(tst_mw.get('/resources/tw2.tests/templates/..\\__init__.py', expect_errors=True).status == '404 Not Found')
+
+    def test_whole_dir_traversal(self): # check for potential security flaw
+        mw.resources.register('tw2.tests', 'templates/', whole_dir=True)
+        assert(tst_mw.get('/resources/tw2.tests/__init__.py', expect_errors=True).status == '404 Not Found')
+        assert(tst_mw.get('/resources/tw2.tests/templates/../__init__.py', expect_errors=True).status == '404 Not Found')
+        assert(tst_mw.get('/resources/tw2.tests/templates/..\\__init__.py', expect_errors=True).status == '404 Not Found')
 
     def test_zipped(self):
         # assumes webtest is installed as a zipped egg

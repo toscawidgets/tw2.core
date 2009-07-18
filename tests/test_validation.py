@@ -251,7 +251,7 @@ class TestValidator(tb.ValidatorTest):
     attrs =    [{}, {'required':True}]
     params =   ['', '']
     expected = [None, ValidationError]
-    
+
     from_python_attrs =    [{}, {'required':True}]
     from_python_params =   ['', 'asdf']
     from_python_expected = ['', 'asdf']
@@ -261,7 +261,7 @@ class TestValidator(tb.ValidatorTest):
         assert v.required == False
         v2 = v.clone(required=True)
         assert v2.required == True
-    
+
     def test_repr_(self):
         v = Validator()
         r = repr(v)
@@ -272,7 +272,7 @@ class TestLengthValidator(tb.ValidatorTest):
     attrs =    [{}, {}, {'max':3}, {'max':3}, {'max':3}, {'min':3}, {'min':3}, {'min':3}]
     params =   ['', 'asdf', 'as', 'asd', 'asdf', 'as', 'asd', 'asdf']
     expected = [None, None, None, None, ValidationError, ValidationError, None, None]
-    
+
 class TestIntValidator(tb.ValidatorTest):
     validator = IntValidator
     to_python_attrs =    [{}, {}, {}, {}]
@@ -290,7 +290,7 @@ class TestIntValidator(tb.ValidatorTest):
     @raises(ValidationError)
     def test_required(self):
         v = IntValidator(required=True)
-        v.validate_python('')
+        v.validate_python(v.to_python(''))
 
 
 class TestBoolValidator(tb.ValidatorTest):
@@ -304,17 +304,17 @@ class TestOneOfValidator(tb.ValidatorTest):
     attrs =    [{'values':['a', 'b', 'c']}, {'values':['a', 'b', 'c']}]
     params =   ['a', 'd']
     expected = [None, ValidationError]
-    
+
 class TestDateValidator(tb.ValidatorTest):
     validator = DateValidator
     to_python_attrs =    [{}, {}]
     to_python_params =   ['01/01/2009', 'asdf']
     to_python_expected = [datetime.date(2009, 1, 1), ValidationError]
-    
+
     from_python_attrs = [{}, {}]
     from_python_params = [datetime.date(2009, 1, 1)]
     from_python_expected = ['01/01/2009']
-    
+
     def test_max_str(self):
         expected = '31/12/2009'
         r = DateValidator(max=datetime.date(2009, 12, 31)).max_str
@@ -330,7 +330,7 @@ class TestDatetimeValidator(tb.ValidatorTest):
     to_python_attrs =    [{}, {}]
     to_python_params =   ['01/01/2009 01:00', 'asdf']
     to_python_expected = [datetime.datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M'), ValidationError]
-    
+
     from_python_attrs = [{}, {}]
     from_python_params = [datetime.datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M')]
     from_python_expected = ['01/01/2009 01:00']
@@ -363,5 +363,5 @@ class TestMatchValidator(tb.ValidatorTest):
     attrs =    [{'field1':'field1', 'field2':'field2'}, {'field1':'field1', 'field2':'field2'}]
     params =   [{'field1':'a', 'field2':'a'},           {'field1':'a', 'field2':'b'}]
     expected = [None,                                   ValidationError]
-    
-    
+
+

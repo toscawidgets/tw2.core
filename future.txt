@@ -125,8 +125,11 @@ sqlalchemy
 
 
 yui
+    use percious approach for multiple lib versions
+    allow multiple DataSource widgets on one page
     move script out of templates - just use PlainWidget for most of them
         this depends a lot on the growing work
+
     rename options? it clashes with SelectionField.options
     autocomplete: experiment with force_select
     container - dialogs, tooltips

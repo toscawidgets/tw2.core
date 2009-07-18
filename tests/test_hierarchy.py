@@ -63,11 +63,11 @@ class TestHierarchy(object):
             assert(str(e) == "WidgetBunch contains a duplicate id 'a'")
 
     def test_cw_propagate(self):
-        test = twc.CompoundWidget(id='a', template='x', children=[
+        testb = twc.CompoundWidget(id='a', template='x', children=[
             twc.Widget(id='b'),
             twc.Widget(id='c'),
-        ]).req()
-        test.value = {'b':1, 'c':2}
+        ])
+        test = testb.req(value = {'b':1, 'c':2})
         test.prepare()
         assert(test.children.b.value == 1)
         assert(test.children.c.value == 2)
@@ -77,7 +77,7 @@ class TestHierarchy(object):
         a = A()
         a.b = 10
         a.c= 20
-        test.value = a
+        test = testb.req(value = a)
         test.prepare()
         assert(test.children.b.value == 10)
         assert(test.children.c.value == 20)
@@ -104,23 +104,26 @@ class TestHierarchy(object):
         assert([w.value for w in test.children] == ['a', 'b', 'c'])
 
     def test_rw_length(self):
-        test = twc.RepeatingWidget(child=twc.Widget).req()
+        testb = twc.RepeatingWidget(child=twc.Widget)
 
-        test.value = range(10)
+        test = testb.req(value=range(10))
         test.repetitions = None
         test.prepare()
         assert(test.repetitions == 10)
 
+        test = testb.req(value=range(10))
         test.extra_reps = 5
         test.repetitions = None
         test.prepare()
         assert(test.repetitions == 15)
 
+        test = testb.req(value=range(10))
         test.max_reps = 10
         test.repetitions = None
         test.prepare()
         assert(test.repetitions == 10)
 
+        test = testb.req(value=range(10))
         test.max_reps = 30
         test.min_reps = 20
         test.repetitions = None

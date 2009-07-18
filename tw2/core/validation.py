@@ -145,7 +145,7 @@ class Validator(object):
             try:
                 if self.encoding:
                     value = value.decode(self.encoding)
-            except UnicodeEncodeError, e:
+            except (UnicodeDecodeError, UnicodeEncodeError), e:
                 raise ValidationError('decode', self)
             if self.strip:
                 value = value.strip()
@@ -263,11 +263,15 @@ class IntValidator(RangeValidator):
             raise ValidationError('notint', self)
 
     def validate_python(self, value):
-        value = self.to_python(value)
-        # avoid calling Validator.validate_python, as it sees int(0) as missing
+        # avoid super().validate_python, as it sees int(0) as missing
+        value = self.to_python(value) # TBD: I wanted to avoid this; needed to make unit tests pass
         if self.required and value is None:
             raise ValidationError('required', self)
-        RangeValidator.validate_python(self, value)
+        if value is not None:
+            if self.min and value < self.min:
+                raise ValidationError('toosmall', self)
+            if self.max and value > self.max:
+                raise ValidationError('toobig', self)
 
     def from_python(self, value):
         return str(value)

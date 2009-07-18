@@ -163,7 +163,9 @@ class ResourcesApp(object):
         req = wo.Request(environ)
         try:
             path = req.path_info[len(self.config.res_prefix):]
-            if path not in self._paths or '../' in path: # protect against directory traversal
+            if path not in self._paths:
+                if '..' in path: # protect against directory traversal
+                    raise IOError()
                 for d in self._dirs:
                     if path.startswith(d):
                         break

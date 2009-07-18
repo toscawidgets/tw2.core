@@ -1,28 +1,30 @@
-tw2.core
-    check resource dir trav with backslash
-    the way ids work with displayonlywidget isn't quite right
-        make compound_id always use the last element?
+compound ids
+    document and unit tests
     force ids to begin with a letter
+    avoid multiple registrations for repeating widgets
+        only register in the zero-th repetition
+        make sure they are registered at startup
+
+tw2.core
+    move tw2.tests from devtools to core (maybe core.test_templates?)
+    check resource dir trav with backslash
 
     children_deep
         dupe id
         validation
         grandchild hiding
+    refactor resources even more - avoid need to do parent=self.__class__ when adding dynamically
     quickstart - autodetect package from "tw2.package"
     problem with colons as id separator - doesn't work in css, it thinks they're pseudo classes
         configurable compound id separator
     resources - caching
         I can generate expires/max-age, but it doesn't make it cache
         make the static file server support http 1.1 stuff like if-modified-since
+            *** should ask about this on paste mailing list (or somewhere)
     the "extra children" thing for datasrc (and submit) - avoid reserved_names
     better dev server - paste, auto reload, weberror
-    move tw2.tests from devtools to core (maybe core.test_templates?)
 
 auto-registering controllers
-    add link to widget once registered
-    avoid multiple registrations for repeating widgets
-        only register in the zero-th repetition
-        make sure they are registered at startup
     rewrite class name like elixir does
 
 validation
@@ -36,7 +38,8 @@ validation
 
 documentation
     core
-        explain global_config/middleware, etc.
+        explain global_config/middleware, etc
+        explain the order things happen - building attrs, registering resources, etc.
     forms
         getting started
             with wsgi
@@ -61,17 +64,11 @@ support python 2.4 and 2.6
     use paste web server?
 
 tw2.dynforms
-    fix widget browser
     OtherSingleSelectField
     unique column in growinggrid
     make onload trigger onchange
 
 yui
-    autocomplete example with ajax
-        register with compound id
-            needs to always include the last element
-            nearly working, need to explicitly set id on formpage
-            *** update docs
-        referencing the controller
-            to start with, have a get_link function?
+    referencing the controller
+        to start with, have a get_link function?
     data table
