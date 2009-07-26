@@ -1,0 +1,1 @@
+<p xmlns:py="http://purl.org/kid/ns#">TEST kid</p>

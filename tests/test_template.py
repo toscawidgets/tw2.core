@@ -42,16 +42,16 @@ class TestTemplate(object):
         engs.remove('kid')
         for engine in engs:
             #set up the default renderers
-            yield self._check_render, 'tw2.tests.templates.simple', {'test':engine}, '<p>TEST %s</p>'%engine, engine
-        
+            yield self._check_render, 'tw2.core.test_templates.simple', {'test':engine}, '<p>TEST %s</p>'%engine, engine
+
     @raises(twc.template.EngineError)
     def test_auto_select_unavailable_engine(self):
         engine = 'mako'
-        self._check_render('tw2.tests.templates.simple_genshi', {'test':engine}, '<p>TEST %s</p>'%engine, engine)
+        self._check_render('tw2.core.test_templates.simple_genshi', {'test':engine}, '<p>TEST %s</p>'%engine, engine)
 
     def test_auto_select_cache_works(self):
         engine='genshi'
-        args = 'tw2.tests.templates.simple_genshi', 'string', {'test':engine}
+        args = 'tw2.core.test_templates.simple_genshi', 'string', {'test':engine}
         em = twc.template.EngineManager()
         out = em.render(*args)
         assert(isinstance(out, unicode))
@@ -59,17 +59,17 @@ class TestTemplate(object):
         out = em.render(*args)
         assert(isinstance(out, unicode))
         assert out == '<p>TEST genshi</p>', out
-        
+
     def test_auto_select_unavailable_engine_not_strict(self):
         engine = 'mako'
         mw = twc.make_middleware(None, preferred_rendering_engines=[engine], strict_engine_selection=False)
         testapi.request(501, mw)
-        self._check_render('tw2.tests.templates.simple_genshi', {'test':'blah!'}, '<p>TEST blah!</p>')
-        
+        self._check_render('tw2.core.test_templates.simple_genshi', {'test':'blah!'}, '<p>TEST blah!</p>')
+
     def test_engines(self):
         for engine in engines:
             print "Testing %s..." % engine
-            out = twc.template.EngineManager().render('%s:tw2.tests.templates.simple_%s' % (engine, engine), 'string', {'test':'test1'})
+            out = twc.template.EngineManager().render('%s:tw2.core.test_templates.simple_%s' % (engine, engine), 'string', {'test':'test1'})
             out = strip_prefix(kid_prefix, out)
             assert(isinstance(out, unicode))
             assert(out == '<p>TEST test1</p>')
@@ -77,7 +77,7 @@ class TestTemplate(object):
     def test_engines_unicode(self):
         for engine in engines:
             print "Testing %s..." % engine
-            out = twc.template.EngineManager().render('%s:tw2.tests.templates.simple_%s' % (engine, engine), 'string', {'test':'test\u1234'})
+            out = twc.template.EngineManager().render('%s:tw2.core.test_templates.simple_%s' % (engine, engine), 'string', {'test':'test\u1234'})
             out = strip_prefix(kid_prefix, out)
             assert(out == '<p>TEST test\u1234</p>')
 
@@ -102,7 +102,7 @@ class TestTemplate(object):
         for engine in engines[:3]: #mako is exempt
             print "Testing %s..." % engine
             eng.load_engine(engine, extra_vars_func=lambda: {'test':'wobble'})
-            out = eng.render('%s:tw2.tests.templates.simple_%s' % (engine, engine), 'string', {})
+            out = eng.render('%s:tw2.core.test_templates.simple_%s' % (engine, engine), 'string', {})
             out = strip_prefix(kid_prefix, out)
             assert(out == '<p>TEST wobble</p>')
 
@@ -112,9 +112,9 @@ class TestTemplate(object):
         for outer in engines:
             for inner in engines:
                 print 'Testing %s on %s' % (inner, outer)
-                test = eng.render('%s:tw2.tests.templates.simple_%s' % (inner, inner), outer, {'test':'test1'})
+                test = eng.render('%s:tw2.core.test_templates.simple_%s' % (inner, inner), outer, {'test':'test1'})
                 test = strip_prefix(kid_prefix, test)
-                out = eng.render('%s:tw2.tests.templates.simple_%s' % (outer, outer), 'string', {'test':test})
+                out = eng.render('%s:tw2.core.test_templates.simple_%s' % (outer, outer), 'string', {'test':test})
                 out = strip_prefix(kid_prefix, out)
                 print out
                 assert(out == '<p>TEST <p>TEST test1</p></p>')
@@ -124,7 +124,7 @@ class TestTemplate(object):
         mtest = TestWD(id='x')
         for eng in engines:
             test = mtest.req()
-            test.template = '%s:tw2.tests.templates.inner_%s' % (eng, eng)
+            test.template = '%s:tw2.core.test_templates.inner_%s' % (eng, eng)
             out = strip_prefix(kid_prefix, test.display())
             assert(out == '<p>TEST bob</p>')
 
@@ -133,9 +133,9 @@ class TestTemplate(object):
         for outer in engines:
             for inner in engines:
                 test = twc.CompoundWidget(id='x',
-                    template = '%s:tw2.tests.templates.widget_%s' % (outer, outer),
+                    template = '%s:tw2.core.test_templates.widget_%s' % (outer, outer),
                     children=[
-                        TestWD(id='y', template='%s:tw2.tests.templates.inner_%s' % (inner, inner)),
+                        TestWD(id='y', template='%s:tw2.core.test_templates.inner_%s' % (inner, inner)),
                     ]
                 )
                 assert(test.display().replace(kid_prefix, '') == '<p>TEST <p>TEST bob</p></p>')
