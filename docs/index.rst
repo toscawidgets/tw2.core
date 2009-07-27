@@ -28,8 +28,7 @@ Contents:
    :maxdepth: 2
 
    tutorial
-   core
-   validation
+   design
    devtools
    history
    future

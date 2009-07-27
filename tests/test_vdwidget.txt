@@ -1,7 +1,7 @@
 Check that display classmethod picks up validated_widget in request local
 
 >>> import tw2.core as twc
->>> w = twc.Widget(id='w', template='genshi:tw2.tests.templates.field_genshi', validator=twc.EmailValidator())
+>>> w = twc.Widget(id='w', template='genshi:tw2.core.test_templates.field_genshi', validator=twc.EmailValidator())
 >>> w.validate({'w':'fred'})
 Traceback (most recent call last):
     ...

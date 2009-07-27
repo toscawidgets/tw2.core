@@ -59,8 +59,7 @@ class Widget(pm.Parametered):
     parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
 
     _sub_compound = False
-    _valid_id_re = re.compile(r'^[\w\-\_\.]*$')
-
+    _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
 
     @classmethod
     def req(cls, **kw):
@@ -100,8 +99,16 @@ class Widget(pm.Parametered):
         """
         if getattr(cls, 'id', None) and not cls._valid_id_re.match(cls.id):
             raise pm.ParameterError("Not a valid identifier: '%s'" % cls.id)
-        cls._gen_compound_id()
-        cls._auto_register()
+        cls.compound_id = cls._gen_compound_id(for_url=False)
+        cls.attrs = cls.attrs.copy()
+        cls.attrs['id'] = getattr(cls, 'id', None) and cls.compound_id
+
+        if hasattr(cls, 'request') and getattr(cls, 'id', None):
+            import middleware
+            capp = getattr(cls.__module__, 'tw2_controllers', middleware.global_controllers)
+            if capp:
+                capp.register(cls, cls._gen_compound_id(for_url=True))
+
         if cls.validator:
             if cls.validator is pm.Required:
                 vld = cls.__mro__[1].validator
@@ -122,30 +129,26 @@ class Widget(pm.Parametered):
                     setattr(cls, p.name, p.default)
 
     @classmethod
-    def _gen_compound_id(cls):
+    def _gen_compound_id(cls, for_url):
         ancestors = []
-        cur = cls.parent
+        cur = cls
         while cur:
             if cur in ancestors:
                 raise core.WidgetError('Parent loop')
             ancestors.append(cur)
             cur = cur.parent
-        elems = reversed(filter(None, [getattr(cls, 'id', None)] + [a._compound_id_elem() for a in ancestors]))
-        cls.compound_id = elems and ':'.join(elems) or None
-        cls.attrs = cls.attrs.copy()
-        cls.attrs['id'] = getattr(cls, 'id', None) and cls.compound_id
+        elems = reversed(filter(None, [a._compound_id_elem(for_url) for a in ancestors]))
+        return elems and ':'.join(elems) or None
 
     @classmethod
-    def _compound_id_elem(cls):
-        return getattr(cls, 'id', None)
-
-    @classmethod
-    def _auto_register(cls):
-        if hasattr(cls, 'request') and getattr(cls, 'id', None):
-            import middleware
-            capp = getattr(cls.__module__, 'tw2_controllers', middleware.global_controllers)
-            if capp:
-                capp.register(cls, cls.compound_id)
+    def _compound_id_elem(cls, for_url):
+        if cls.parent and issubclass(cls.parent, RepeatingWidget):
+            if for_url:
+                return None
+            else:
+                return str(getattr(cls, 'repetition', None))
+        else:
+            return getattr(cls, 'id', None)
 
     def prepare(self):
         """
@@ -359,7 +362,7 @@ class RepeatingWidgetBunchCls(object):
         try:
             rep = self._repetition_cache[item]
         except KeyError:
-            rep = self.parent.child(parent=self.parent, repetition=item, id=str(item))
+            rep = self.parent.child(parent=self.parent, repetition=item)
             self._repetition_cache[item] = rep
         return rep
 
@@ -470,6 +473,7 @@ class DisplayOnlyWidget(Widget):
     """
     child = pm.Param('Child for this widget.')
     children = pm.Param('children specified for this widget will be passed to the child', default=[])
+    id_suffix = pm.Param('Suffix to append to compound IDs')
 
     @classmethod
     def post_define(cls):
@@ -494,8 +498,19 @@ class DisplayOnlyWidget(Widget):
             cls.child = cls.child(id=cls_id, parent=cls)
 
     @classmethod
-    def _compound_id_elem(cls):
-        return None
+    def _gen_compound_id(cls, for_url):
+        elems = [Widget._gen_compound_id.im_func(cls, for_url), getattr(cls, 'id', None)]
+        if not for_url:
+            elems.append(getattr(cls, 'id_suffix', None))
+        elems = filter(None, elems)
+        return elems and ':'.join(elems) or None
+
+    @classmethod
+    def _compound_id_elem(cls, for_url):
+        if cls.parent and issubclass(cls.parent, RepeatingWidget):
+            Widget._compound_id_elem.im_func(cls, for_url)
+        else:
+            return None
 
     def __init__(self, **kw):
         super(DisplayOnlyWidget, self).__init__(**kw)
@@ -526,6 +541,7 @@ class Page(DisplayOnlyWidget):
     """
     title = pm.Param('Title for the page')
     template = "tw2.core.templates.page"
+    id_suffix = 'page'
     _no_autoid = True
 
     @classmethod

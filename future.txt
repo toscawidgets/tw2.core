@@ -26,7 +26,6 @@ tw2.forms
     make selection_list and selection_table support grouping
     make selection table configurable how it arranges (horiz/vert)
     named buttons
-    form id - ${w.compound_id}:form
     TableForm - make TableLayout parameters accessible?
     SSF - do adding an empty row, at post_define time, when possible
     datagrid

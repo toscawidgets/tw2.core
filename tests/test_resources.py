@@ -67,32 +67,32 @@ class TestResources(object):
         assert(tst_mw.get('/resources/test', expect_errors=True).status == '404 Not Found')
 
     def test_serve(self):
-        mw.resources.register('tw2.tests', 'templates/simple_genshi.html')
-        fcont = open(os.path.join(os.path.dirname(tw2.tests.__file__), 'templates/simple_genshi.html')).read()
-        assert(tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').body == fcont)
-        assert(tst_mw.get('/resources/tw2.tests/templates/notexist', expect_errors=True).status == '404 Not Found')
+        mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
+        fcont = open(os.path.join(os.path.dirname(tw2.core.__file__), 'test_templates/simple_genshi.html')).read()
+        assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
+        assert(tst_mw.get('/resources/tw2.core/test_templates/notexist', expect_errors=True).status == '404 Not Found')
 
     def test_different_file(self):
-        mw.resources.register('tw2.tests', 'templates/simple_genshi.html')
+        mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
         assert(tst_mw.get('/resources/tw2.tests/simple_kid.kid', expect_errors=True).status == '404 Not Found')
 
     def test_whole_dir(self):
-        mw.resources.register('tw2.tests', 'templates/', whole_dir=True)
-        fcont = open(os.path.join(os.path.dirname(tw2.tests.__file__), 'templates/simple_genshi.html')).read()
-        assert(tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').body == fcont)
-        assert(tst_mw.get('/resources/tw2.tests/templates/notexist', expect_errors=True).status == '404 Not Found')
+        mw.resources.register('tw2.core', 'test_templates/', whole_dir=True)
+        fcont = open(os.path.join(os.path.dirname(tw2.core.__file__), 'test_templates/simple_genshi.html')).read()
+        assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
+        assert(tst_mw.get('/resources/tw2.core/test_templates/notexist', expect_errors=True).status == '404 Not Found')
 
     def test_dir_traversal(self): # check for potential security flaw
-        mw.resources.register('tw2.tests', 'templates/')
+        mw.resources.register('tw2.core', 'test_templates/')
         assert(tst_mw.get('/resources/tw2.tests/__init__.py', expect_errors=True).status == '404 Not Found')
-        assert(tst_mw.get('/resources/tw2.tests/templates/../__init__.py', expect_errors=True).status == '404 Not Found')
-        assert(tst_mw.get('/resources/tw2.tests/templates/..\\__init__.py', expect_errors=True).status == '404 Not Found')
+        assert(tst_mw.get('/resources/tw2.core/test_templates/../__init__.py', expect_errors=True).status == '404 Not Found')
+        assert(tst_mw.get('/resources/tw2.core/test_templates/..\\__init__.py', expect_errors=True).status == '404 Not Found')
 
     def test_whole_dir_traversal(self): # check for potential security flaw
-        mw.resources.register('tw2.tests', 'templates/', whole_dir=True)
+        mw.resources.register('tw2.core', 'test_templates/', whole_dir=True)
         assert(tst_mw.get('/resources/tw2.tests/__init__.py', expect_errors=True).status == '404 Not Found')
-        assert(tst_mw.get('/resources/tw2.tests/templates/../__init__.py', expect_errors=True).status == '404 Not Found')
-        assert(tst_mw.get('/resources/tw2.tests/templates/..\\__init__.py', expect_errors=True).status == '404 Not Found')
+        assert(tst_mw.get('/resources/tw2.core/test_templates/../__init__.py', expect_errors=True).status == '404 Not Found')
+        assert(tst_mw.get('/resources/tw2.core/test_templates/..\\__init__.py', expect_errors=True).status == '404 Not Found')
 
     def test_zipped(self):
         # assumes webtest is installed as a zipped egg
@@ -100,8 +100,8 @@ class TestResources(object):
         assert(tst_mw.get('/resources/webtest/__init__.py').body.startswith('# (c) 2005 Ian'))
 
     def test_cache_header(self):
-        mw.resources.register('tw2.tests', 'templates/simple_genshi.html')
-        cache = tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').headers['Cache-Control']
+        mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
+        cache = tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').headers['Cache-Control']
         assert(cache == 'max_age=3600')
 
     #--
@@ -109,14 +109,14 @@ class TestResources(object):
     #--
     def test_link_reg(self):
         testapi.request(1, mw)
-        wa = twc.JSLink(modname='tw2.tests', filename='templates/simple_mako.mak').req()
+        wa = twc.JSLink(modname='tw2.core', filename='test_templates/simple_mako.mak').req()
         wa.prepare()
-        assert(wa.link == '/resources/tw2.tests/templates/simple_mako.mak')
+        assert(wa.link == '/resources/tw2.core/test_templates/simple_mako.mak')
         tst_mw.get(wa.link)
 
     def test_mime_type(self):
         testapi.request(1, mw)
-        wa = twc.JSLink(modname='tw2.tests', filename='templates/simple_genshi.html').req()
+        wa = twc.JSLink(modname='tw2.core', filename='test_templates/simple_genshi.html').req()
         wa.prepare()
         resp = tst_mw.get(wa.link)
         assert(resp.content_type == 'text/html')
@@ -157,10 +157,10 @@ class TestResources(object):
     #--
     def test_mw_resourcesapp(self):
         testapi.request(1)
-        mw.resources.register('tw2.tests', 'templates/simple_genshi.html')
-        fcont = open(os.path.join(os.path.dirname(tw2.tests.__file__), 'templates/simple_genshi.html')).read()
-#        print tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').body
-        assert(tst_mw.get('/resources/tw2.tests/templates/simple_genshi.html').body == fcont)
+        mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
+        fcont = open(os.path.join(os.path.dirname(tw2.core.__file__), 'test_templates/simple_genshi.html')).read()
+#        print tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body
+        assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
 
     def test_mw_clear_rl(self):
         rl = testapi.request(1)
