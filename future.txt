@@ -37,6 +37,8 @@ validation
     client-side
     inheriting required
 
+run the w3c validator on all the widgets
+
 widget browser
     more detail - need tabs (no ajax to start with)
         Summary / Demo Source / Parameters / Source / Template
@@ -59,7 +61,7 @@ template
     template optimiser
 
 resources
-    optimisation
+    optimisation - use Diez's work
     paste command to grab resources, for serving with a web server
     'afterwidget' as a location?
 

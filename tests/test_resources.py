@@ -5,7 +5,7 @@ js = twc.JSLink(link='paj')
 css = twc.CSSLink(link='joe')
 jssrc = twc.JSSource(src='bob')
 
-TestWidget = twc.Widget(template='genshi:tw2.tests.templates.inner_genshi', test='test')
+TestWidget = twc.Widget(template='genshi:tw2.core.test_templates.inner_genshi', test='test')
 html = "<html><head><title>a</title></head><body>hello</body></html>"
 
 inject_widget = TestWidget(id='a', resources=[js])
@@ -141,7 +141,7 @@ class TestResources(object):
         assert(out == '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
     def test_detect_clear(self):
-        widget = twc.Widget(id='a', template='genshi:tw2.tests.templates.inner_genshi', test='test', resources=[js])
+        widget = twc.Widget(id='a', template='genshi:tw2.core.test_templates.inner_genshi', test='test', resources=[js])
         rl = testapi.request(1, mw)
         eq_(rl.get('resources', []), [])
         widget.display()

@@ -1,0 +1,1 @@
+<p xmlns:py="http://purl.org/kid/ns#">TEST ${w.children.y.display()}</p>

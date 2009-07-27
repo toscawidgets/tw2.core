@@ -6,9 +6,8 @@ compound ids
         make sure they are registered at startup
 
 tw2.core
-    move tw2.tests from devtools to core (maybe core.test_templates?)
-    check resource dir trav with backslash
-
+    inject()
+        in TW2, we use it to inject javascript only widgets in the wsgi stream.
     children_deep
         dupe id
         validation
@@ -16,11 +15,11 @@ tw2.core
     refactor resources even more - avoid need to do parent=self.__class__ when adding dynamically
     quickstart - autodetect package from "tw2.package"
     problem with colons as id separator - doesn't work in css, it thinks they're pseudo classes
-        configurable compound id separator
+        configurable compound id separator - relieson global config
     resources - caching
         I can generate expires/max-age, but it doesn't make it cache
         make the static file server support http 1.1 stuff like if-modified-since
-            *** should ask about this on paste mailing list (or somewhere)
+            http://pythonpaste.org/modules/fileapp.html
     the "extra children" thing for datasrc (and submit) - avoid reserved_names
     better dev server - paste, auto reload, weberror
 
