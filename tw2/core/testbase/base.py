@@ -1,5 +1,5 @@
-import os, re, copy, middleware as tmw, template
-import formencode as fe, itertools as it, pkg_resources as pk, HTMLParser as hp
+import os, re, copy, tw2.core.middleware as tmw, tw2.core.template as template
+import formencode as fe, itertools as it, pkg_resources as pk
 from difflib import unified_diff
 from cStringIO import StringIO
 from BeautifulSoup import BeautifulSoup as bs
@@ -13,40 +13,6 @@ from xml.parsers.expat import ExpatError
 
 rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
 rm = pk.ResourceManager()
-
-# code from Tom Lynn on #pythonpaste
-SELF_CLOSING_TAGS = ['br', 'hr', 'input', 'img', 'meta',
-                     'spacer', 'link', 'frame', 'base']
-
-class Parser(hp.HTMLParser):
-    def __init__(self, self_closing=SELF_CLOSING_TAGS):
-        HTMLParser.HTMLParser.__init__(self)
-        self.tags = []
-        self.self_closing = self_closing
-
-    def handle_starttag(self, tag, attrs):
-        self.tags.append(tag)
-
-    def handle_endtag(self, tag):
-        line, col = self.getpos()
-        if not self.tags:
-            raise HTMLParser.HTMLParseError(
-                "Unopened tag %r at line %s column %s" % (tag, line, col))
-        prevtag = self.tags.pop()
-        if prevtag != tag and prevtag not in self.self_closing and tag!=None:
-            raise HTMLParser.HTMLParseError(
-                "Unclosed tag %r at line %s column %s" % (prevtag, line, col))
-
-    def close(self):
-        while self.tags:
-            self.handle_endtag(None)
-
-def validate_html(html):
-    p = Parser()
-    p.feed(html)
-    p.close()
-    return html
-# end Tom Lynn code
 
 def remove_whitespace_nodes(node):
     new_node = copy.copy(node)

@@ -144,7 +144,11 @@ class TwMiddleware(object):
                     resp = wo.Response(status="404 Not Found")
             content_type = resp.headers.get('Content-Type','text/plain').lower()
             if self.config.inject_resources and 'html' in content_type:
-                resp.body = resources.inject_resources(resp.body, encoding=resp.charset)
+                body = resources.inject_resources(resp.body, encoding=resp.charset)
+                if isinstance(body, unicode):
+                    resp.unicode_body = body
+                else:
+                    resp.body = body
         core.request_local().clear()
         return resp(environ, start_response)
 
