@@ -1,5 +1,5 @@
-import os, re, copy, middleware as tmw, template
-import formencode as fe, itertools as it, pkg_resources as pk, HTMLParser as hp
+import os, re, copy, tw2.core.middleware as tmw, tw2.core.template as template
+import formencode as fe, itertools as it, pkg_resources as pk
 from difflib import unified_diff
 from cStringIO import StringIO
 from BeautifulSoup import BeautifulSoup as bs
@@ -13,40 +13,6 @@ from xml.parsers.expat import ExpatError
 
 rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
 rm = pk.ResourceManager()
-
-# code from Tom Lynn on #pythonpaste
-SELF_CLOSING_TAGS = ['br', 'hr', 'input', 'img', 'meta',
-                     'spacer', 'link', 'frame', 'base']
-
-class Parser(hp.HTMLParser):
-    def __init__(self, self_closing=SELF_CLOSING_TAGS):
-        HTMLParser.HTMLParser.__init__(self)
-        self.tags = []
-        self.self_closing = self_closing
-
-    def handle_starttag(self, tag, attrs):
-        self.tags.append(tag)
-
-    def handle_endtag(self, tag):
-        line, col = self.getpos()
-        if not self.tags:
-            raise HTMLParser.HTMLParseError(
-                "Unopened tag %r at line %s column %s" % (tag, line, col))
-        prevtag = self.tags.pop()
-        if prevtag != tag and prevtag not in self.self_closing and tag!=None:
-            raise HTMLParser.HTMLParseError(
-                "Unclosed tag %r at line %s column %s" % (prevtag, line, col))
-
-    def close(self):
-        while self.tags:
-            self.handle_endtag(None)
-
-def validate_html(html):
-    p = Parser()
-    p.feed(html)
-    p.close()
-    return html
-# end Tom Lynn code
 
 def remove_whitespace_nodes(node):
     new_node = copy.copy(node)
@@ -157,7 +123,47 @@ def TW2WidgetBuilder(widget, **attrs):
     return MyTestWidget
 
 class WidgetTest(object):
+    """
+    This class provides a basis for testing all widget classes.  It's setup will 
+    automatically create a request, and a widget of the type specified.  It will 
+    also test the display function by comparing it against an expected output.
+    
+    
+    `template_engine`
+        Default template engine for the displays_on property of the TestCase's
+        middleware
+    
+    `params_as_vars`
+        Also passed into the middleware
 
+    `widget`
+        Class of the widget to test
+
+    `attrs`
+        attributes to pass into the widget at creation
+        
+    `params`
+        params to send into the widget on the "display" call
+        
+    `expected`
+        xhtml stream representing the expected output
+        
+    `declarative`
+        whether or not the widget shoudl be created in a declarative manner.
+    
+    `validate_params`
+        A list of conditions to test against the widget.  The list contains a set of sub-lists,
+        which have the following format:
+        
+        [0] - Params to send into the widget's init
+
+        [1] - Params sent into the widget's validate method
+
+        [2] - expected output
+
+        [3] - the expected validation error type (optional)
+    """
+    
     template_engine = 'string'
     params_as_vars = True
     widget = None
@@ -233,6 +239,42 @@ class WidgetTest(object):
                 yield self._check_validation, params[0], params[1], params[2], params[3]
 
 class ValidatorTest(object):
+    """
+    This test provides a basis for testing all validator classes. On initialization,
+    this class will make a request and a middleware instance for use in testing.
+    
+    It will then test the validator's validate, to_python, and from_python methods.
+    
+    `validator`
+        class to create the validator from
+        
+    `attrs`
+        attributes sent into the validator on instantiation
+
+    `params`
+        list of parameters sent into test the validator's validate method
+
+    `expected`
+        list of expected outputs for the validator's validate method
+
+    `from_python_attrs`
+        attributes sent into the validator on instantiation for from python tests
+
+    `from_python_params`
+        list of parameters sent into test the validator's from_python method
+
+    `from_python_expected`
+        list of expected outputs for the validator's from_python method
+    
+    `to_python_attrs`
+        attributes sent into the validator on instantiation for from python tests
+    
+    `to_python_params`
+        list of parameters sent into test the validator's to_python method
+    
+    `to_python_expected`
+        list of expected outputs for the validator's to_python method
+    """
     validator = None
     attrs = None
     params = None
