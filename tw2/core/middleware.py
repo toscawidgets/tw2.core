@@ -44,7 +44,7 @@ class Config(object):
 
     `debug`
         Whether the app is running in development or production mode.
-        (default: False)
+        (default: True)
 
     `validator_msgs`
         A dictionary that maps validation message names to messages. This lets
@@ -79,7 +79,7 @@ class Config(object):
     controller_prefix = '/controllers/'
     bufsize = 4*1024
     params_as_vars = False
-    debug = False
+    debug = True
     validator_msgs = {}
     auto_reload_templates = None
     preferred_rendering_engines = ['mako', 'genshi', 'cheetah', 'kid']
