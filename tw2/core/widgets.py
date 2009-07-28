@@ -505,10 +505,12 @@ class DisplayOnlyWidget(Widget):
     @classmethod
     def _gen_compound_id(cls, for_url):
         elems = [Widget._gen_compound_id.im_func(cls, for_url), getattr(cls, 'id', None)]
-        if not for_url:
-            elems.append(getattr(cls, 'id_suffix', None))
         elems = filter(None, elems)
-        return elems and ':'.join(elems) or None
+        if not elems:
+            return None
+        if not for_url and getattr(cls, 'id_suffix', None):
+            elems.append(cls.id_suffix)
+        return ':'.join(elems)
 
     @classmethod
     def _compound_id_elem(cls, for_url):

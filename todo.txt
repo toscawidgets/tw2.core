@@ -4,6 +4,7 @@ tw2.core
             force ids to begin with a letter
 
     registrations for repeating widgets
+        get_link
         only register in the zero-th repetition
         make sure they are registered at startup
 
@@ -68,6 +69,5 @@ tw2.dynforms
     make onload trigger onchange
 
 yui
-    referencing the controller
-        to start with, have a get_link function?
+    use get_link
     data table
