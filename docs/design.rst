@@ -1,3 +1,6 @@
+Design
+------
+
 Widget Overview
 ===============
 
@@ -81,13 +84,23 @@ The hierarchy also affects the generation of compound ids, and validation.
 
 **Identifier**
 
-In general, a widget needs to have an identifier. Without an id, it cannot participate in value propagation or validation, and it does not get an id= attribute. For widgets with an id, *compound_id* is generated for the id= attribute, by joining it's parent and all ancestors' ids. The default separator is colon (:), resulting in compound ids like "form:sub_form:field".
-
-There are some exceptions to this:
+In general, a widget needs to have an identifier. Without an id, it cannot participate in value propagation or validation, and it does not get an HTML id attribute. There are some exceptions to this:
 
  * Some widgets do not need an id (e.g. Label, Spacer) and provide a default id of None.
- * The child of a RepeatingWidget must not have an id. The repetition is used instead to generate compound  ids.
- * DisplayOnlyWidget takes the id from its child, but uses None for generating compound ids.
+ * The child of a RepeatingWidget must not have an id.
+ * An id can be specified either on a DisplayOnlyWidget, or it's child, but not both. The widget that does not have the id specified automatically picks it up from the other.
+
+Compound IDs are formed by joining the widget's id with those of its ancestors. These are used in two situations:
+
+ * For the HTML id attribute, and also the name attribute for form fields
+ * For the URL path a controller widget is registered at
+
+The separator is a colon (:), resulting in compound ids like "form:sub_form:field". **Note** this causes issues with CSS and will be changed shortly, and made configurable.
+
+In generel, the id on a DisplayOnlyWidget is not included in the compound id. However, when generating the compound id for a DisplayOnlyWidget, the id is included. In addition *id_suffix* is appended, to avoid generating duplicate IDs. The *id_suffix* is not appended for URL paths, to keep the paths short. There is a risk of duplicate IDs, but this is not expected to be a problem in practice.
+
+For children of a RepeatingWidget, the repetition is used instead of the id, for generating the compound HTML id. For the URL path, the element is skipped entirely.
+
 
 **Deep Children**
 
@@ -95,22 +108,22 @@ This is a feature that helps have a form layout that doesn't exactly match the d
 
     class MyForm(twf.Form):
         class child(twc.CompoundWidget):
-            class info(twf.FieldSet):
+            class info(twf.TableFieldSet):
                 id = None
                 title = twf.TextField()
                 customer = twf.TextField()
-            class dates(twf.FieldSet):
+            class dates(twf.TableFieldSet):
                 id = None
                 start_date = twf.TextField()
                 end_date = twf.TextField()
 
-Now, when a value like ``{'title': 'my title'}`` is passed to MyForm, this will propage correctly.
+When a value like ``{'title': 'my title'}`` is passed to MyForm, this will propagate correctly.
 
 
 Template
 ========
 
-Every widget has a template, this is core to the widget concept. ToscaWidgets aims to support any templating engine that support the ``buffet`` interface, which is an attempt by the TurboGears project to create a standard interface for template libraries. In practice, there are a few differences between template engines that the buffet interface does not standardise. So, ToscaWidgets has some template-language hooks, and support is primarily for: Genshi, Mako, Kid and Cheetah.
+Every widget has a template, this is core to the widget concept. ToscaWidgets aims to support any templating engine that support the ``buffet`` interface, which is an initiative by the TurboGears project to create a standard interface for template libraries. In practice, there are more differences between template engines than the buffet interface standardises. So, ToscaWidgets has some template-language hooks, and support is primarily for: Genshi, Mako, Kid and Cheetah.
 
 The :attr:`template` parameter takes the form ``engine_name:template_path``. The ``engine_name`` is the name that the template engine defines in the ``python.templating.engines`` entry point, e.g. ``genshi`` or ``mako``. The ``template_path`` is a string the engine can use to locate the template; usually this is dot-notation that mimics the semantics of Python's import statement, e.g. ``myapp.templates.mytemplate``.
 
@@ -267,6 +280,81 @@ For convenience, widgets that have a :meth:`request` method, and an :attr:`id` w
 
     `ajax_request`
         Return python data that is automatically converted to an ajax response
+
+
+Validation
+==========
+
+One of the main features of any forms library is the vaidation of form input, e.g checking that an email address is valid, or that a user name is not already taken. If there are validation errors, these must be displayed to the user in a helpful way. Many validation tasks are common, so these should be easy for the developer, while less-common tasks are still possible.
+
+**Conversion**
+
+Validation is also responsible for conversion to and from python types. For example, the DateValidator takes a string from the form and produces a python date object. If it is unable to do this, that is a validation failure.
+
+To keep related functionality together, validators also support coversion from python to string, for display. This should be complete, in that there are no python values that cause it to fail. It should also be precise, in that converting from python to string, and back again, should always give a value equal to the original python value. The converse is not always true, e.g. the string "1/2/2004" may be converted to a python date object, then back to "01/02/2004".
+
+**Validation Errors**
+
+When validation fails, the user should see the invalid values they entered. This is helpful in the case that a field is entered only slightly wrong, e.g. a number entered as "2,000" when commas are not allowed. In such cases, conversion to and from python may not be possible, so the value is kept as a string. Some widgets will not be able to display an invalid value (e.g. selection fields); this is fine, they just have to do the best they can.
+
+When there is an error, whether valid fields could potentially normalise their value, by converting to python and back again. It was decided to use the original value in this case, although this may become a configurable option in the future.
+
+In some cases, validation may encounter a major error, as if the web user has tampered with the HTML source. However, we can never be completely sure this is the case, perhaps they have a buggy browser, or caught the site in the middle of an upgrade. In these cases, validation will produce the most helpful error messages it can, which may just be "Your form submission was received corrupted; please try again."
+
+**Required Fields**
+
+If a field has no value, if defaults to ``None``. It is down to that field's validator to raise an error if the field is required. By default, fields are not required. It was considered to have a dedicated ``Missing`` class, but this was decided against, as ``None`` is already intended to convey the absence of data.
+
+**Security Consideration**
+
+When a widget is redisplayed after a validation failure, it's value is derived from unvalidated user input. So, all widgets must be "safe" for all input values. In practice, this is almost always the case without great care, so widgets are assumed to be safe. If a particular widget is not safe in this way, it must override :meth:`_validate` and set :attr:`value` to *None* in case of error.
+
+**Validator Messages**
+
+if msg is a tuple, it's (newname, msg)
+
+
+Using Validators
+~~~~~~~~~~~~~~~~
+
+There's two parts to using validators. First, specify validators in the widget definition, like this::
+
+    class RegisterUser(twf.TableForm):
+        validator = twc.MatchValidator('email', 'confirm_email')
+        name = twf.TextField()
+        email = twf.TextField(validator=twc.EmailValidator)
+        confirm_email = twf.PasswordField()
+
+You can specify a validator on any widget, either a class or an instance. Using an instance lets you pass parameters to the validator. You can code your own validator by subclassing :class:`tw2.core.Validator`. All validators have at least these parameters:
+
+.. autoclass:: tw2.core.Validator
+
+Second, when the form values are submitted, call :meth:`validate` on the outermost widget. Pass this a dictionary of the request parameters. It will call the same method on all contained widgets, and either return the validated data, with all conversions applied, or raise :class:`tw2.core.ValidationError`. In the case of a validation failure, it stores the invalid value and an error message on the affected widget.
+
+
+FormEncode
+~~~~~~~~~~
+
+Earlier versions of ToscaWidgets used FormEncode for validation and there are good reasons for this. Some aspects of the design work very well, and FormEncode has a lot of clever validators, e.g. the ability to check that a post code is in the correct format for a number of different countries.
+
+However, there are challenges making FormEncode and ToscaWidgets work together. For example, both libraries store the widget hierarchy internally. This makes implementing some features (e.g. ``strip_name`` and :class:`tw2.dynforms.HidingSingleSelectField`) difficult. There are different needs for the handling of unicode, leading ToscaWidgets to override some behaviour. Also, FormEncode just does not support client-side validation, a planned feature of ToscaWidgets 2.
+
+ToscaWidgets 2 does not rely on FormEncode. However, developers can use FormEncode validators for individual fields. The API is compatible in that :meth:`to_python` and :meth:`from_python` are called for conversion, and :class:`formencode.Invalid` is caught.
+
+Implementation
+~~~~~~~~~~~~~~
+
+**TBD**
+
+A two-pass approach is used internally, although this is invisible to the user. When :meth:`Widget.validate` is called (with validate=True), it automatically calls :meth:`Widget.unflatten_params`.
+
+.. autofunction:: tw2.core.validation.unflatten_params
+
+Then validate works recursively, using the widget hierarchy
+
+There is a specific :class:`tw2.core.Invalid` marker, but this is only seen in a compound/repeating validator, if some of the children have failed validation.
+
+.. autoclass:: tw2.core.ValidationError
 
 
 General Considerations

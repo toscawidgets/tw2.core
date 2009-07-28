@@ -11,4 +11,70 @@
 Traceback (most recent call last):
     ...
 AttributeError: type object 'Myclass' has no attribute 'id'
-
+>>> twc.Widget(id='10')
+Traceback (most recent call last):
+    ...
+ParameterError: Not a valid identifier: '10'
+>>> twc.Widget(id=':')
+Traceback (most recent call last):
+    ...
+ParameterError: Not a valid identifier: ':'
+>>> twc.Widget(id=' ')
+Traceback (most recent call last):
+    ...
+ParameterError: Not a valid identifier: ' '
+>>> twc.Widget(id='test10')
+<class 'tw2.core.params.Widget_s'>
+>>> print twc.Page.compound_id
+None
+>>> twc.Page(id='test').compound_id
+'test:page'
+>>> class Test(twc.CompoundWidget):
+...     id = 'a'
+...     class c(twc.RepeatingWidget):
+...         class child(twc.CompoundWidget):
+...             class d(twc.Widget):
+...                 @classmethod
+...                 def request(cls):
+...                     pass
+...             e = twc.Widget()
+...     f = twc.Widget(id=None)
+...
+>>> Test.compound_id
+'a'
+>>> Test.attrs['id']
+'a'
+>>> Test.children.c.rwbc[1].compound_id
+'a:c:1'
+>>> Test.children.c.rwbc[7].compound_id
+'a:c:7'
+>>> Test.children.c.rwbc[1].children.d.compound_id
+'a:c:1:d'
+>>> Test.children.c.rwbc[1].children.e.compound_id
+'a:c:1:e'
+>>> print Test.children[1].compound_id
+None
+>>> 'id' in Test.children[1].attrs
+False
+>>> twc.Page.req().get_link()
+Traceback (most recent call last):
+    ...
+WidgetError: Not a controller widget
+>>> import testapi
+>>> testapi.request(1, twc.make_middleware(None))
+{}
+>>> twc.Page(id='paj').req().get_link()
+'/controllers/paj'
+>>> Test.req().children.c.children[1].children.d.get_link()
+'/controllers/a:c:d'
+>>> class a(twc.CompoundWidget):
+...     class b(twc.CompoundWidget):
+...         id = None
+...         c = twc.Widget()
+...     class d(twc.CompoundWidget):
+...         id = None
+...         c = twc.Widget()
+...
+Traceback (most recent call last):
+    ...
+WidgetError: Duplicate id 'c'
