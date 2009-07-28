@@ -5,6 +5,8 @@ from cStringIO import StringIO
 from BeautifulSoup import BeautifulSoup as bs
 from nose.tools import eq_
 
+from xhtmlify import xhtmlify, ValidationError
+
 #try:
 import xml.etree.ElementTree as etree
 from xml.parsers.expat import ExpatError
@@ -64,11 +66,12 @@ def fix_xml(needle):
         raise
     """
     #then we close all the open-ended tags to make sure it will compare properly
-    needle = bs(needle).prettify()
+    #needle = bs(needle).prettify()
+    needle = xhtmlify(needle)
     try:
         needle_node = etree.fromstring(needle)
-    except ExpatError:
-        raise ExpatError('Could not parse %s into xml.'%needle)
+    except ExpatError, e:
+        raise ExpatError('Could not parse %s into xml. %s'%(needle, e.args[0]))
     needle_node = remove_whitespace_nodes(needle_node)
     remove_namespace(needle_node)
     needle_s = etree.tostring(needle_node)
@@ -77,16 +80,24 @@ def fix_xml(needle):
 def in_xml(needle, haystack):
     try:
         needle_s = fix_xml(needle)
-    except ExpatError:
-        raise ExpatError('Could not parse needle: %s into xml.'%needle)
+    except ValidationError:
+        raise ValidationError('Could not parse needle: %s into xml.'%needle)
     try:
         haystack_s = fix_xml(haystack)
-    except ExpatError:
-        raise ExpatError('Could not parse haystack: %s into xml.'%haystack)
+    except ValidationError:
+        raise ValidationError('Could not parse haystack: %s into xml.'%haystack)
     return needle_s in haystack_s
 
 def eq_xml(needle, haystack):
-    needle_s, haystack_s = map(fix_xml, (needle, haystack))
+    try:
+        needle_s = fix_xml(needle)
+    except ValidationError, e:
+        raise Exception('Could not parse needle: %s into xml. %s'%(needle, e.message))
+    try:
+        haystack_s = fix_xml(haystack)
+    except ValidationError, e:
+        raise Exception('Could not parse haystack: %s into xml. %s'%(haystack, e.message))
+#    needle_s, haystack_s = map(fix_xml, (needle, haystack))
     return needle_s == haystack_s
 
 def assert_in_xml(needle, haystack):
@@ -212,8 +223,7 @@ class WidgetTest(object):
         self.request(1, mw)
         r = self.widget(_no_autoid=True, **attrs).display(**params)
         # reset the cache as not to affect other tests
-        assert_eq_xml(expected, r)
-
+        assert_eq_xml(r, expected)
 
     def test_display(self):
         for engine in self._get_all_possible_engines():
@@ -227,7 +237,7 @@ class WidgetTest(object):
                 pass
             return
         r = self.widget(**attrs).validate(params)
-        assert r == expected, r
+        eq_(expected, r)
 
     def test_validate(self):
         if self.validate_params is not None:
