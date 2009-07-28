@@ -1,12 +1,12 @@
-compound ids
-    unit tests
-        force ids to begin with a letter
-
-registrations for repeating widgets
-    only register in the zero-th repetition
-    make sure they are registered at startup
-
 tw2.core
+    compound ids
+        unit tests
+            force ids to begin with a letter
+
+    registrations for repeating widgets
+        only register in the zero-th repetition
+        make sure they are registered at startup
+
     children_deep
         dupe id
         validation
