@@ -33,7 +33,10 @@ None
 ...     id = 'a'
 ...     class c(twc.RepeatingWidget):
 ...         class child(twc.CompoundWidget):
-...             d = twc.Widget()
+...             class d(twc.Widget):
+...                 @classmethod
+...                 def request(cls):
+...                     pass
 ...             e = twc.Widget()
 ...     f = twc.Widget(id=None)
 ...
@@ -53,3 +56,14 @@ None
 None
 >>> 'id' in Test.children[1].attrs
 False
+>>> twc.Page.req().get_link()
+Traceback (most recent call last):
+    ...
+WidgetError: Not a controller widget
+>>> import testapi
+>>> testapi.request(1, twc.make_middleware(None))
+{}
+>>> twc.Page(id='paj').req().get_link()
+'/controllers/paj'
+>>> Test.req().children.c.children[1].children.d.get_link()
+'/controllers/a:c:d'
