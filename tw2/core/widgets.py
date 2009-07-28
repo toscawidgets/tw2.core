@@ -100,8 +100,9 @@ class Widget(pm.Parametered):
         if getattr(cls, 'id', None) and not cls._valid_id_re.match(cls.id):
             raise pm.ParameterError("Not a valid identifier: '%s'" % cls.id)
         cls.compound_id = cls._gen_compound_id(for_url=False)
-        cls.attrs = cls.attrs.copy()
-        cls.attrs['id'] = getattr(cls, 'id', None) and cls.compound_id
+        if cls.compound_id:
+            cls.attrs = cls.attrs.copy()
+            cls.attrs['id'] = cls.compound_id
 
         if hasattr(cls, 'request') and getattr(cls, 'id', None):
             import middleware
@@ -138,7 +139,10 @@ class Widget(pm.Parametered):
             ancestors.append(cur)
             cur = cur.parent
         elems = reversed(filter(None, [a._compound_id_elem(for_url) for a in ancestors]))
-        return elems and ':'.join(elems) or None
+        if getattr(cls, 'id', None) or (cls.parent and issubclass(cls.parent, RepeatingWidget)):
+            return ':'.join(elems)
+        else:
+            return None
 
     @classmethod
     def _compound_id_elem(cls, for_url):
@@ -170,7 +174,8 @@ class Widget(pm.Parametered):
             self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
-            self.attrs['id'] = getattr(self, 'id', None) and self.compound_id
+            if self.compound_id:
+                self.attrs['id'] = self.compound_id
             for a in self._attr:
                 view_name = self._params[a].view_name
                 if view_name in self.attrs:

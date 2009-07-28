@@ -1,5 +1,4 @@
 compound ids
-    growing is broken - clone_node is null
     unit tests
         force ids to begin with a letter
 
