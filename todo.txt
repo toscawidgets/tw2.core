@@ -1,13 +1,11 @@
 tw2.core
-    registrations for repeating widgets
-        get_link
-        only register in the zero-th repetition
-        make sure they are registered at startup
-
     children_deep
-        dupe id
-        validation
         grandchild hiding
+    compatibility
+        id as default param to Widget.__new__
+        value as default to display
+        widget.__call__
+    look at rowlayout templates - too much python code
     refactor resources even more - avoid need to do parent=self.__class__ when adding dynamically
         inject() - in TW2, we use it to inject javascript only widgets in the wsgi stream.
     quickstart - autodetect package from "tw2.package"
@@ -19,12 +17,12 @@ tw2.core
             http://pythonpaste.org/modules/fileapp.html
     the "extra children" thing for datasrc (and submit) - avoid reserved_names
     better dev server - paste, auto reload, weberror
-    RepeatingWidget.rwbc is a bit of a hack - any improvements?
 
 auto-registering controllers
     rewrite class name like elixir does
 
 validation
+    default validator should decode unicode
     MatchField - relies on state
     selection validators
         Better required messages - "Select a value"
@@ -66,5 +64,4 @@ tw2.dynforms
     make onload trigger onchange
 
 yui
-    use get_link
     data table

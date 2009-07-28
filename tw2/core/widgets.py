@@ -270,6 +270,10 @@ class Widget(pm.Parametered):
                 isinstance(getattr(self, attr, None), (dict, list))):
             setattr(self, attr, copy.copy(getattr(self, attr)))
 
+    @classmethod
+    def children_deep(cls):
+        yield cls
+
 class LeafWidget(Widget):
     """
     A widget that has no children; this is the most common kind, e.g. form
@@ -303,16 +307,17 @@ class CompoundWidget(Widget):
         cls._sub_compound = not getattr(cls, 'id', None)
         if not hasattr(cls, 'children'):
             return
-        ids = set()
         joined_cld = []
         for c in cls.children:
             if not isinstance(c, type) or not issubclass(c, Widget):
                 raise pm.ParameterError("All children must be widgets")
+            joined_cld.append(c(parent=cls))
+        ids = set()
+        for c in cls.children_deep():
             if getattr(c, 'id', None):
                 if c.id in ids:
                     raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)
-            joined_cld.append(c(parent=cls))
         cls.children = WidgetBunch(joined_cld)
 
     def __init__(self, **kw):
@@ -368,6 +373,15 @@ class CompoundWidget(Widget):
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data
+
+    @classmethod
+    def children_deep(cls):
+        if getattr(cls, 'id', None):
+            yield cls
+        else:
+            for c in cls.children:
+                for cc in c.children_deep():
+                    yield cc
 
 class RepeatingWidgetBunchCls(object):
     def __init__(self, parent):
@@ -552,6 +566,11 @@ class DisplayOnlyWidget(Widget):
             return self.child._validate(value)
         except vd.ValidationError, e:
             raise vd.ValidationError('childerror', self.validator, self)
+
+    @classmethod
+    def children_deep(cls):
+        for c in cls.child.children_deep():
+            yield c
 
 class Page(DisplayOnlyWidget):
     """

@@ -3,7 +3,6 @@ tw2.core
     csrf protection
     better way to do "extra children" - Form.submit is a bit of a hack
         don't collect widgets as params? (but do if its id=)
-    id as default param to Widget.__init__
 
     avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
     detect attempts to modify a widget instance and raise exception
@@ -18,6 +17,7 @@ tw2.core
     make resource injector work correctly with pylons cacheing
     nick more unit tests from tw1, e.g. leaks
     resource link auto module name
+    RepeatingWidget.rwbc is a bit of a hack - any improvements? may not be a problem, rarely need to call
 
 tw2.forms
     stop label names being post-to-able

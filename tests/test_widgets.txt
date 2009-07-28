@@ -67,3 +67,14 @@ WidgetError: Not a controller widget
 '/controllers/paj'
 >>> Test.req().children.c.children[1].children.d.get_link()
 '/controllers/a:c:d'
+>>> class a(twc.CompoundWidget):
+...     class b(twc.CompoundWidget):
+...         id = None
+...         c = twc.Widget()
+...     class d(twc.CompoundWidget):
+...         id = None
+...         c = twc.Widget()
+...
+Traceback (most recent call last):
+    ...
+WidgetError: Duplicate id 'c'
