@@ -1,8 +1,4 @@
 tw2.core
-    compound ids
-        unit tests
-            force ids to begin with a letter
-
     registrations for repeating widgets
         get_link
         only register in the zero-th repetition
@@ -23,6 +19,7 @@ tw2.core
             http://pythonpaste.org/modules/fileapp.html
     the "extra children" thing for datasrc (and submit) - avoid reserved_names
     better dev server - paste, auto reload, weberror
+    RepeatingWidget.rwbc is a bit of a hack - any improvements?
 
 auto-registering controllers
     rewrite class name like elixir does
