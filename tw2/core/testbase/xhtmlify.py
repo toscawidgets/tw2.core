@@ -3,24 +3,26 @@
 
 
 This code is from Tom Lynn
-
 http://www.fish.cx/pytest/wsgi/xhtmlify.py
 
+MIT Licensed
 """
 import re, htmlentitydefs
 
-NAME_RE = r'[_a-zA-Z\-][_a-zA-Z0-9\-]*'
+NAME_RE = r'[_a-zA-Z\-][:_a-zA-Z0-9\-]*'
 BAD_ATTR_RE = r'''[^<>\s"'][^<>\s]*'''
 ATTR_RE = r'''%s\s*(?:=\s*(?:".*?"|'.*?'|%s))?''' % (NAME_RE, BAD_ATTR_RE)
 CDATA_RE = r'<!\[CDATA\[.*?\]\]>'
-TAG_RE = r'%s|<([^<>]*?)>|<' % CDATA_RE
-INNARDS_RE = r'(%s\s*(?:%s\s*)*(/?)\Z)|(/%s\s*\Z)|(\?.*)|(!.*)|(.*)' % (
+COMMENT_RE = r'<!--.*?-->|<!\s*%s.*?>' % NAME_RE # comment or doctype-alike
+TAG_RE = r'%s|%s|<([^<>]*?)>|<' % (COMMENT_RE, CDATA_RE)
+INNARDS_RE = r'(%s\s*(?:%s\s*)*(/?)\Z)|(/%s\s*\Z)|(\?.*)|(.*)' % (
                  NAME_RE, ATTR_RE, NAME_RE)
-COMMENT_RE = r'!--(.*?)--\Z|!\s*%s.*' % NAME_RE # comment or doctype-alike
 
 SELF_CLOSING_TAGS = ['br' , 'hr', 'input', 'img', 'meta',
                      'spacer', 'link', 'frame', 'base'] # from BeautifulSoup
 CDATA_TAGS = ['script']
+STRUCTURAL_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'div', 'td',
+                   'ul', 'ol', 'li', 'body'] # deliberately excluding <p>
 
 class ValidationError(Exception):
     def __init__(self, message, line, offset):
@@ -136,6 +138,12 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
             tagname = TagName.lower()
             if prevtag in self_closing_tags:
                 tags.pop()
+                prevtag = tags and tags[-1][0].lower() or None
+            if (prevtag=='p' and (tagname=='p' or tagname in STRUCTURAL_TAGS)
+               ) or (prevtag=='li' and tagname=='li'):
+                tags.pop()
+                output('</%s>' % prevtag)
+                #prevtag = tags and tags[-1][0].lower() or None
             if endslash:
                 output('<%s%s>' % (tagname, attrs))
             elif tagname in self_closing_tags:
@@ -161,6 +169,11 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
                     tags.pop()
                     prevtag = tags and tags[-1][0].lower() or None
                     assert prevtag not in self_closing_tags
+            if (prevtag=='p' and tagname in STRUCTURAL_TAGS) or (
+                prevtag=='li' and tagname in ('ol', 'ul')):
+                output('</%s>' % prevtag)
+                tags.pop()
+                prevtag = tags and tags[-1][0].lower() or None
             if prevtag==tagname:
                 if tagname not in self_closing_tags:
                     output(tag_match.group().lower())
@@ -168,16 +181,11 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
             else:
                 raise ValidationError(
                     "Unexpected closing tag </%s>" % TagName, line, offset)
-        elif m.group(5): # comment or doctype tag, <! ... >
-            m = re.compile(COMMENT_RE, re.DOTALL).match(innards)
-            if not m:
-                raise ValidationError("Malformed comment tag", line, offset)
-            output(tag_match.group())
-        elif m.group(6): # mismatch
+        elif m.group(5): # mismatch
             raise ValidationError("Malformed tag", line, offset)
         else:
             # We don't do any validation on pre-processing tags (<? ... >).
-            output(tag_match.group())
+            output(ampfix(tag_match.group()))
         lastpos = tag_match.end()
     while tags:
         tagname = tags[-1][0].lower()
@@ -197,9 +205,13 @@ def test(html=None):
         else:
             sys.exit('usage: %s HTMLFILE' % sys.argv[0])
     xhtml = xhtmlify(html)
-    assert xhtml==xhtmlify(xhtml)
+    try:
+        assert xhtml==xhtmlify(xhtml)
+    except ValidationError:
+        print xhtml
+        raise
     # parse it as XML with ElementTree/expat
-    xml = ET.fromstring(xhtml.split('>', 1)[1]) # skip the doctype
+    xml = ET.fromstring(re.sub(r'(?si)<!--.*?-->|<!doctype\b.*?>', '', xhtml))
     if len(sys.argv)==2:
         print xhtml
     return xhtml
