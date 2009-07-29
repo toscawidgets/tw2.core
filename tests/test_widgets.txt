@@ -78,3 +78,5 @@ WidgetError: Not a controller widget
 Traceback (most recent call last):
     ...
 WidgetError: Duplicate id 'c'
+>>> list(twc.CompoundWidget.children_deep())
+[]

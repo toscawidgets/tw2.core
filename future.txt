@@ -1,9 +1,6 @@
 tw2.core
     make pkg_resources a soft dependency
     csrf protection
-    better way to do "extra children" - Form.submit is a bit of a hack
-        don't collect widgets as params? (but do if its id=)
-
     avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)
     detect attempts to modify a widget instance and raise exception
     params - find a neater way to break param descriptions across lines
@@ -16,7 +13,6 @@ tw2.core
     capitals for name2label - ID, IP, URL
     make resource injector work correctly with pylons cacheing
     nick more unit tests from tw1, e.g. leaks
-    resource link auto module name
     RepeatingWidget.rwbc is a bit of a hack - any improvements? may not be a problem, rarely need to call
 
 tw2.forms

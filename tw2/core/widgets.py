@@ -379,7 +379,7 @@ class CompoundWidget(Widget):
         if getattr(cls, 'id', None):
             yield cls
         else:
-            for c in cls.children:
+            for c in getattr(cls, 'children', []):
                 for cc in c.children_deep():
                     yield cc
 
