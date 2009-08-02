@@ -4,9 +4,6 @@ import sys, os
 
 from setuptools import setup
 
-if sys.version_info < (2, 5):
-    raise SystemExit("Python 2.5 or later is required")
-
 def get_description(fname='README.txt'):
     # Adapted from PEAK-Rules' setup.py
     # Get our long description from the documentation

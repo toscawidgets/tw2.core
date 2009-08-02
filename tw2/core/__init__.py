@@ -20,4 +20,4 @@ from validation import (Validator, LengthValidator,
     ListLengthValidator, RangeValidator, MatchValidator,
     BoolValidator, safe_validate, EmptyField)
 
-from middleware import (make_middleware)
+from middleware import (make_middleware, dev_server)

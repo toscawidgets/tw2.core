@@ -176,3 +176,21 @@ global_controllers = ControllersApp()
 
 def make_middleware(app=None, **config):
     return TwMiddleware(app, controllers=global_controllers, **config)
+
+def dev_server(app=None, host='127.0.0.1', port=8000, logging=True, weberror=True, **config):
+    config.setdefault('debug', True)
+    config.setdefault('controller_prefix', '/')
+    app = make_middleware(app, **config)
+
+    if weberror:
+        import weberror.errormiddleware as we
+        app = we.ErrorMiddleware(app, debug=True)
+
+    if logging:
+        import paste.translogger as pt
+        app = pt.TransLogger(app)
+
+    import paste.httpserver as ph
+    ph.serve(app, host=host, port=port)
+
+# TBD: autoreload

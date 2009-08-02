@@ -1,3 +1,9 @@
+dev server
+    auto reload
+    doc
+    dependencies in devtools
+    swing over examples
+
 tw2.core
     children_deep
         grandchild hiding
@@ -5,7 +11,6 @@ tw2.core
         id as default param to Widget.__new__
         value as default to display
         widget.__call__
-    refactor rowlayout templates - too much python code
     refactor resources even more - avoid need to do parent=self.__class__ when adding dynamically
         inject() - in TW2, we use it to inject javascript only widgets in the wsgi stream.
     quickstart - autodetect package from "tw2.package"
@@ -16,9 +21,9 @@ tw2.core
         make the static file server support http 1.1 stuff like if-modified-since
             http://pythonpaste.org/modules/fileapp.html
     the "extra children" thing for datasrc (and submit) - avoid reserved_names
-    better dev server - paste, auto reload, weberror
     resource link auto module name
         sys._getframe(1).f_globals['__name__']
+        have to be careful not to interfere with the absolute path stuff
 
 auto-registering controllers
     rewrite class name like elixir does
@@ -58,7 +63,6 @@ widget browser
     validators - messages
 
 support python 2.4 and 2.6
-    use paste web server?
 
 tw2.dynforms
     OtherSingleSelectField
