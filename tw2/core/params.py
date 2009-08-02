@@ -74,11 +74,22 @@ class Param(object):
 
     def __init__(self, description=Default, default=Default, request_local=Default, attribute=Default, view_name=Default):
         self._seq = _param_seq.next()
-        self.description = description if description is not Default else None
-        self.default = default if default is not Default else Required
-        self.request_local = request_local if request_local is not Default else True
-        self.attribute = attribute if attribute is not Default else False
-        self.view_name = view_name if view_name is not Default else None
+
+        self.description = None
+        if description is not Default:
+            self.description = description
+        self.default = Required
+        if default is not Default:
+            self.default = default
+        self.request_local = True
+        if request_local is not Default:
+            self.request_local = request_local
+        self.attribute = False
+        if attribute is not Default:
+            self.attribute = attribute
+        self.view_name = None
+        if view_name is not Default:
+            self.view_name = view_name
 
         self.specified = []
         for arg in ['description', 'default', 'request_local', 'attribute', 'view_name']:

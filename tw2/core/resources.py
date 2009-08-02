@@ -1,8 +1,5 @@
-import widgets as wd
-import util as util
-import core as core
-import params as pm
-import threading, re, logging, wsgiref.util as wru, itertools, heapq, operator
+import widgets as wd, util, core, params as pm
+import re, logging, itertools
 import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
 
 log = logging.getLogger(__name__)
@@ -180,12 +177,30 @@ class ResourcesApp(object):
         except IOError:
             resp = wo.Response(status="404 Not Found")
         else:
-            stream = wru.FileWrapper(stream, self.config.bufsize)
+            stream = _FileIter(stream, self.config.bufsize)
             resp = wo.Response(request=req, app_iter=stream, content_type=ct)
             if enc:
                 resp.content_type_params['charset'] = enc
         resp.cache_control = {'max_age': int(self.config.res_max_age)}
         return resp(environ, start_response)
+
+# Could use wsgiref, but this is python 2.4 compatible
+class _FileIter(object):
+    def __init__(self, fileobj, bufsize):
+        self.fileobj = fileobj
+        self.bufsize = bufsize
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        buf = self.fileobj.read(self.bufsize)
+        if not buf:
+            raise StopIteration
+        return buf
+
+    def close(self):
+        self.fileobj.close()
 
 
 class _ResourceInjector(util.MultipleReplacer):

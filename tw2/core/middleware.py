@@ -102,11 +102,6 @@ class Config(object):
 
         #test to see if the rendering engines are available for the preferred engines selected
         for engine_name in self.preferred_rendering_engines:
-            if engine_name == 'mako':
-                try:
-                    import mako
-                except ImportError:
-                    self.preferred_rendering_engines.remove(engine_name)
             if engine_name not in self.available_rendering_engines:
                 self.preferred_rendering_engines.remove(engine_name)
 
