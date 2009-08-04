@@ -190,7 +190,7 @@ class Widget(pm.Parametered):
                 self.attrs['id'] = self.compound_id
             for a in self._attr:
                 view_name = self._params[a].view_name
-                if view_name in self.attrs:
+                if self.attrs.get(view_name):
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[view_name] = getattr(self, a)
 
