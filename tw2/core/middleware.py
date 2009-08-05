@@ -173,6 +173,11 @@ def make_middleware(app=None, **config):
     return TwMiddleware(app, controllers=global_controllers, **config)
 
 def dev_server(app=None, host='127.0.0.1', port=8000, logging=True, weberror=True, **config):
+    """
+    Run a development server, hosting the ToscaWidgets application.
+    This requires Paste and WebError, which are only sure to be available if
+    tw2.devtools is installed.
+    """
     config.setdefault('debug', True)
     config.setdefault('controller_prefix', '/')
     app = make_middleware(app, **config)

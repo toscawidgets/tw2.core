@@ -2,7 +2,7 @@ import pkg_resources as pk, sys, core,  os
 try:
     from tw2.core import mako_util
     from dottedtemplatelookup import DottedTemplateLookup
-    dotted_template_lookup = DottedTemplateLookup(input_encoding='utf-8', 
+    dotted_template_lookup = DottedTemplateLookup(input_encoding='utf-8',
                                                        output_encoding='utf-8',
                                                        imports=[],
                                                        default_filters=[])
@@ -23,7 +23,7 @@ def template_available(template_name, engine_name, mw=None):
     ext = rendering_extension_lookup[engine_name]
     split = template_name.rsplit('.', 1)
     return os.path.isfile(rm.resource_filename(split[0], '.'.join((split[1], ext))))
- 
+
 engine_name_cache = {}
 
 def reset_engine_name_cache():
@@ -83,7 +83,7 @@ class EngineManager(dict):
             #if the engine name is not specified, find the best possible engine
             engine_name = get_engine_name(template)
             template_path = template
-        
+
         if engine_name == 'genshi' and (template_path.startswith('/') or template_path[1] == ':'):
             engine_name = 'genshi_abs'
 
@@ -94,7 +94,7 @@ class EngineManager(dict):
 
         if engine_name == 'mako':
             output = adaptor_renderer(**dct)
-        else: 
+        else:
             output = adaptor_renderer(template=template_path, info=dct)
         if isinstance(output, str):
             output = output.decode('utf-8')
@@ -137,7 +137,7 @@ class EngineManager(dict):
         if name == 'genshi_abs':
             name = 'genshi'
             options.update({'genshi.search_path': '/'})
-        
+
         try:
             factory = core.request_local()['middleware'].config.available_rendering_engines[name]
         except (KeyError, AttributeError):

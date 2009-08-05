@@ -34,7 +34,7 @@ setup(
         'WebOb',
         'simplejson >= 2.0',
         ],
-    tests_require = ['BeautifulSoup', 'formencode'],
+    tests_require = ['BeautifulSoup', 'FormEncode', 'WebTest'],
     test_suite = 'nose.collector',
     extras_require = {
         'cheetah': _extra_cheetah,

@@ -1,4 +1,4 @@
-import webob as wo, webtest as wt, tw2.core as twc, tw2.tests, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
+import webob as wo, webtest as wt, tw2.core as twc, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
 from nose.tools import eq_, raises
 
 js = twc.JSLink(link='paj')
@@ -68,7 +68,7 @@ class TestResources(object):
 
     def test_serve(self):
         mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
-        fcont = open(os.path.join(os.path.dirname(tw2.core.__file__), 'test_templates/simple_genshi.html')).read()
+        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html')).read()
         assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
         assert(tst_mw.get('/resources/tw2.core/test_templates/notexist', expect_errors=True).status == '404 Not Found')
 
@@ -78,7 +78,7 @@ class TestResources(object):
 
     def test_whole_dir(self):
         mw.resources.register('tw2.core', 'test_templates/', whole_dir=True)
-        fcont = open(os.path.join(os.path.dirname(tw2.core.__file__), 'test_templates/simple_genshi.html')).read()
+        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html')).read()
         assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
         assert(tst_mw.get('/resources/tw2.core/test_templates/notexist', expect_errors=True).status == '404 Not Found')
 
@@ -158,7 +158,7 @@ class TestResources(object):
     def test_mw_resourcesapp(self):
         testapi.request(1)
         mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
-        fcont = open(os.path.join(os.path.dirname(tw2.core.__file__), 'test_templates/simple_genshi.html')).read()
+        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html')).read()
 #        print tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body
         assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
 

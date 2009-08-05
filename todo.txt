@@ -1,6 +1,5 @@
 dev server
-    auto reload - this is non-trivial
-    doc
+    auto reload - need to run interpreter in subprocess (see paster serve)
     swing over examples
 
 tw2.core
@@ -23,6 +22,13 @@ tw2.core
     resource link auto module name
         sys._getframe(1).f_globals['__name__']
         have to be careful not to interfere with the absolute path stuff
+    support python 2.4 and 2.6
+        2.4
+            if all(number_re.match(k) for k in v):
+            TypeError: super() argument 1 must be type, not classobj
+        2.6
+            BaseException deprecated
+    tests dependency on webtest
 
 auto-registering controllers
     rewrite class name like elixir does
@@ -60,9 +66,6 @@ widget browser
     validators __repr__ better
     tw branding
     validators - messages
-
-support python 2.4 and 2.6
-    TypeError: super() argument 1 must be type, not classobj
 
 tw2.dynforms
     OtherSingleSelectField
