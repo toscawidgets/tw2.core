@@ -1,4 +1,5 @@
 tw2.core
+    Label("mylabel", label_text=Markup("<a href='http://www.google.com'>Google</a>"))
     make pkg_resources a soft dependency
     csrf protection
     avoid so many subclasses being created - inplace addition of parent (but this is harder than I thought)

@@ -1,8 +1,7 @@
-dev server
-    auto reload - need to run interpreter in subprocess (see paster serve)
-    swing over examples
-
 tw2.core
+    docs
+        explain global_config/middleware, etc
+        explain the order things happen - building attrs, registering resources, etc.
     children_deep
         grandchild hiding
     compatibility
@@ -22,16 +21,18 @@ tw2.core
     resource link auto module name
         sys._getframe(1).f_globals['__name__']
         have to be careful not to interfere with the absolute path stuff
+    dev server
+        auto reload - need to run interpreter in subprocess (see paster serve)
+        swing over examples
     support python 2.4 and 2.6
         2.4
             if all(number_re.match(k) for k in v):
             TypeError: super() argument 1 must be type, not classobj
         2.6
-            BaseException deprecated
-    tests dependency on webtest
-
-auto-registering controllers
-    rewrite class name like elixir does
+            Looks fine, deprecation warnings in nose/cheetah
+            Check widget browser
+    auto-registering controllers
+        rewrite class name like elixir does
 
 validation
     default validator should decode unicode
@@ -44,9 +45,6 @@ validation
     global config for encoding
 
 documentation
-    core
-        explain global_config/middleware, etc
-        explain the order things happen - building attrs, registering resources, etc.
     forms
         getting started
             with wsgi

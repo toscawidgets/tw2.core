@@ -9,7 +9,7 @@ This tutorial will show you how to get ToscaWidgets 2 working with a WSGI applic
 
 You need to run ``python setup.py develop`` for each repository.
 
-To check the install worked, we will try to run the widget browser. Issue ``paster twbrowser`` then browse to http://localhost:8000/. You should see the widget browser, like this:
+To check the install worked, we will try to run the widget browser. Issue ``paster tw2.browser`` then browse to http://localhost:8000/. You should see the widget browser, like this:
 
 .. image:: tut0.png
 
