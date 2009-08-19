@@ -169,7 +169,9 @@ class ControllersApp(object):
 
 global_controllers = ControllersApp()
 
-def make_middleware(app=None, **config):
+def make_middleware(app=None, config=None, **kw):
+    config = (config or {}).copy()
+    config.update(kw)
     return TwMiddleware(app, controllers=global_controllers, **config)
 
 def dev_server(app=None, host='127.0.0.1', port=8000, logging=True, weberror=True, **config):

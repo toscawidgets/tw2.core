@@ -58,6 +58,9 @@ setup(
     [turbogears.extensions]
     toscawidgets=tw.core.framework:tg
 
+    [paste.filter_app_factory]
+    middleware = tw2.core.middleware:make_middleware
+
     """,
     zip_safe=False,
     classifiers = [
@@ -74,9 +77,3 @@ setup(
         'Programming Language :: Python',
     ],
 )
-
-
-"""
-    [paste.filter_app_factory]
-    middleware = tw.api:make_middleware
-"""
