@@ -183,6 +183,8 @@ class Widget(pm.Parametered):
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
         if self.validator and not hasattr(self, '_validated'):
+            if self.value is None:
+                self.value = {}
             self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
@@ -258,11 +260,14 @@ class Widget(pm.Parametered):
         self._validated = True
         self.value = value
         if self.validator:
-            value = self.validator.to_python(value)
             if isinstance(self.validator, vd.Validator):
+                value = self.validator.to_python(value)
                 self.validator.validate_python(value)
             else:
+#                assert 0
+                value = self.validator.to_python(value)
                 self.validator.validate_python(value, None)
+#                assert 0
         return value
 
     def safe_modify(self, attr):
@@ -346,8 +351,13 @@ class CompoundWidget(Widget):
         for c in self.children:
             c.prepare()
 
+    def get_child_error_message(self, name):
+        if isinstance(self.error_msg, basestring):
+            if self.error_msg.startswith(name+':'):
+                return self.error_msg.split(':')[1]
+            
     @vd.catch_errors
-    def _validate(self, value):
+    def _validate(self, value, state=None):
         self._validated = True
         value = value or {}
         if not isinstance(value, dict):
@@ -369,7 +379,7 @@ class CompoundWidget(Widget):
                 any_errors = True
         if self.validator:
             data = self.validator.to_python(data)
-            self.validator.validate_python(data)
+            self.validator.validate_python(data, state)
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data

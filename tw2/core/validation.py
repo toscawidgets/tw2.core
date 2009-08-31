@@ -22,8 +22,9 @@ class ValidationError(core.WidgetError):
     def __init__(self, msg, validator=None, widget=None):
         self.widget = widget
         validator = validator or Validator
-        msg = validator.msg_rewrites.get(msg, msg)
         mw = core.request_local().get('middleware')
+        if isinstance(validator, Validator):
+            msg = validator.msg_rewrites.get(msg, msg)
         if mw and msg in mw.config.validator_msgs:
             msg = mw.config.validator_msgs[msg]
         elif msg in validator.msgs:
@@ -48,7 +49,8 @@ def catch_errors(fn):
         catch = (catch, formencode.Invalid)
     def inner(self, *args, **kw):
         try:
-            return fn(self, *args, **kw)
+            d = fn(self, *args, **kw)
+            return d
         except catch, e:
             if self:
                 self.error_msg = str(e)
@@ -151,7 +153,7 @@ class Validator(object):
                 value = value.strip()
         return value
 
-    def validate_python(self, value):
+    def validate_python(self, value, state=None):
         if self.required and not value:
             raise ValidationError('required', self)
 
@@ -187,7 +189,7 @@ class LengthValidator(Validator):
     min = None
     max = None
 
-    def validate_python(self, value):
+    def validate_python(self, value, state=None):
         super(LengthValidator, self).validate_python
         if self.min and len(value) < self.min:
             raise ValidationError('tooshort', self)
@@ -235,7 +237,7 @@ class RangeValidator(Validator):
     min = None
     max = None
 
-    def validate_python(self, value):
+    def validate_python(self, value, state=None):
         super(RangeValidator, self).validate_python(value)
         if self.min and value < self.min:
             raise ValidationError('toosmall', self)
@@ -262,7 +264,7 @@ class IntValidator(RangeValidator):
         except ValueError:
             raise ValidationError('notint', self)
 
-    def validate_python(self, value):
+    def validate_python(self, value, state=None):
         # avoid super().validate_python, as it sees int(0) as missing
         value = self.to_python(value) # TBD: I wanted to avoid this; needed to make unit tests pass
         if self.required and value is None:
@@ -303,7 +305,7 @@ class OneOfValidator(Validator):
     }
     values = []
 
-    def validate_python(self, value):
+    def validate_python(self, value, state=None):
         super(OneOfValidator, self).validate_python(value)
         if value not in self.values:
             raise ValidationError('notinlist', self)
@@ -382,7 +384,7 @@ class RegexValidator(Validator):
     }
     regex = None
 
-    def validate_python(self, value):
+    def validate_python(self, value, state=None):
         super(RegexValidator, self).validate_python(value)
         if value and not self.regex.search(value):
             raise ValidationError('badregex', self)
@@ -416,7 +418,7 @@ class IpAddressValidator(Validator):
         'badipaddress': 'Must be a valid IP address',
     }
     regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)$', re.IGNORECASE)
-    def validate_python(self, value):
+    def validate_python(self, value, state=None):
         m = self.regex.search(value)
         if not m or any(not(0 <= int(g) <= 255) for g in m.groups()):
             raise ValidationError('badipaddress', self)
@@ -442,7 +444,7 @@ class MatchValidator(Validator):
     def field2_str(self):
         return util.name2label(self.field2).lower()
 
-    def validate_python(self, value):
+    def validate_python(self, value, state=None):
         v1 = value[self.field1]
         v2 = value[self.field2]
         if v1 is not Invalid and v2 is not Invalid and v1 != v2:

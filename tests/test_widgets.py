@@ -95,7 +95,7 @@ class TestRepeatingWidgetBunch():
         self.bunch['asdf']
 
 class AlwaysValidateFalseValidator(vd.Validator):
-    def validate_python(self, params):
+    def validate_python(self, params, state=None):
         raise vd.ValidationError('I always throw up on roller coasters.')
 class AlwaysValidateFalseWidget(wd.Widget):
     validator = AlwaysValidateFalseValidator()
