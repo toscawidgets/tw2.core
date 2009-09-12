@@ -155,14 +155,20 @@ class ControllersApp(object):
     def __init__(self):
         self._widgets = {}
 
-    def register(self, widget, path):
+    def register(self, widget, path=None):
+        if path is None:
+            path = widget.id
         self._widgets[path] = widget
 
     def __call__(self, req):
         try:
             config = rl = core.request_local()['middleware'].config
-            path = req.path_info[len(config.controller_prefix):] or 'index'
-            resp = self._widgets[path].request(req)
+            path = req.path_info.split('/')[1:]
+            if path[0] != config.controller_prefix.strip('/'):
+                return wo.Response(status="404 Not Found")
+            widget_name = path[1] or 'index'
+            widget = self._widgets[path[1]]
+            resp = widget.request(req)
         except KeyError:
             resp = wo.Response(status="404 Not Found")
         return resp
