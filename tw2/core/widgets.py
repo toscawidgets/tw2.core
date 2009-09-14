@@ -246,11 +246,8 @@ class Widget(pm.Parametered):
         if cls.parent:
             raise core.WidgetError('Only call validate on root widgets')
         value = vd.unflatten_params(params)
-        try:
-            if hasattr(cls, 'id') and cls.id:
-                value = value[cls.id]
-        except KeyError:
-            raise vd.ValidationError('corrupt', cls.validator, widget=cls.req())
+        if hasattr(cls, 'id') and cls.id:
+            value = value.get(cls.id, {})
         ins = cls.req()
         core.request_local()['validated_widget'] = ins
         return ins._validate(value)
