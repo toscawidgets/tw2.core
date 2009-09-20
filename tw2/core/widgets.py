@@ -261,10 +261,8 @@ class Widget(pm.Parametered):
                 value = self.validator.to_python(value)
                 self.validator.validate_python(value)
             else:
-#                assert 0
                 value = self.validator.to_python(value)
                 self.validator.validate_python(value, None)
-#                assert 0
         return value
 
     def safe_modify(self, attr):
@@ -342,9 +340,10 @@ class CompoundWidget(Widget):
             else:
                 for c in self.children:
                     if c._sub_compound:
+                        c.value = self.value
+                    else:
+                        v = getattr(self.value, c.id or '', None)
                         c.value = v
-                    elif hasattr(v, c.id):
-                        c.value = getattr(v, c.id)
         for c in self.children:
             c.prepare()
 
