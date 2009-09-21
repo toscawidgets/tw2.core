@@ -95,6 +95,8 @@ class EngineManager(dict):
 
         if engine_name == 'string':
             template = template_path
+            
+        #xxx: add support for "toscawidgets" template engine
     
         adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on, template)
 

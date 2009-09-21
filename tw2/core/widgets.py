@@ -349,7 +349,8 @@ class CompoundWidget(Widget):
                         c.value = self.value
                     else:
                         v = getattr(self.value, c.id or '', None)
-                        c.value = v
+                        if v:
+                            c.value = v
         for c in self.children:
             c.prepare()
 
