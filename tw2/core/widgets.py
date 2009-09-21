@@ -373,9 +373,12 @@ class CompoundWidget(Widget):
                 if c._sub_compound:
                     data.update(c._validate(value))
                 else:
-                    val = c._validate(value.get(c.id))
-                    if val is not vd.EmptyField:
-                        data[c.id] = val
+#                    if c.name=='school_type_id':
+#                        assert 0
+                    if hasattr(c, 'name'):
+                        val = c._validate(value.get(c.name))
+                        if val is not vd.EmptyField:
+                            data[c.id] = val
             except vd.ValidationError:
                 if not c._sub_compound:
                     data[c.id] = vd.Invalid
