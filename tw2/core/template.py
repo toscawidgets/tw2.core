@@ -1,4 +1,6 @@
 import pkg_resources as pk, sys, core,  os
+import string
+
 try:
     from tw2.core import mako_util
     from dottedtemplatelookup import DottedTemplateLookup
@@ -83,13 +85,17 @@ class EngineManager(dict):
             #if the engine name is not specified, find the best possible engine
             engine_name = get_engine_name(template)
             template_path = template
+            
 
         if engine_name == 'genshi' and (template_path.startswith('/') or template_path[1] == ':'):
             engine_name = 'genshi_abs'
 
-        if engine_name != 'cheetah':
+        if engine_name not in ['string', 'cheetah']:
             template = self[engine_name].load_template(template_path)
 
+        if engine_name == 'string':
+            template = template_path
+    
         adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on, template)
 
         if engine_name == 'mako':
@@ -104,6 +110,8 @@ class EngineManager(dict):
         """Return a function that will that processes a template appropriately,
         given the source and destination engine names.
         """
+        if src =='string' or src=='toscawidgets':
+            return lambda **kw: string.Template(template).substitute(**dict(kw['info']['w'].iteritems()))
         if src == dst and src in ('kid', 'genshi'):
             return self[src].transform
         elif src == 'mako' and dst == 'kid':

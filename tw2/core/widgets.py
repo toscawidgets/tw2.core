@@ -196,6 +196,12 @@ class Widget(pm.Parametered):
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[view_name] = getattr(self, a)
 
+    def iteritems(self):
+        """An iterator which will provide the params of the widget in key, value pairs"""
+        for param in self._params.keys():
+            value = getattr(self, param)
+            yield param, value
+
     @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
         """Display the widget - render the template. In the template, the
