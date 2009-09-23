@@ -87,7 +87,7 @@ class TestValidation(object):
             twc.Widget(id='b', validator=twc.Validator(required=True)),
         ])
         testapi.request(1)
-        assert(test.validate({'a:b':'10'}) == {'b':'10'})
+        eq_(test.validate({'a:b':'10'}), {'b':'10'})
 
     def test_meta_msgs(self):
         class A(object):
@@ -145,7 +145,7 @@ class TestValidation(object):
         testapi.request(1)
         inp = {'a': {'b':'test', 'c':'test2'}}
         out = compound_widget.validate(inp)
-        assert(out == inp['a'])
+        eq_(out, inp['a'])
         cw = twc.core.request_local()['validated_widget']
         assert(cw.children.b.value == 'test')
         assert(cw.children.c.value == 'test2')
@@ -200,7 +200,7 @@ class TestValidation(object):
         assert(rw.children[0].value == 'test')
         assert('Enter a value' == rw.children[1].error_msg)
 
-    def test_dow(self):
+    def test_display_only_widget(self):
         test = twc.DisplayOnlyWidget(child=compound_widget)
         testapi.request(1)
         inp = {'a': {'b':'test', 'c':'test2'}}
@@ -244,7 +244,7 @@ class TestValidation(object):
         ]
 
         for i,w in enumerate(widgets):
-            assert(w.value == 'test%d' % i)
+            eq_(w.value, 'test%d' % i)
 
 class TestValidator(tb.ValidatorTest):
     validator = Validator

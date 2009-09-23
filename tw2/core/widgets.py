@@ -373,8 +373,14 @@ class CompoundWidget(Widget):
                 if c._sub_compound:
                     data.update(c._validate(value))
                 else:
+                    #favor name parameters over id params
                     if hasattr(c, 'name'):
                         val = value.get(c.name.split(':')[-1], None)
+                        val = c._validate(val)
+                        if val is not vd.EmptyField:
+                            data[c.id] = val
+                    elif hasattr(c, 'id'):
+                        val = value.get(c.id)
                         val = c._validate(val)
                         if val is not vd.EmptyField:
                             data[c.id] = val
