@@ -183,9 +183,13 @@ class Widget(pm.Parametered):
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
         if self.validator and not hasattr(self, '_validated'):
-            if self.value is None:
-                self.value = {}
-            self.value = self.validator.from_python(self.value)
+            value = self.value
+# I think that this may be needed, but I need to test more.
+# in any event it causes value="{}" to appear in form fields
+#            if self.value is None:
+#                value = {}
+#            raise
+            self.value = self.validator.from_python(value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.compound_id:
@@ -195,7 +199,7 @@ class Widget(pm.Parametered):
                 if self.attrs.get(view_name):
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[view_name] = getattr(self, a)
-
+        
     def iteritems(self):
         """An iterator which will provide the params of the widget in key, value pairs"""
         for param in self._params.keys():
