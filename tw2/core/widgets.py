@@ -189,7 +189,12 @@ class Widget(pm.Parametered):
 #            if self.value is None:
 #                value = {}
 #            raise
-            self.value = self.validator.from_python(value)
+            if formencode and self.value is None:
+                value = {}
+            value = self.validator.from_python(value)
+            if formencode and value == {} and self.value is None:
+                value = None
+            self.value = value
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.compound_id:
