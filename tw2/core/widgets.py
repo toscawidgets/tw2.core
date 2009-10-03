@@ -184,11 +184,9 @@ class Widget(pm.Parametered):
                 setattr(self, a, dfr.fn())
         if self.validator and not hasattr(self, '_validated'):
             value = self.value
-# I think that this may be needed, but I need to test more.
-# in any event it causes value="{}" to appear in form fields
-#            if self.value is None:
-#                value = {}
-#            raise
+            
+            # Handles the case where FE expects dict-like object, but 
+            # you have None at your disposal.
             if formencode and self.value is None:
                 value = {}
             value = self.validator.from_python(value)
