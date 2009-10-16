@@ -58,6 +58,8 @@ class Widget(pm.Parametered):
     error_msg = pm.Variable("Validation error message.")
     parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
     Controller = pm.Variable("Default controller for this widget", default=None)
+    _check_authz = pm.Variable("Method for checking authorization, should be classmethod in form: def _check_authn(cls, req, method)", default=None)
+    _check_authn = pm.Variable("Method for checking authentication, should be classmethod in the form: def _check_authn(cls, req)", default=None)
 
     _sub_compound = False
     _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
@@ -105,8 +107,9 @@ class Widget(pm.Parametered):
             cls.attrs = cls.attrs.copy()
             cls.attrs['id'] = cls.compound_id
 
-        if cls.Controller:
-            cls.attrs['controller'] = cls.Controller
+        cls.attrs['controller']   = getattr(cls, 'Controller')
+        cls.attrs['_check_authn'] = getattr(cls, '_check_authn')
+        cls.attrs['_check_authz'] = getattr(cls, '_check_authz')
 
         if getattr(cls, 'id', None):
             import middleware
@@ -160,7 +163,7 @@ class Widget(pm.Parametered):
 
     def get_link(self):
         """
-        Get the URL to the controller. This is called at run time, not startup
+        Get the URL to the controller . This is called at run time, not startup
         time, so we know the middleware if configured with the controller path.
         Note: this function is a temporary measure, a cleaner API for this is
         planned.
@@ -291,21 +294,6 @@ class Widget(pm.Parametered):
     def children_deep(cls):
         yield cls
         
-        
-    @classmethod
-    def _check_authz(cls, req, method):
-        """
-        Check if the user is authorized for the given controller method.
-        """
-        return True
-
-    @classmethod
-    def _check_authn(cls, req):
-        """
-        Check if the user is authenticated.
-        """
-        return True
-
     @classmethod
     def request(cls, req):
         """
@@ -313,7 +301,11 @@ class Widget(pm.Parametered):
         
         The default does TG-style object dispatch.
         """
-        if not cls._check_authn(req):
+        
+        authn = cls.attrs.get('_check_authn')
+        authz = cls.attrs.get('_check_authz')
+        
+        if authn and not authn(req):
             return util.abort(req, 401)
         
         controller = cls.attrs.get('controller', cls.Controller)
@@ -331,7 +323,7 @@ class Widget(pm.Parametered):
             method_name = method_name[:-5]
         method = getattr(controller, method_name, None)
         if method:
-            if not cls._check_authz(req, method):
+            if authz and not authz(req, method):
                 return util.abort(req, 403)
 
             controller = cls.Controller()
@@ -606,7 +598,7 @@ class DisplayOnlyWidget(Widget):
             Widget.post_define.im_func(cls)
             cls.child = cls.child(parent=cls)
         else:
-            cls.child = cls.child(id=cls_id, Controller=cls.Controller, parent=cls)
+            cls.child = cls.child(id=cls_id, Controller=cls.Controller, _check_authz=cls._check_authz, _check_authn=cls._check_authn, parent=cls)
 
     @classmethod
     def _gen_compound_id(cls, for_url):
