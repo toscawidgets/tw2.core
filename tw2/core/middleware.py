@@ -166,8 +166,8 @@ class ControllersApp(object):
             path = req.path_info.split('/')[1:]
             if path[0] != config.controller_prefix.strip('/'):
                 return wo.Response(status="404 Not Found")
-            widget_name = path[1] or 'index'
-            widget = self._widgets[path[1]]
+	    widget_name = (len(path) > 1 and path[1]) or 'index'
+            widget = self._widgets[widget_name]
             resp = widget.request(req)
         except KeyError:
             resp = wo.Response(status="404 Not Found")
