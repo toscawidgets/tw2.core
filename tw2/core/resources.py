@@ -96,7 +96,11 @@ class JSFuncCall(JSSource):
 
     def prepare(self):
         super(JSFuncCall, self).prepare()
-        self.src = '%s(%s)' % (self.function, encoder.encode(self.args))
+        if isinstance(self.args, dict):
+            args = encoder.encode(self.args)
+        else:
+            args = ', '.join(encoder.encode(a) for a in self.args)
+        self.src = '%s(%s)' % (self.function, args)
 
 
 class ResourcesApp(object):

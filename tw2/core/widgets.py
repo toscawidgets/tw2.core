@@ -440,8 +440,19 @@ class CompoundWidget(Widget):
                     data[c.id] = vd.Invalid
                 any_errors = True
         if self.validator:
-            data = self.validator.to_python(data)
-            self.validator.validate_python(data, state)
+            catch = vd.ValidationError
+            if formencode:
+                catch = (catch, formencode.Invalid)
+            try:
+                data = self.validator.to_python(data)
+                self.validator.validate_python(data, state)
+            except catch, e:
+                error_dict = getattr(e, 'error_dict', {})
+                for c in self.children:
+                    if getattr(c, 'id', None) in error_dict:
+                        c.error_msg = error_dict[c.id]
+                        data[c.id] = vd.Invalid
+                any_errors=True
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data

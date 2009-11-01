@@ -27,7 +27,7 @@ class ValidationError(core.WidgetError):
             msg = validator.msg_rewrites.get(msg, msg)
         if mw and msg in mw.config.validator_msgs:
             msg = mw.config.validator_msgs[msg]
-        elif msg in validator.msgs:
+        elif hasattr(validator, 'msgs') and msg in validator.msgs:
             msg = validator.msgs[msg]
         msg = re.sub('\$(\w+)',
                 lambda m: str(getattr(validator, m.group(1))), msg)
