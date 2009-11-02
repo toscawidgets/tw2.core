@@ -51,7 +51,7 @@ class Widget(pm.Parametered):
     template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
     validator = pm.Param('Validator for the widget.', default=None, request_local=False)
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
-    css_class = pm.Param('Css Class Name', default=None, attribute=True, view_name='class')
+    css_class = pm.Param('CSS class name', default=None, attribute=True, view_name='class')
     value = pm.Param("The value for the widget.", default=None)
     resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a :class:`Resource` subclass.", default=[], request_local=False)
 
