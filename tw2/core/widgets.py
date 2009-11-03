@@ -443,6 +443,8 @@ class CompoundWidget(Widget):
             except catch, e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
+                if hasattr(e, 'value'):
+                    c.value = e.value
                 if not c._sub_compound:
                     data[c.id] = vd.Invalid
                 any_errors = True
