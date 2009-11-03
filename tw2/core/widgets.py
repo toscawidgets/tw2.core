@@ -419,6 +419,11 @@ class CompoundWidget(Widget):
         self.value = value
         any_errors = False
         data = {}
+        
+        catch = vd.ValidationError
+        if formencode:
+            catch = (catch, formencode.Invalid)
+
         for c in self.children:
             try:
                 if c._sub_compound:
@@ -435,7 +440,7 @@ class CompoundWidget(Widget):
                         val = c._validate(val)
                         if val is not vd.EmptyField:
                             data[c.id] = val
-            except vd.ValidationError, e:
+            except catch, e:
                 if not c._sub_compound:
                     data[c.id] = vd.Invalid
                 any_errors = True
