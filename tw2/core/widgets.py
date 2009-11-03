@@ -441,13 +441,12 @@ class CompoundWidget(Widget):
                         if val is not vd.EmptyField:
                             data[c.id] = val
             except catch, e:
+                if hasattr(e, 'msg'):
+                    c.error_msg = e.msg
                 if not c._sub_compound:
                     data[c.id] = vd.Invalid
                 any_errors = True
         if self.validator:
-            catch = vd.ValidationError
-            if formencode:
-                catch = (catch, formencode.Invalid)
             try:
                 data = self.validator.to_python(data)
                 self.validator.validate_python(data, state)
