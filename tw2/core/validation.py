@@ -276,7 +276,10 @@ class IntValidator(RangeValidator):
                 raise ValidationError('toobig', self)
 
     def from_python(self, value):
-        return str(value)
+        if value is None:
+            return None
+        else:
+            return str(value)
 
 
 class BoolValidator(RangeValidator):

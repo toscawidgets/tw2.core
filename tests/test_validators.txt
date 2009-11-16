@@ -60,6 +60,8 @@ Traceback (most recent call last):
 ValidationError: Must be an integer
 >>> twc.IntValidator().to_python('') is None
 True
+>>> twc.IntValidator().to_python(None) is None
+True
 >>> twc.IntValidator().to_python(0)
 0
 >>> twc.IntValidator(required=True).validate_python(None)
@@ -78,6 +80,10 @@ ValidationError: Must be at least 5
 Traceback (most recent call last):
     ...
 ValidationError: Cannot be more than 5
+>>> twc.IntValidator().from_python(0)
+'0'
+>>> twc.IntValidator().from_python(None) is None
+True
 
 >>> twc.BoolValidator().to_python('')
 False
