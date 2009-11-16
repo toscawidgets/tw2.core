@@ -603,6 +603,7 @@ class Page(DisplayOnlyWidget):
     the page.
     """
     title = pm.Param('Title for the page')
+    content_type = pm.Param('Content type header', default="text/html; charset=UTF8", request_local=False)
     template = "tw2.core.templates.page"
     id_suffix = 'page'
     _no_autoid = True
@@ -616,7 +617,7 @@ class Page(DisplayOnlyWidget):
 
     @classmethod
     def request(cls, req):
-        resp = webob.Response(request=req, content_type="text/html; charset=UTF8")
+        resp = webob.Response(request=req, content_type=cls.content_type)
         ins = cls.req()
         ins.fetch_data(req)
         resp.body = ins.display().encode('utf-8')
