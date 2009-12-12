@@ -18,6 +18,16 @@ class WidgetMeta(pm.ParamMeta):
      * Calls post_define for the widget class and base classes. This
        is needed as it's not possible to call super() in post_define.
     """
+    @classmethod
+    def _collect_base_children(meta, bases):
+        ''' Collect the children from the base classes '''
+        children = []
+        for b in bases:
+            bcld = getattr(b, 'children', None)
+            if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
+                children.extend(bcld)
+        return children
+
     def __new__(meta, name, bases, dct):
         if name != 'Widget' and 'children' not in dct:
             new_children = []
@@ -25,11 +35,7 @@ class WidgetMeta(pm.ParamMeta):
                 if isinstance(v, type) and issubclass(v, Widget) and d not in reserved_names:
                     new_children.append((v, d))
                     del dct[d]
-            children = []
-            for b in bases:
-                bcld = getattr(b, 'children', None)
-                if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
-                    children.extend(bcld)
+            children = meta._collect_base_children(bases)
             new_children = sorted(new_children, key=lambda t: t[0]._seq)
             children.extend(hasattr(v, 'id') and v or v(id=d) for v,d in new_children)
             if children:
@@ -584,6 +590,18 @@ class RepeatingWidget(Widget):
             raise vd.ValidationError('childerror', self.validator, self)
         return data
 
+class DisplayOnlyWidgetMeta(WidgetMeta):
+    @classmethod
+    def _collect_base_children(meta, bases):
+        children = []
+        for b in bases:
+            bchild = getattr(b, 'child', None)
+            if bchild:
+                b = b.child
+            bcld = getattr(b, 'children', None)
+            if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
+                children.extend(bcld)
+        return children
 
 class DisplayOnlyWidget(Widget):
     """
@@ -594,6 +612,11 @@ class DisplayOnlyWidget(Widget):
     child = pm.Param('Child for this widget.')
     children = pm.Param('children specified for this widget will be passed to the child', default=[])
     id_suffix = pm.Param('Suffix to append to compound IDs')
+
+    __metaclass__ = DisplayOnlyWidgetMeta
+
+    def __new__(cls, **kw):
+        return type(cls.__name__+'_d', (cls,), kw)
 
     @classmethod
     def post_define(cls):

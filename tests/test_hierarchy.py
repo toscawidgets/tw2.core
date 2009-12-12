@@ -144,3 +144,18 @@ class TestHierarchy(object):
         test.prepare()
         assert(test.child.value == 10)
 
+    #
+    # Display Only with inheritance
+    def test_display_only_inherit(self):
+        class a(twc.DisplayOnlyWidget):
+            child = twc.CompoundWidget
+            wdgt = twc.Widget()
+
+        class b(a):
+            wdgt2 = twc.Widget()
+        
+        test = b()
+        import epdb; epdb.st()
+        assert 'wdgt' in [c.id for c in test.child.children]
+        assert 'wdgt2' in [c.id for c in test.child.children]
+
