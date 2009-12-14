@@ -155,7 +155,6 @@ class TestHierarchy(object):
             wdgt2 = twc.Widget()
         
         test = b()
-        import epdb; epdb.st()
         assert 'wdgt' in [c.id for c in test.child.children]
         assert 'wdgt2' in [c.id for c in test.child.children]
 
