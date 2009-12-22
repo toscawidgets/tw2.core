@@ -405,9 +405,9 @@ class CompoundWidget(Widget):
                     if c._sub_compound:
                         c.value = self.value
                     else:
-                        v = getattr(self.value, c.id or '', None)
-                        if v:
-                            c.value = v
+                        #If you have the attr, set it, regardless of whether it's not False
+                        if hasattr(self.value, c.id or ''):
+                            c.value = getattr(self.value, c.id or '')
         for c in self.children:
             c.prepare()
 
