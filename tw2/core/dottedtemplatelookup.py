@@ -115,6 +115,9 @@ class DottedTemplateLookup(object):
             self._mutex.release()
             pass
 
+    def adjust_uri(self, uri, relativeto):
+        return os.path.join(os.path.dirname(relativeto), uri)
+
     def get_template(self, template_name):
         """this is the emulated method that must return a template
         instance based on a given template name
