@@ -13,13 +13,15 @@ def thread_local():
         _thread_local[threadid] = rl_data
         return rl_data
 
+import functools
 
 class class_or_instance(object):
     def __init__(self, fn):
-        self.fn = fn
-    def __get__(self, ins, cls):
-        return lambda *a, **kw: self.fn(ins, cls, *a, **kw)
+        self._function = fn
+        self._wrapper = functools.wraps(fn)
 
+    def __get__(self, ins, cls):
+        return self._wrapper(functools.partial(self._function, ins, cls))
 
 def name2label(name):
     """

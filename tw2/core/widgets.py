@@ -238,9 +238,10 @@ class Widget(pm.Parametered):
         if not self:
             vw = core.request_local().get('validated_widget')
             if vw:
-                return vw.display()
-            else:
-                return cls.req(**kw).display(displays_on)
+                if isinstance(vw, cls):
+                #Prefer the validated widget, but ONLY if they're the same type
+                    return vw.display()
+            return cls.req(**kw).display(displays_on)
         else:
             if not self.parent:
                 self.prepare()
