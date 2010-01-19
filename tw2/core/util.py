@@ -82,7 +82,7 @@ class MultipleReplacer(object):
 
     def __call__(self, string, *args, **kw):
         return self._regexp.sub(self._subsitutor(*args, **kw), string)
-    
+
 def abort(req, status):
     return webob.Response(request=req, status=status, content_type="text/html")
 

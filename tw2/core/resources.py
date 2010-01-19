@@ -158,12 +158,16 @@ class ResourcesApp(object):
             path = modname + '/' + filename.strip('/')
             if path not in self._paths:
                 self._paths[path] = (modname, filename)
-        return self.config.res_prefix + path
+
+        return self.config.script_name+self.config.res_prefix + path
 
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
         try:
-            path = req.path_info[len(self.config.res_prefix):]
+
+            path = environ['PATH_INFO']
+            path = path[len(self.config.res_prefix):]
+
             if path not in self._paths:
                 if '..' in path: # protect against directory traversal
                     raise IOError()
