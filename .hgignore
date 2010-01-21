@@ -5,3 +5,5 @@ glob:docs/.output/
 glob:.coverage
 glob:.noseids
 glob:html
+glob:dist
+glob:build
