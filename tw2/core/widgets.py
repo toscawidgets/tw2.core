@@ -83,6 +83,7 @@ class Widget(pm.Parametered):
         """
         New is overloaded to return a subclass of the widget, rather than an instance.
         """
+        newname = calc_name(cls, kw)
         return type(cls.__name__+'_s', (cls,), kw)
 
     def __init__(self, **kw):
@@ -602,6 +603,15 @@ class DisplayOnlyWidgetMeta(WidgetMeta):
                 children.extend(bcld)
         return children
 
+def calc_name(cls, kw, char='s'):
+    if 'parent' in kw:
+        newname = kw['parent'].__name__ + '__' + cls.__name__
+    else:
+        newname = cls.__name__ + '_%s' % char
+    return newname
+
+
+
 class DisplayOnlyWidget(Widget):
     """
     A widget that has a single child. The parent widget is only used for display
@@ -615,7 +625,8 @@ class DisplayOnlyWidget(Widget):
     __metaclass__ = DisplayOnlyWidgetMeta
 
     def __new__(cls, **kw):
-        return type(cls.__name__+'_d', (cls,), kw)
+        newname = calc_name(cls, kw, 'd')
+        return type(newname, (cls,), kw)
 
     @classmethod
     def post_define(cls):

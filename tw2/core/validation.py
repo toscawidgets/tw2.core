@@ -64,7 +64,7 @@ def unflatten_params(params):
     this into a nested dict/list structure. This has been designed so it
     (should!) never raise an exception.
     """
-    if isinstance(params, webob.MultiDict):
+    if isinstance(params, webob.multidict.MultiDict):
         params = params.mixed()
     out = {}
     for pname in params:

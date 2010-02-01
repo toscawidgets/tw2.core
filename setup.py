@@ -31,7 +31,7 @@ setup(
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=[
-        'WebOb',
+        'WebOb>=0.9.7',
         'simplejson >= 2.0',
         ],
     tests_require = ['BeautifulSoup', 'FormEncode', 'WebTest'],
