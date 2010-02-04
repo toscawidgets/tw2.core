@@ -5,7 +5,7 @@ import re
 import datetime
 import formencode
 from nose.tools import eq_, raises
-from webob import MultiDict
+from webob.multidict import MultiDict
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),

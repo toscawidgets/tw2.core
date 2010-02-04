@@ -363,6 +363,8 @@ class DateTimeValidator(DateValidator):
     format = '%d/%m/%Y %H:%M'
 
     def to_python(self, value):
+        if value is None:
+            return value
         try:
             return datetime.datetime.strptime(value, self.format)
         except ValueError:
