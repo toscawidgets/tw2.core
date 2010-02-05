@@ -1,10 +1,52 @@
 import widgets as wd, util, core, params as pm
-import re, logging, itertools
+import re, logging
 import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
 
 log = logging.getLogger(__name__)
-encoder = simplejson.encoder.JSONEncoder()
 
+class JSSymbol(object):
+    def __init__(self, src):
+        self.src = src
+
+class TW2Encoder(simplejson.encoder.JSONEncoder):
+    """
+    Technical note: This is basically a copy & paste of TW1's TWEncoder, 
+    but dumbed down, since I don't need JSCall, etc., but just a wrapper 
+    kind of like HTML.literal but for JS.
+    """
+    
+    def __init__(self, *args, **kw):
+        super(TW2Encoder, self).__init__(*args, **kw)
+
+    def default(self, obj):
+        if isinstance(obj, JSSymbol):
+            return self.mark_for_escape(obj)
+        return super(TW2Encoder, self).default(obj)
+
+    def encode(self, obj):
+        self.unescape_symbols = {}
+        encoded = super(TW2Encoder, self).encode(obj)
+        unescaped = self.unescape_marked(encoded)
+        self.unescape_symbols = {}
+        return unescaped
+
+    def mark_for_escape(self, obj):
+        self.unescape_symbols[id(obj)] = obj
+        return 'TW2Encoder_unescape_' + str(id(obj))
+
+    def unescape_marked(self, encoded):
+        unescape_pattern = re.compile('"TW2Encoder_unescape_([0-9]*)"')
+        def unescape(match):
+            try:
+                obj_id = int(match.group(1))
+                obj = self.unescape_symbols[obj_id]
+                return obj.src
+            except:
+                # Simply return the match if there is a problem
+                return match.group(0)
+        return unescape_pattern.sub(unescape, encoded)
+        
+encoder = TW2Encoder()
 
 class Resource(wd.Widget):
     location = pm.Param('Location on the page where the resource should be placed.' \
