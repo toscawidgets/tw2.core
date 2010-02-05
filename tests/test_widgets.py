@@ -4,6 +4,7 @@ from nose.tools import eq_
 from webob import Request
 from nose.tools import raises
 import formencode as fe
+from strainer.operators import eq_xhtml
 
 class Test6(twc.Widget):
     test = twc.Param(attribute=True)
@@ -154,14 +155,14 @@ class SubCompoundTestWidget(wd.CompoundWidget):
 class TestSubCompoundWidget(tb.WidgetTest):
     widget = SubCompoundTestWidget
     attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
-    expected = """<p>Test Widget</p>"""
+    expected = """<div id="rw"><div><p>Test Widget</p></div></div>"""
     validate_params = [[None, {'rw':''}, None, vd.ValidationError]]
 
     def test_string_value(self):
         w = self.widget(**self.attrs)()
         w.value = "value"
         r = w.display("value")
-        eq_(r.strip(), self.expected)
+        assert eq_xhtml(r, self.expected)
 
     @raises(twc.WidgetError)
     def test_duplicate_ids(self):
@@ -178,7 +179,7 @@ class TestSubCompoundWidget(tb.WidgetTest):
 class TestCompoundWidget(tb.WidgetTest):
     widget = CompoundTestWidget
     attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
-    expected = """<p>Test Widget</p>"""
+    expected = """<div id="rw"><p>Test Widget</p></div>"""
     validate_params = [[None, {'rw':''}, None, vd.ValidationError], [None, {'rw':'asdf'}, None, vd.ValidationError]]
 
 class RepeatingTestWidget(wd.RepeatingWidget):
@@ -187,7 +188,7 @@ class RepeatingTestWidget(wd.RepeatingWidget):
 class TestRepeatingWidget(tb.WidgetTest):
     widget = RepeatingTestWidget
     attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
-    expected = """<p>Test Widget</p>"""
+    expected = """<div id="rw"><p>Test Widget</p></div>"""
     validate_params = [[None, {'rw':''}, None, vd.ValidationError]]
 
     @raises(pm.ParameterError)
@@ -262,7 +263,7 @@ class TestPage(tb.WidgetTest):
                    }
         req=Request(environ)
         r = self.widget(_no_autoid=True, **self.attrs).request(req)
-        tb.assert_eq_xml(r.body, """<html>
+        assert eq_xhtml(r.body, """<html>
 <head><title>some title</title></head>
 <body><h1>some title</h1></body>
 </html>""")
