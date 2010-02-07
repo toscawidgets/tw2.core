@@ -61,11 +61,11 @@ def get_engine_name(template_name, mw=None):
             if template_available(template_name, engine_name):
                 engine_name_cache[template_name] = engine_name
                 return engine_name
-    raise EngineError("Could not find template for: %s.  You may need to specify\
-a template engine name in the widget like mako:%s, or change the middleware setup\
-to include the template's templating language in your preferred_template_engines\
-configuration. As a last resort, you may set strict_template_selection to false\
-which will grab whatever template it finds if there one of your preferred template\
+    raise EngineError("Could not find template for: %s. You may need to specify \
+a template engine name in the widget like mako:%s, or change the middleware setup \
+to include the template's templating language in your preferred_template_engines \
+configuration. As a last resort, you may set strict_template_selection to false \
+which will grab whatever template it finds if there one of your preferred template \
 engines is not found."""%(template_name, template_name))
 
 

@@ -1,5 +1,5 @@
 import widgets as wd, util, core, params as pm
-import re, logging
+import re, logging, itertools
 import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
 
 log = logging.getLogger(__name__)
