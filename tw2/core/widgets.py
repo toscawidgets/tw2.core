@@ -237,7 +237,9 @@ class Widget(pm.Parametered):
             parent. Set this to ``string`` to get raw string output.
         """
         if not self:
-            vw = core.request_local().get('validated_widget_%s' % id(cls))
+            vw = core.request_local().get('validated_widget')
+            if vw.__class__ != cls:
+                vw = None
             if vw:
                 return vw.display()
             return cls.req(**kw).display(displays_on)
@@ -277,7 +279,7 @@ class Widget(pm.Parametered):
         ins = cls.req()
         
         # Key the validated widget by class id
-        core.request_local()['validated_widget_%s' % id(cls)] = ins
+        core.request_local()['validated_widget'] = ins
         return ins._validate(value)
 
     @vd.catch_errors
