@@ -1,4 +1,4 @@
-import copy, weakref, re, itertools, webob
+import copy, weakref, re, itertools, inspect, webob
 import template, core, util, validation as vd, params as pm
 try:
     import formencode
@@ -237,8 +237,15 @@ class Widget(pm.Parametered):
             parent. Set this to ``string`` to get raw string output.
         """
         if not self:
-            vw = core.request_local().get('validated_widget')
-            if vw.__class__ != cls:
+            vw = vw_class = core.request_local().get('validated_widget')
+            if not inspect.isclass(vw_class):
+                vw_class = vw.__class__
+            if not inspect.isclass(cls):
+                cls_class = cls.__class__
+            else:
+                cls_class = cls
+                
+            if vw_class != cls_class:
                 vw = None
             if vw:
                 return vw.display()
