@@ -198,8 +198,8 @@ class Widget(pm.Parametered):
                 setattr(self, a, dfr.fn())
         if self.validator and not hasattr(self, '_validated'):
             value = self.value
-            
-            # Handles the case where FE expects dict-like object, but 
+
+            # Handles the case where FE expects dict-like object, but
             # you have None at your disposal.
             if formencode and self.value is None:
                 value = {}
@@ -216,7 +216,7 @@ class Widget(pm.Parametered):
                 if self.attrs.get(view_name):
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[view_name] = getattr(self, a)
-        
+
     def iteritems(self):
         """An iterator which will provide the params of the widget in key, value pairs"""
         for param in self._params.keys():
@@ -244,8 +244,8 @@ class Widget(pm.Parametered):
                 cls_class = cls.__class__
             else:
                 cls_class = cls
-                
-            if vw_class != cls_class:
+
+            if vw_class.__name__ != cls_class.__name__:
                 vw = None
             if vw:
                 return vw.display()
@@ -284,7 +284,7 @@ class Widget(pm.Parametered):
         if hasattr(cls, 'id') and cls.id:
             value = value.get(cls.id, {})
         ins = cls.req()
-        
+
         # Key the validated widget by class id
         core.request_local()['validated_widget'] = ins
         return ins._validate(value)
@@ -310,25 +310,25 @@ class Widget(pm.Parametered):
     @classmethod
     def children_deep(cls):
         yield cls
-        
+
     @classmethod
     def request(cls, req):
         """
         Override this method to define your own way of handling a widget request.
-        
+
         The default does TG-style object dispatch.
         """
-        
+
         authn = cls.attrs.get('_check_authn')
         authz = cls.attrs.get('_check_authz')
-        
+
         if authn and not authn(req):
             return util.abort(req, 401)
-        
+
         controller = cls.attrs.get('controller', cls.Controller)
         if controller is None:
             return util.abort(req, 404)
-        
+
         path = req.path_info.split('/')[3:]
         if len(path) == 0:
             method_name = 'index'
@@ -426,7 +426,7 @@ class CompoundWidget(Widget):
         if isinstance(self.error_msg, basestring):
             if self.error_msg.startswith(name+':'):
                 return self.error_msg.split(':')[1]
-            
+
     @vd.catch_errors
     def _validate(self, value, state=None):
         self._validated = True
@@ -436,7 +436,7 @@ class CompoundWidget(Widget):
         self.value = value
         any_errors = False
         data = {}
-        
+
         catch = vd.ValidationError
         if formencode:
             catch = (catch, formencode.Invalid)
