@@ -1,4 +1,4 @@
-import copy, weakref, re, itertools, inspect, webob
+import copy, weakref, re, itertools, webob
 import template, core, util, validation as vd, params as pm
 try:
     import formencode
@@ -238,17 +238,24 @@ class Widget(pm.Parametered):
         """
         if not self:
             vw = vw_class = core.request_local().get('validated_widget')
-            if not inspect.isclass(vw_class):
-                vw_class = vw.__class__
-            if not inspect.isclass(cls):
-                cls_class = cls.__class__
-            else:
-                cls_class = cls
-                
-            if vw_class != cls_class:
-                vw = None
+            
             if vw:
-                return vw.display()
+                # Pull out actual class instances to compare to see if this
+                # is really the widget that was actually validated
+                if not getattr(vw_class, '__bases__', None):
+                    vw_class = vw.__class__
+                if not getattr(cls, '__bases__', None):
+                    cls_class = cls.__class__
+                else:
+                    cls_class = cls
+                
+                if vw_class != cls_class:
+                    vw = None
+                
+                # If we still have a validated widget, display it
+                if vw:
+                    return vw.display()
+            
             return cls.req(**kw).display(displays_on)
         else:
             if not self.parent:
