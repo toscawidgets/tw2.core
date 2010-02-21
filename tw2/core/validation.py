@@ -1,4 +1,5 @@
-import core, re, util, string, webob, time, datetime, copy
+import core, re, util, string, time, datetime, copy
+import webob.multidict as mdict
 try:
     import formencode
 except ImportError:
@@ -64,7 +65,7 @@ def unflatten_params(params):
     this into a nested dict/list structure. This has been designed so it
     (should!) never raise an exception.
     """
-    if isinstance(params, webob.multidict.MultiDict):
+    if isinstance(params, mdict.MultiDict):
         params = params.mixed()
     out = {}
     for pname in params:
@@ -447,7 +448,7 @@ class MatchValidator(Validator):
         return util.name2label(self.field2).lower()
 
     def validate_python(self, value, state=None):
-        v1 = value[self.field1]
-        v2 = value[self.field2]
+        v1 = value.get(self.field1, None)
+        v2 = value.get(self.field2, None)
         if v1 is not Invalid and v2 is not Invalid and v1 != v2:
             raise ValidationError('mismatch', self)
