@@ -33,8 +33,9 @@ setup(
     install_requires=[
         'WebOb>=0.9.7',
         'simplejson >= 2.0',
+        'decorator',
         ],
-    tests_require = ['BeautifulSoup', 'FormEncode', 'WebTest'],
+    tests_require = ['nose', 'BeautifulSoup', 'FormEncode', 'WebTest', 'strainer'],
     test_suite = 'nose.collector',
     extras_require = {
         'cheetah': _extra_cheetah,
