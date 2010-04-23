@@ -10,11 +10,11 @@ class JSSymbol(object):
 
 class TW2Encoder(simplejson.encoder.JSONEncoder):
     """
-    Technical note: This is basically a copy & paste of TW1's TWEncoder, 
-    but dumbed down, since I don't need JSCall, etc., but just a wrapper 
+    Technical note: This is basically a copy & paste of TW1's TWEncoder,
+    but dumbed down, since I don't need JSCall, etc., but just a wrapper
     kind of like HTML.literal but for JS.
     """
-    
+
     def __init__(self, *args, **kw):
         super(TW2Encoder, self).__init__(*args, **kw)
 
@@ -45,7 +45,7 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
                 # Simply return the match if there is a problem
                 return match.group(0)
         return unescape_pattern.sub(unescape, encoded)
-        
+
 encoder = TW2Encoder()
 
 class Resource(wd.Widget):
@@ -138,11 +138,12 @@ class JSFuncCall(JSSource):
 
     def prepare(self):
         super(JSFuncCall, self).prepare()
-        if isinstance(self.args, dict):
-            args = encoder.encode(self.args)
-        else:
-            args = ', '.join(encoder.encode(a) for a in self.args)
-        self.src = '%s(%s)' % (self.function, args)
+        if not self.src:
+            if isinstance(self.args, dict):
+                args = encoder.encode(self.args)
+            elif self.args:
+                args = ', '.join(encoder.encode(a) for a in self.args)
+            self.src = '%s(%s)' % (self.function, args)
 
 
 class ResourcesApp(object):

@@ -89,6 +89,7 @@ class Widget(pm.Parametered):
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
+        self._js_calls = []
 
     @classmethod
     def post_define(cls):
@@ -224,6 +225,16 @@ class Widget(pm.Parametered):
             yield param, value
 
     @util.class_or_instance
+    def add_call(self, extra_arg, call, location="bodybottom"):
+        """
+        not sure what the "extra_arg" needed is for, but it is needed, as is the decorator, or an infinite loop ensues
+        Adds a :func:`tw.api.js_function` call that will be made when the
+        widget is rendered.
+        """
+        #log.debug("Adding call <%s> for %r statically.", call, self)
+        self._js_calls.append([str(call), location])
+
+    @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
         """Display the widget - render the template. In the template, the
         widget instance is available as the variable ``$w``.
@@ -256,6 +267,11 @@ class Widget(pm.Parametered):
         else:
             if not self.parent:
                 self.prepare()
+            if self._js_calls:
+                #avoids circular reference
+                import resources as rs
+                for item in self._js_calls:
+                    self.resources.append(rs.JSFuncCall(src=str(item[0]), location=item[1]))
             if self.resources:
                 self.resources = WidgetBunch([r.req() for r in self.resources])
                 for r in self.resources:
