@@ -137,14 +137,21 @@ class JSFuncCall(JSSource):
     location = 'bodybottom' # TBD: afterwidget?
 
     def prepare(self):
-        super(JSFuncCall, self).prepare()
         if not self.src:
             if isinstance(self.args, dict):
                 args = encoder.encode(self.args)
             elif self.args:
                 args = ', '.join(encoder.encode(a) for a in self.args)
             self.src = '%s(%s)' % (self.function, args)
+        super(JSFuncCall, self).prepare()
 
+    def __hash__(self):
+        return hash((hasattr(self, 'src') and self.src or '') + (hasattr('args') and self.args or ''))
+
+    def __eq__(self, other):
+        return (getattr(self, 'src', None) == getattr(other, 'src', None)
+                and getattr(self, 'args', None) == getattr(other, 'args', None)
+                )
 
 class ResourcesApp(object):
     """WSGI Middleware to serve static resources
