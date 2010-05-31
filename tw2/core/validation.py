@@ -434,7 +434,7 @@ class IpAddressValidator(Validator):
     msgs = {
         'badipaddress': 'Must be a valid IP address',
     }
-    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)$', re.IGNORECASE)
+    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)$')
     def validate_python(self, value, state=None):
         if value:
             m = self.regex.search(value)
@@ -447,15 +447,15 @@ class NetBlockValidator(Validator):
     Confirm the value is a valid IP4 network block.
     """
     msgs = {
-        'badipaddress': 'Must be a valid IP network block',
+        'badnetblock': 'Must be a valid IP network block',
     }
-    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)/(\d+)$', re.IGNORECASE)
+    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)/(\d+)$')
     def validate_python(self, value, state=None):
         if value:
             m = self.regex.search(value)
             if (not m or any(not(0 <= int(g) <= 255) for g in m.groups()[:4]) or 
                     not (1 <= int(m.group(5)) <= 32)):
-                raise ValidationError('badipaddress', self)
+                raise ValidationError('badnetblock', self)
 
 
 class MatchValidator(Validator):
