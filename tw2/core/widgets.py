@@ -49,7 +49,7 @@ class Widget(pm.Parametered):
 
     id = pm.Param('Widget identifier', request_local=False)
     template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
-    validator = pm.Param('Validator for the widget.', default=None, request_local=False)
+    validator = pm.Param('Validator for the widget.', default=vd.Validator(), request_local=False)
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
     css_class = pm.Param('CSS class name', default=None, attribute=True, view_name='class')
     value = pm.Param("The value for the widget.", default=None)
@@ -182,14 +182,8 @@ class Widget(pm.Parametered):
             dfr = getattr(self, a)
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
-        if self.validator and not hasattr(self, '_validated'):
-            value = self.value
-# I think that this may be needed, but I need to test more.
-# in any event it causes value="{}" to appear in form fields
-#            if self.value is None:
-#                value = {}
-#            raise
-            self.value = self.validator.from_python(value)
+        if not hasattr(self, '_validated'):
+            self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.compound_id:
@@ -353,7 +347,7 @@ class CompoundWidget(Widget):
                         c.value = self.value
                     else:
                         v = getattr(self.value, c.id or '', None)
-                        if v:
+                        if v is not None:
                             c.value = v
         for c in self.children:
             c.prepare()
