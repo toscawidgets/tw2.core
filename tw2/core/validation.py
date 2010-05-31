@@ -175,6 +175,16 @@ class Validator(object):
             setattr(nself, k, kw[k])
         return nself
 
+
+class BlankValidator(Validator):
+    """
+    Always returns EmptyField. This is the default for hidden fields,
+    so their values are not included in validated data
+    """
+    def to_python(self, value):
+        return EmptyField
+
+
 class LengthValidator(Validator):
     """
     Confirm a value is of a suitable length. Usually you'll use

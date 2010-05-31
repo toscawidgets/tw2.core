@@ -18,6 +18,7 @@ from validation import (Validator, LengthValidator,
     DateTimeValidator, ValidationError, Invalid, EmailValidator,
     UrlValidator, IpAddressValidator, StringLengthValidator,
     ListLengthValidator, RangeValidator, MatchValidator,
-    BoolValidator, NetBlockValidator, safe_validate, EmptyField)
+    BoolValidator, NetBlockValidator, safe_validate, EmptyField,
+    BlankValidator)
 
 from middleware import (make_middleware, dev_server)
