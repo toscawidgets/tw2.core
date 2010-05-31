@@ -9,6 +9,8 @@ This tutorial will show you how to get ToscaWidgets 2 working with a WSGI applic
 
 You need to run ``python setup.py develop`` for each repository.
 
+You also need to install one of the supported templating engines - either Genshi or Mako.
+
 To check the install worked, we will try to run the widget browser. Issue ``paster tw2.browser`` then browse to http://localhost:8000/. You should see the widget browser, like this:
 
 .. image:: tut0.png
