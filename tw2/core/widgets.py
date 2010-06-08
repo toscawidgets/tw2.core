@@ -48,6 +48,7 @@ class Widget(pm.Parametered):
     __metaclass__ = WidgetMeta
 
     id = pm.Param('Widget identifier', request_local=False)
+    key = pm.Param('Widget data key (defaults to id)', request_local=False)
     template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
     validator = pm.Param('Validator for the widget.', default=vd.Validator(), request_local=False)
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
@@ -97,8 +98,11 @@ class Widget(pm.Parametered):
         abstract class. There is no need to call super(), the metaclass will do
         this automatically.
         """
-        if getattr(cls, 'id', None) and not cls._valid_id_re.match(cls.id):
-            raise pm.ParameterError("Not a valid identifier: '%s'" % cls.id)
+        if getattr(cls, 'id', None):
+            if not cls._valid_id_re.match(cls.id):
+                raise pm.ParameterError("Not a valid identifier: '%s'" % cls.id)
+            if not getattr(cls, 'key', None):
+                cls.key = cls.id
         cls.compound_id = cls._gen_compound_id(for_url=False)
         if cls.compound_id:
             cls.attrs = cls.attrs.copy()
@@ -323,6 +327,7 @@ class CompoundWidget(Widget):
                     raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)
         cls.children = WidgetBunch(joined_cld)
+        cls.keyed_children = [c.id for c in joined_cld if hasattr(c, 'key') and hasattr(c, 'id') and c.key != c.id]
 
     def __init__(self, **kw):
         super(CompoundWidget, self).__init__(**kw)
@@ -330,7 +335,7 @@ class CompoundWidget(Widget):
 
     def prepare(self):
         """
-        Propagate the value for this widget to the children, based on their id.
+        Propagate the value for this widget to the children, based on their key (usually id).
         """
         super(CompoundWidget, self).prepare()
         v = self.value or {}
@@ -339,14 +344,14 @@ class CompoundWidget(Widget):
                 for c in self.children:
                     if c._sub_compound:
                         c.value = v
-                    elif c.id in v:
-                        c.value = v[c.id]
+                    elif c.key in v:
+                        c.value = v[c.key]
             else:
                 for c in self.children:
                     if c._sub_compound:
                         c.value = self.value
                     else:
-                        v = getattr(self.value, c.id or '', None)
+                        v = getattr(self.value, c.key or '', None)
                         if v is not None:
                             c.value = v
         for c in self.children:
@@ -386,6 +391,11 @@ class CompoundWidget(Widget):
                 if not c._sub_compound:
                     data[c.id] = vd.Invalid
                 any_errors = True
+        for cid in self.keyed_children:
+            c = getattr(self.children, cid)
+            d = data.get(c.key)
+            if d and d is not vd.Invalid:
+                c._validate(d)
         if self.validator:
             data = self.validator.to_python(data)
             self.validator.validate_python(data, state)
