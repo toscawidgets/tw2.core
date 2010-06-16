@@ -429,32 +429,33 @@ class UrlValidator(RegexValidator):
 
 class IpAddressValidator(Validator):
     """
-    Confirm the value is a valid IP4 address.
+    Confirm the value is a valid IP4 address, or network block.
+
+    `allow_netblock`
+        Allow the IP address to include a network block (default: False)
+
+    `require_netblock`
+        Require the IP address to include a network block (default: False)
     """
+    allow_netblock = False
+    require_netblock = False
+    
     msgs = {
         'badipaddress': 'Must be a valid IP address',
-    }
-    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)$')
-    def validate_python(self, value, state=None):
-        if value:
-            m = self.regex.search(value)
-            if not m or any(not(0 <= int(g) <= 255) for g in m.groups()):
-                raise ValidationError('badipaddress', self)
-
-
-class NetBlockValidator(Validator):
-    """
-    Confirm the value is a valid IP4 network block.
-    """
-    msgs = {
         'badnetblock': 'Must be a valid IP network block',
     }
-    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)/(\d+)$')
+    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)(/(\d+))?$')
     def validate_python(self, value, state=None):
         if value:
             m = self.regex.search(value)
-            if (not m or any(not(0 <= int(g) <= 255) for g in m.groups()[:4]) or 
-                    not (1 <= int(m.group(5)) <= 32)):
+            if not m or any(not(0 <= int(g) <= 255) for g in m.groups()[:4]):
+                raise ValidationError('badipaddress', self)
+            if m.group(6):
+                if not self.allow_netblock:
+                    raise ValidationError('badipaddress', self)
+                if not (0 <= int(m.group(6)) <= 32):
+                    raise ValidationError('badnetblock', self)
+            elif self.require_netblock:
                 raise ValidationError('badnetblock', self)
 
 
