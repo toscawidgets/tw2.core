@@ -424,7 +424,7 @@ class CompoundWidget(Widget):
         super(CompoundWidget, self).prepare()
         v = self.value or {}
         if not hasattr(self, '_validated'):
-            if isinstance(v, dict):
+            if hasattr(v, '__getitem__'):
                 for c in self.children:
                     if c._sub_compound:
                         c.value = v
