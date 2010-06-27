@@ -59,11 +59,25 @@ We'll now add some widgets to the application. Update the code to this::
         return resp(environ, start_response)
 
     if __name__ == "__main__":
-        wrs.make_server('', 8000, twc.TwMiddleware(app)).serve_forever()
+        wrs.make_server('', 8000, twc.make_middleware(app)).serve_forever()
 
 When you look at this with a browser, it should be like this:
 
 .. image:: tut1.png
+
+
+TurboGears 2
+------------
+
+First, disable ToscaWidgets 0.9. Edit ``app_cfg.py`` and add at the end::
+
+    base_config.use_toscawidgets = False
+
+Second, add the ToscaWidgets 2.0 middleware. Edit ``middleware.py`` and add, just before the ``return app`` line::
+
+    app = twc.make_middleware(app)
+
+
 
 
 Creating Widgets
