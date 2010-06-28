@@ -50,6 +50,9 @@ class Config(object):
         A dictionary that maps validation message names to messages. This lets
         you override validation messages on a global basis. (default: {})
 
+    `encoding`
+        The encoding to decode when performing validation (default: utf-8)
+    
     `auto_reload_templates`
         Whether to automatically reload changed templates. Set this to False in
         production for efficiency. If this is None, it takes the same value as
@@ -81,6 +84,7 @@ class Config(object):
     params_as_vars = False
     debug = True
     validator_msgs = {}
+    encoding = 'utf-8'
     auto_reload_templates = None
     preferred_rendering_engines = ['mako', 'genshi', 'cheetah', 'kid']
     strict_engine_selection = True

@@ -65,11 +65,18 @@ if not hasattr(webob, 'MultiDict'):
 def unflatten_params(params):
     """This performs the first stage of validation. It takes a dictionary where
     some keys will be compound names, such as "form:subform:field" and converts
-    this into a nested dict/list structure. This has been designed so it
-    (should!) never raise an exception.
+    this into a nested dict/list structure. It also performs unicode decoding,
+    with the encoding specified in the middleware config.
     """
     if isinstance(params, webob.MultiDict):
-        params = params.mixed()
+        params = params.mixed()    
+    enc = core.request_local()['middleware'].config.encoding            
+    try:
+        for p in params:
+            if isinstance(params[p], str):
+                params[p] = params[p].decode(enc)
+    except UnicodeDecodeError:
+        raise vd.ValidationError('corrupt')
     out = {}
     for pname in params:
         dct = out
@@ -122,11 +129,6 @@ class Validator(object):
         Whether to strip leading and trailing space from the input, before
         any other validation. (default: True)
 
-    `encoding`
-        Input character set. All incoming strings are automatically decoded
-        to Python Unicode objects, unless encoding is set to None.
-        (default: 'utf-8')
-
     To create your own validators, sublass this class, and override any of:
     :meth:`to_python`, :meth:`validate_python`, or :meth:`from_python`.
     """
@@ -140,21 +142,14 @@ class Validator(object):
     }
     required = False
     strip = True
-    encoding = 'utf-8'
 
     def __init__(self, **kw):
         for k in kw:
             setattr(self, k, kw[k])
 
     def to_python(self, value):
-        if isinstance(value, basestring):
-            try:
-                if self.encoding:
-                    value = value.decode(self.encoding)
-            except (UnicodeDecodeError, UnicodeEncodeError), e:
-                raise ValidationError('decode', self)
-            if self.strip:
-                value = value.strip()
+        if isinstance(value, basestring) and self.strip:
+            value = value.strip()
         return value
 
     def validate_python(self, value, state=None):
