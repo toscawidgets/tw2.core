@@ -10,7 +10,17 @@ class Invalid(object):
 class EmptyField(object):
     pass
 
-class ValidationError(core.WidgetError):
+
+if formencode:
+    class BaseValidationError(core.WidgetError, formencode.Invalid):
+        def __init__(self, msg):
+            formencode.Invalid.__init__(self, msg, None, None)        
+else:
+    class BaseValidationError(core.WidgetError):
+        pass
+
+
+class ValidationError(BaseValidationError):
     """Invalid data was encountered during validation.
 
     The constructor can be passed a short message name, which is looked up in
