@@ -69,15 +69,21 @@ When you look at this with a browser, it should be like this:
 TurboGears 2
 ------------
 
-First, disable ToscaWidgets 0.9. Edit ``app_cfg.py`` and add at the end::
+To enable ToscaWidgets 2.0, edit ``middleware.py`` and add, just before the ``return app`` line::
+
+    app = twc.make_middleware(app, default_engine='genshi')
+
+By default, TurboGears 2 has ToscaWidgets 0.9 enabled. The two libraries can co-exist, but for production sites it is recommended to only run one, for efficiency.
+
+To disable ToscaWidgets 0.9, edit ``app_cfg.py`` and add at the end::
 
     base_config.use_toscawidgets = False
+    
+This prevents Catwalk from working, so in ``root.py`` comment out the following lines::
 
-Second, add the ToscaWidgets 2.0 middleware. Edit ``middleware.py`` and add, just before the ``return app`` line::
-
-    app = twc.make_middleware(app)
-
-
+    #from catwalk.tg2 import Catwalk
+    
+    #admin = Catwalk(model, DBSession)
 
 
 Creating Widgets
