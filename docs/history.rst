@@ -53,6 +53,6 @@ One of the main challenges for a widget framework is that some widget parameters
 
 In ToscaWidgets 0.9, widget instances existed for the life of the app. It was important to never update a widget parameter within a request, as this would break thread-safety. Instead, per-request parameters were stored in a dictionary. However, this is inconvenient, particularly when setting parameters on widgets deep within a nested hierarchy. It requires the user to create a singleton instance of every widget. It is also a potential performance problem.
 
-The first attempt at ToscaWidgets 2 also had widget instances exist for the life of the app. However, instrumentation of the class made some parameters request local. This makes accessing parameters much more convenient. However, you still need to create singleton instances of every widget, and it is still a potential peformance problem.
+The first attempt at ToscaWidgets 2 also had widget instances exist for the life of the app. However, instrumentation of the class made some parameters request local. This makes accessing parameters much more convenient. However, you still needed to create singleton instances of every widget, and it was still a potential peformance problem.
 
 The second attempt at ToscaWidgets 2 has widget instances exist only for the life of a request. All fixed parameters are set by subclassing widgets. This keeps parameters easy to access, and avoids the need to create singletons. Initial performance testing suggests this gives around a two-fold performance improvement.
