@@ -47,8 +47,9 @@ def test_safe_validate():
     eq_(r, "asdf")
 
 def test_safe_validate_invalid():
-    v = Validator(required=True, encoding="ascii")
-    r = safe_validate(v, u'\ua000')
+    v = twc.IntValidator()
+    r = safe_validate(v, 'x')
+    assert(r is twc.Invalid)
 
 def test_unflatten_params_multi_dict():
     params = unflatten_params(MultiDict((('asdf:f1', 's1'), ('asdf:f2', 's2'))))
@@ -88,6 +89,16 @@ class TestValidation(object):
         ])
         testapi.request(1)
         eq_(test.validate({'a:b':'10'}), {'b':'10'})
+
+    def test_unflatten_decode(self):
+        assert(twc.validation.unflatten_params({'a': u'\u1234'.encode('utf-8')}) == {'a':u'\u1234'})
+        
+    def test_unflatten_error(self):
+        try:
+            twc.validation.unflatten_params({'a': chr(128)})
+            assert(False)
+        except twc.ValidationError, e:
+            assert(str(e) == "Received in the wrong character set; should be utf-8")
 
     def test_meta_msgs(self):
         class A(object):
@@ -265,7 +276,7 @@ class TestValidator(tb.ValidatorTest):
     def test_repr_(self):
         v = Validator()
         r = repr(v)
-        eq_(r, "Validator(required=False, strip=True, encoding='utf-8')")
+        eq_(r, "Validator(required=False, strip=True)")
 
 class TestLengthValidator(tb.ValidatorTest):
     validator = LengthValidator

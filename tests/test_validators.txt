@@ -6,16 +6,9 @@ Traceback (most recent call last):
 ValidationError: Enter a value
 
 >>> twc.Validator().to_python(' a ')
-u'a'
+'a'
 >>> twc.Validator(strip=False).to_python(' a ')
-u' a '
-
->>> twc.Validator().to_python(u'\u1234'.encode('utf-8'))
-u'\u1234'
->>> twc.Validator().to_python(chr(128))
-Traceback (most recent call last):
-    ...
-ValidationError: Received in the wrong character set; should be utf-8
+' a '
 
 >>> twc.LengthValidator(min=1).validate_python([])
 Traceback (most recent call last):

@@ -80,13 +80,14 @@ def unflatten_params(params):
     """
     if isinstance(params, webob.MultiDict):
         params = params.mixed()    
-    enc = core.request_local()['middleware'].config.encoding            
+    mw = core.request_local().get('middleware')
+    enc = mw.config.encoding if mw else 'utf-8'
     try:
         for p in params:
             if isinstance(params[p], str):
                 params[p] = params[p].decode(enc)
     except UnicodeDecodeError:
-        raise vd.ValidationError('corrupt')
+        raise ValidationError('decode', Validator(encoding=enc))
     out = {}
     for pname in params:
         dct = out
@@ -171,8 +172,8 @@ class Validator(object):
 
     def __repr__(self):
         _bool = ['False', 'True']
-        return ("Validator(required=%s, strip=%s, encoding='%s')" %
-            (_bool[int(self.required)], _bool[int(self.strip)], self.encoding))
+        return ("Validator(required=%s, strip=%s)" %
+            (_bool[int(self.required)], _bool[int(self.strip)]))
 
     def clone(self, **kw):
         nself = copy.copy(self)
