@@ -1,3 +1,73 @@
+
+
+Changes email
+    Unicode refactor - issue 62
+
+
+Select refactor
+    new unit tests, update documentation
+
+    later:
+        separate SingleSelectionField, MultipleSelectionField
+        change default_selected
+            this for doing things like:
+            "--- select value below ---"
+    
+
+tw2.sqla
+
+    unit test RelatedValidator
+
+    DbFormPage
+        avoid hardcoded id
+        robust against bad id
+        avoid elixir dependency
+        unit test
+
+
+    later:
+        efficiency concerns with saving M:M (ask on sa list)
+            http://groups.google.com/group/sqlalchemy/browse_thread/thread/fa5df9a15b27e877
+        eager loader?
+            only a major concern if there are multiple levels of repeater
+
+    some support for (later)
+        -> these shouldn't be part of tw2.sqla
+        in widget libraries, if a widget could benefit from database integration, the developer:
+            MUST include a base widget with no integration
+            SHOULD include a widget with SQLAlchemy integration
+            MAY include widgets with any other database integration            
+
+        FilteringGrid
+        OtherSingleSelectField
+        AjaxLookup
+
+    schema evolution - migrate
+        migrate seems to have come to life again!
+
+
+
+http://groups.google.com/group/turbogears-trunk/browse_thread/thread/3b3fff3dadd0b1e5
+    Paste XSS issue
+    
+http://groups.google.com/group/turbogears-trunk/browse_thread/thread/ec921035779324e9
+    Genshi now unmaintained?!?
+
+
+notes from tsrgen2
+    tw2.forms: allow title to be a template    
+    FormPage redirect - flexibility to include id
+
+    calling super classes can get messy 
+        if you copy and paste a method, have to change super calls
+        doesn't work neatly for a class defined inline
+        -> solution is Python 3
+
+
+http://www.facebook.com/alteris.ian - doing exactly the kind of work I'm interested in
+
+
+
 tw2.core
     Label("mylabel", label_text=Markup("<a href='http://www.google.com'>Google</a>"))
     make pkg_resources a soft dependency
@@ -89,38 +159,18 @@ dynforms
     customisedform - save prompt
     HidingComponentMixin - has JS optimisation that should be on general resources
     Consider HidingComponent, CascadingComponent as a display-only widget
+    text input mask - http://deformdemo.repoze.org/text_input_masks/
 
 
 frameworks
     pylons
-    tg2 - percious has done some work
+    tg2 - basically working
     cp3
+    repoze.bfg
     django
 
 
-sqlalchemy
-    get a simple form working
-    lists
-    fkeyselect
-    Relations
-        skip cols for MTO relations
-        MTO
-            view - label
-            edit - select / ajax
-
-    how to update
-        updating A with B
-        if B is AutoField
-            update A with params B has specified
-        else
-            update B with params A has specified and B not *** this sounds like trouble!
-            ok, for now just use B, any param set to auto is taken from A
-
-    later
-        generic function
-        OneToMany - list inline, with add and delete
-        ManyToMany - CheckBoxList (or growing with ajax)
-
+http://www.mongodb.org/
 
 yui
     use percious approach for multiple lib versions
@@ -137,3 +187,32 @@ yui
     carousel - picking images
     Resize
     YUI CSS base
+
+
+
+
+class OtherSingleSelectField(twc.CompoundWidget, HidingContainerMixin):
+    """A SingleSelectField that has "Other" as an option. If a user selects "Other", they are prompted to enter a text string. Users of the widget must define a :meth:`create_code` method that takes the user-supplied text, and allocates a new code."""
+    template = "genshi:tw2.dynforms.templates.other_select_field"
+
+    # TBD:
+    #other_validator = twc.Param('The validator to use for text entered in the "please specify" box.')
+
+    other_code = twc.Param('The code used for "other"; occasionally you may need to override the default to avoid a clash with a valid value.', default=10000)
+    other_text = twc.Param('The text string display for the "other" choice.', default='Other')
+    specify_text = twc.Param('The text string display to prompt for a text value.', default='Please specify:')
+    options = twc.Param('Options to be displayed', default=[])
+
+    children = [
+        HidingSingleSelectField(id='select', mapping = {}, options=[]), # TBD
+        twf.TextField(id='other'),
+    ]        
+
+    @classmethod
+    def post_define(cls):
+        1 #cls.options.append((cls.other_code, cls.other_text))
+        #cls.children[0].mapping = {cls.other_code: ['other']}
+
+    def prepare(self):
+        self.c.select.value = self.value
+        self.c.select.options = self.options
