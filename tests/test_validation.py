@@ -369,10 +369,3 @@ class TestIPAddressValidator(tb.ValidatorTest):
     attrs =    [{}, {}]
     params =   ['123.123.123.123', 'asdf']
     expected = [None, ValidationError]
-class TestMatchValidator(tb.ValidatorTest):
-    validator = MatchValidator
-    attrs =    [{'field1':'field1', 'field2':'field2'}, {'field1':'field1', 'field2':'field2'}]
-    params =   [{'field1':'a', 'field2':'a'},           {'field1':'a', 'field2':'b'}]
-    expected = [None,                                   ValidationError]
-
-

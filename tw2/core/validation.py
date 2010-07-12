@@ -458,27 +458,21 @@ class IpAddressValidator(Validator):
 
 class MatchValidator(Validator):
     """
-    Confirm two fields on a form match.
+    Confirm a field matches another field
     """
     msgs = {
-        'mismatch': "$field1_str doesn't match $field2_str"
+        'mismatch': "Must match $other_field_str"
     }
 
-    def __init__(self, field1, field2, **kw):
+    def __init__(self, other_field, **kw):
         super(MatchValidator, self).__init__(**kw)
-        self.field1 = field1
-        self.field2 = field2
+        self.other_field = other_field
 
     @property
-    def field1_str(self):
-        return string.capitalize(util.name2label(self.field1).lower())
+    def other_field_str(self):
+        return string.capitalize(util.name2label(self.other_field).lower())
 
-    @property
-    def field2_str(self):
-        return util.name2label(self.field2).lower()
-
-    def validate_python(self, value, state=None):
-        v1 = value[self.field1]
-        v2 = value[self.field2]
-        if v1 is not Invalid and v2 is not Invalid and v1 != v2:
+    def validate_python(self, value, state):
+        super(MatchValidator, self).validate_python(value, state)        
+        if value != state[self.other_field]:
             raise ValidationError('mismatch', self)

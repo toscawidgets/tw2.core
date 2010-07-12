@@ -92,3 +92,37 @@ ValidationError: You must select this
 Traceback (most recent call last):
     ...
 ValidationError: Must be a valid email address
+
+>>> class Test(twc.CompoundWidget):
+...   pw = twc.Widget()
+...   pw_conf = twc.Widget(validator=twc.MatchValidator('pw'))
+...
+>>> Test.validate({'pw':'fred'})
+Traceback (most recent call last):
+    ...
+ValidationError
+>>> Test.validate({'pw':'fred', 'pw_conf':'fred'})
+{'pw_conf': u'fred', 'pw': u'fred'}
+
+>>> class Test(twc.CompoundWidget):
+...   id = twc.Widget()
+...   report = twc.Widget(key='id')
+...
+>>> ins = Test.req()
+>>> ins._validate({'id':'test'})
+{'report': None, 'id': 'test'}
+>>> ins.c.report.value
+'test'
+
+>>> class MyVal(twc.Validator):
+...   def validate_python(self, value, state):
+...     assert(state['a'] is twc.Invalid)
+...
+>>> class Test(twc.CompoundWidget):
+...    a = twc.Widget(validator=twc.IntValidator)
+...    b = twc.Widget(validator=MyVal)
+...
+>>> Test.validate({'a':'x'})
+Traceback (most recent call last):
+    ...
+ValidationError
