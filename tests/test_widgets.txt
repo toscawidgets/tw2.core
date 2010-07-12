@@ -80,3 +80,13 @@ Traceback (most recent call last):
 WidgetError: Duplicate id 'c'
 >>> list(twc.CompoundWidget.children_deep())
 []
+
+>>> class Test(twc.CompoundWidget):
+...   id = twc.Widget()
+...   report = twc.Widget(key='id')
+...
+>>> ins = Test.req()
+>>> ins.value = {'id':123}
+>>> ins.prepare()
+>>> ins.c.report.value
+123
