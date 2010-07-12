@@ -44,3 +44,6 @@ Writing a good widget library
 
 `Growing`
     Every widget should work correctly within a tw2.dynforms Growing container.
+
+`Database interaction`
+    Some widgets (e.g. AjaxLookup, DataGrid) can benefit from built-in database interaction. In this case, the widget library must include a base widget that does no database interaction, so it can be connected to any database/ORM. The library should include a widget that interacts with SQLAlchemy, and may include a widget that interacts with any other database/ORM.
