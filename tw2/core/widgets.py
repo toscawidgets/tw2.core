@@ -50,7 +50,7 @@ class Widget(pm.Parametered):
     id = pm.Param('Widget identifier', request_local=False)
     key = pm.Param('Widget data key (defaults to id)', request_local=False)
     template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
-    validator = pm.Param('Validator for the widget.', default=vd.Validator(), request_local=False)
+    validator = pm.Param('Validator for the widget.', default=None, request_local=False)
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
     css_class = pm.Param('CSS class name', default=None, attribute=True, view_name='class')
     value = pm.Param("The value for the widget.", default=None)
@@ -186,7 +186,7 @@ class Widget(pm.Parametered):
             dfr = getattr(self, a)
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
-        if not hasattr(self, '_validated'):
+        if not hasattr(self, '_validated') and self.validator:
             self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
@@ -261,16 +261,18 @@ class Widget(pm.Parametered):
         return ins._validate(value)
 
     @vd.catch_errors
-    def _validate(self, value):
+    def _validate(self, value, state=None):
+        """
+        Inner validation method; this is called by validate and should not be 
+        called directly. Overriding this method in widgets is discouraged; a
+        custom validator should be coded instead. However, in some circumstances
+        overriding is necessary.
+        """
         self._validated = True
         self.value = value
         if self.validator:
-            if isinstance(self.validator, vd.Validator):
-                value = self.validator.to_python(value)
-                self.validator.validate_python(value)
-            else:
-                value = self.validator.to_python(value)
-                self.validator.validate_python(value, None)
+            value = self.validator.to_python(value)
+            self.validator.validate_python(value, state)
         return value
 
     def safe_modify(self, attr):
@@ -364,6 +366,16 @@ class CompoundWidget(Widget):
             
     @vd.catch_errors
     def _validate(self, value, state=None):
+        """
+        The value must be a dict, or None. Each item in the dict is passed to
+        the corresponding child widget for validation, with special 
+        consideration for _sub_compound widgets. If a child returns
+        vd.EmptyField, that value is not included in the resulting dict at all,
+        which is different to including None. Child widgets with a key are
+        passed the validated value from the field the key references. The
+        resulting dict is validated by this widget's validator. If any child
+        widgets produce an errors, this results in a "childerror" failure.
+        """
         self._validated = True
         value = value or {}
         if not isinstance(value, dict):
@@ -374,19 +386,11 @@ class CompoundWidget(Widget):
         for c in self.children:
             try:
                 if c._sub_compound:
-                    data.update(c._validate(value))
-                else:
-                    #favor name parameters over id params
-                    if hasattr(c, 'name'):
-                        val = value.get(c.name.split(':')[-1], None)
-                        val = c._validate(val)
-                        if val is not vd.EmptyField:
-                            data[c.id] = val
-                    elif hasattr(c, 'id'):
-                        val = value.get(c.id)
-                        val = c._validate(val)
-                        if val is not vd.EmptyField:
-                            data[c.id] = val
+                    data.update(c._validate(value, data))
+                elif hasattr(c, 'id'):
+                    val = c._validate(value.get(c.id), data)
+                    if val is not vd.EmptyField:
+                        data[c.id] = val
             except vd.ValidationError, e:
                 if not c._sub_compound:
                     data[c.id] = vd.Invalid
@@ -503,7 +507,14 @@ class RepeatingWidget(Widget):
             c.prepare()
 
     @vd.catch_errors
-    def _validate(self, value):
+    def _validate(self, value, state=None):
+        """
+        The value must either be a list or None. Each item in the list is
+        passed to the corresponding child widget for validation. The resulting
+        list is passed to this widget's validator. If any of the child widgets
+        produces a validation error, this widget generates a "childerror" 
+        failure.
+        """
         self._validated = True
         value = value or []
         if not isinstance(value, list):
@@ -513,13 +524,13 @@ class RepeatingWidget(Widget):
         data = []
         for i,v in enumerate(value):
             try:
-                data.append(self.children[i]._validate(v))
+                data.append(self.children[i]._validate(v, data))
             except vd.ValidationError:
                 data.append(vd.Invalid)
                 any_errors = True
         if self.validator:
             data = self.validator.to_python(data)
-            self.validator.validate_python(data)
+            self.validator.validate_python(data, state)
         if any_errors:
             raise vd.ValidationError('childerror', self.validator, self)
         return data
@@ -589,10 +600,10 @@ class DisplayOnlyWidget(Widget):
             self.child.prepare()
 
     @vd.catch_errors
-    def _validate(self, value):
+    def _validate(self, value, state=None):
         self._validated = True
         try:
-            return self.child._validate(value)
+            return self.child._validate(value, state)
         except vd.ValidationError, e:
             raise vd.ValidationError('childerror', self.validator, self)
 

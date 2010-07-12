@@ -33,6 +33,7 @@ setup(
     install_requires=[
         'WebOb',
         'simplejson >= 2.0',
+        'decorator',
         ],
     tests_require = ['BeautifulSoup', 'FormEncode', 'WebTest'],
     test_suite = 'nose.collector',

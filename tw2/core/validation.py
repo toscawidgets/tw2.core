@@ -1,4 +1,4 @@
-import core, re, util, string, webob, time, datetime, copy
+import core, re, util, string, webob, time, datetime, copy, decorator
 try:
     import formencode
 except ImportError:
@@ -22,12 +22,6 @@ else:
 
 class ValidationError(BaseValidationError):
     """Invalid data was encountered during validation.
-
-    The constructor can be passed a short message name, which is looked up in
-    a validator's :attr:`msgs` dictionary. Any values in this, like
-    ``$val``` are substituted with that attribute from the validator. An
-    explicit validator instance can be passed to the constructor, or this
-    defaults to :class:`Validator` otherwise.
     """
     def __init__(self, msg, validator=None, widget=None):
         self.widget = widget
@@ -37,8 +31,8 @@ class ValidationError(BaseValidationError):
             msg = validator.msg_rewrites.get(msg, msg)
         if mw and msg in mw.config.validator_msgs:
             msg = mw.config.validator_msgs[msg]
-        elif msg in validator.msgs:
-            msg = validator.msgs[msg]
+        else:
+            msg = validator.msgs.get(msg, msg)
         msg = re.sub('\$(\w+)',
                 lambda m: str(getattr(validator, m.group(1))), msg)
         super(ValidationError, self).__init__(msg)
@@ -51,21 +45,19 @@ def safe_validate(validator, value):
         return Invalid
 
 
-def catch_errors(fn):
-    """
-    """
-    catch = ValidationError
-    if formencode:
-        catch = (catch, formencode.Invalid)
-    def inner(self, *args, **kw):
-        try:
-            d = fn(self, *args, **kw)
-            return d
-        except catch, e:
-            if self:
-                self.error_msg = str(e)
-            raise ValidationError(str(e), widget=self)
-    return inner
+catch = ValidationError
+if formencode:
+    catch = formencode.Invalid
+
+@decorator.decorator
+def catch_errors(fn, self, *args, **kw):
+    try:
+        d = fn(self, *args, **kw)
+        return d
+    except catch, e:
+        if self:
+            self.error_msg = str(e)
+        raise ValidationError(str(e), widget=self)
 
 
 # This hack helps work with different versions of WebOb

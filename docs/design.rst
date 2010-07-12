@@ -295,11 +295,13 @@ To keep related functionality together, validators also support coversion from p
 
 **Validation Errors**
 
+When there is an error, all fields should still be validated and multiple errors displayed, rather than stopping after the first error.
+
 When validation fails, the user should see the invalid values they entered. This is helpful in the case that a field is entered only slightly wrong, e.g. a number entered as "2,000" when commas are not allowed. In such cases, conversion to and from python may not be possible, so the value is kept as a string. Some widgets will not be able to display an invalid value (e.g. selection fields); this is fine, they just have to do the best they can.
 
-When there is an error, whether valid fields could potentially normalise their value, by converting to python and back again. It was decided to use the original value in this case, although this may become a configurable option in the future.
+When there is an error is some fields, other valid fields can potentially normalise their value, by converting to python and back again (e.g. 01234 -> 1234). However, it was decided to use the original value in this case.
 
-In some cases, validation may encounter a major error, as if the web user has tampered with the HTML source. However, we can never be completely sure this is the case, perhaps they have a buggy browser, or caught the site in the middle of an upgrade. In these cases, validation will produce the most helpful error messages it can, which may just be "Your form submission was received corrupted; please try again."
+In some cases, validation may encounter a major error, as if the web user has tampered with the HTML source. However, we can never be completely sure this is the case, perhaps they have a buggy browser, or caught the site in the middle of an upgrade. In these cases, validation will produce the most helpful error messages it can, but not attempt to identify which field is at fault, nor redisplay invalid values.
 
 **Required Fields**
 
@@ -307,11 +309,38 @@ If a field has no value, if defaults to ``None``. It is down to that field's val
 
 **Security Consideration**
 
-When a widget is redisplayed after a validation failure, it's value is derived from unvalidated user input. So, all widgets must be "safe" for all input values. In practice, this is almost always the case without great care, so widgets are assumed to be safe. If a particular widget is not safe in this way, it must override :meth:`_validate` and set :attr:`value` to *None* in case of error.
+When a widget is redisplayed after a validation failure, it's value is derived from unvalidated user input. This means widgets must be "safe" for all input values. In practice, this is almost always the case without great care, so widgets are assumed to be safe. 
 
-**Validator Messages**
+.. warning::
+    If a particular widget is not safe in this way, it must override :meth:`_validate` and set :attr:`value` to *None* in case of error.
 
-if msg is a tuple, it's (newname, msg)
+**Validation Messages**
+
+When validation fails, the validator raises :class:`ValidationError`. This must be passed the short message name, e.g. "required". Each validator has a dictionary mapping short names to messages that are presented to the user, e.g.::
+
+    msgs = {
+        'tooshort': 'Value is too short',
+        'toolong': 'Value is too long',
+    }
+
+Messages can be overridden on a global basis, using :attr:`validator_msgs` on the middleware configuration. For example, the user may prefer "Value is required" instead of the default "Enter a value" for a missing field.
+
+A Validator can also rename mesages, by specifying a tuple in the :attr:`msgs` dict. For example, :class:`ListLengthValidator` is a subclass of :class:`LengthValidator` which raises either ``tooshort`` or ``toolong``. However, it's desired to have different message names, so that any global override would be applied separately. The following :attr:`msgs` dict is used::
+
+    msgs = {
+        'tooshort': ('list_tooshort', 'Select at least $min'),
+        'toolong': ('list_toolong', 'Select no more than $max'),
+    }
+
+Within the messages, tags like ``$min`` are substituted with the corresponding attribute from the validator. It is not possible to specify the value in this way; this is to discourage using values within messages.
+
+**FormEncode**
+
+Earlier versions of ToscaWidgets used FormEncode for validation and there are good reasons for this. Some aspects of the design work very well, and FormEncode has a lot of clever validators, e.g. the ability to check that a post code is in the correct format for a number of different countries.
+
+However, there are challenges making FormEncode and ToscaWidgets work together. For example, both libraries store the widget hierarchy internally. This makes implementing some features (e.g. ``strip_name`` and :class:`tw2.dynforms.HidingSingleSelectField`) difficult. There are different needs for the handling of unicode, leading ToscaWidgets to override some behaviour. Also, FormEncode just does not support client-side validation, a planned feature of ToscaWidgets 2.
+
+ToscaWidgets 2 does not rely on FormEncode. However, developers can use FormEncode validators for individual fields. The API is compatible in that :meth:`to_python` and :meth:`from_python` are called for conversion, and :class:`formencode.Invalid` is caught. Also, if FormEncode is installed, the :class:`ValidationError` class is a subclass of :class:`formencode.Invalid`.
 
 
 Using Validators
@@ -332,29 +361,22 @@ You can specify a validator on any widget, either a class or an instance. Using 
 Second, when the form values are submitted, call :meth:`validate` on the outermost widget. Pass this a dictionary of the request parameters. It will call the same method on all contained widgets, and either return the validated data, with all conversions applied, or raise :class:`tw2.core.ValidationError`. In the case of a validation failure, it stores the invalid value and an error message on the affected widget.
 
 
-FormEncode
-~~~~~~~~~~
-
-Earlier versions of ToscaWidgets used FormEncode for validation and there are good reasons for this. Some aspects of the design work very well, and FormEncode has a lot of clever validators, e.g. the ability to check that a post code is in the correct format for a number of different countries.
-
-However, there are challenges making FormEncode and ToscaWidgets work together. For example, both libraries store the widget hierarchy internally. This makes implementing some features (e.g. ``strip_name`` and :class:`tw2.dynforms.HidingSingleSelectField`) difficult. There are different needs for the handling of unicode, leading ToscaWidgets to override some behaviour. Also, FormEncode just does not support client-side validation, a planned feature of ToscaWidgets 2.
-
-ToscaWidgets 2 does not rely on FormEncode. However, developers can use FormEncode validators for individual fields. The API is compatible in that :meth:`to_python` and :meth:`from_python` are called for conversion, and :class:`formencode.Invalid` is caught.
-
 Implementation
 ~~~~~~~~~~~~~~
 
-**TBD**
-
-A two-pass approach is used internally, although this is invisible to the user. When :meth:`Widget.validate` is called (with validate=True), it automatically calls :meth:`Widget.unflatten_params`.
+A two-pass approach is used internally, although this is generally hidden from the developer. When :meth:`Widget.validate` is called it first calls:
 
 .. autofunction:: tw2.core.validation.unflatten_params
 
-Then validate works recursively, using the widget hierarchy
+If this fails, there is no attempt to determine which parameter failed; the whole submission is considered corrupt. If the root widget has an ``id``, this is stripped from the dictionary, e.g. ``{'myid': {'param':'value', ...}}`` is converted to ``{'param':'value', ...}``. A widget instance is created, and stored in request local storage. This allows compatibility with existing frameworks, e.g. the ``@validate`` decorator in TurboGears. There is a hook in :meth:`display` that detects the request local instance. After creating the instance, validate works recursively, using the :meth:`_validate`. 
 
-There is a specific :class:`tw2.core.Invalid` marker, but this is only seen in a compound/repeating validator, if some of the children have failed validation.
+.. automethod:: tw2.core.Widget._validate
 
-.. autoclass:: tw2.core.ValidationError
+.. automethod:: tw2.core.RepeatingWidget._validate
+
+.. automethod:: tw2.core.CompoundWidget._validate
+
+Both :meth:`_validate` and :meth:`validate_python` take an optional state argument. :class:`CompoundWidget` and :class:`RepeatingWidget` pass the partially built dict/list to their child widgets as state. This is useful for creating validators like :class:`MatchValidator` that reference sibling values. If one of the child widgets fails validation, the slot is filled with an :class:`Invalid` instance.
 
 
 General Considerations
