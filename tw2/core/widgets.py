@@ -48,7 +48,7 @@ class Widget(pm.Parametered):
     __metaclass__ = WidgetMeta
 
     id = pm.Param('Widget identifier', request_local=False)
-    key = pm.Param('Widget data key (defaults to id)', request_local=False)
+    key = pm.Param('Widget data key; None just uses id', default=None, request_local=False)
     template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
     validator = pm.Param('Validator for the widget.', default=None, request_local=False)
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
@@ -101,8 +101,8 @@ class Widget(pm.Parametered):
         if getattr(cls, 'id', None):
             if not cls._valid_id_re.match(cls.id):
                 raise pm.ParameterError("Not a valid identifier: '%s'" % cls.id)
-            if not getattr(cls, 'key', None):
-                cls.key = cls.id
+        if hasattr(cls, 'id') and not getattr(cls, 'key', None):
+            cls.key = cls.id
         cls.compound_id = cls._gen_compound_id(for_url=False)
         if cls.compound_id:
             cls.attrs = cls.attrs.copy()
