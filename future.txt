@@ -1,43 +1,88 @@
+Plan...
+    TG2/TW2 tutorial
+    widgetbrowser on tw.org
+    tw2.sqla    
+    
+    merge percious' branch
+    Standalone tutorial (?)
+    improve 0.9 compat
+        resource optimisation
+    perf/mem benchmark
+    auth* and general security
+    client-side validation
+    yui/jquery/etc
 
 
-Changes email
-    Unicode refactor - issue 62
+** I think there's an Elixir bug around specifying M:M table manually
+mercurial - I'd like the ability to revert/commit individual changes
 
 
-Select refactor
-    new unit tests, update documentation
+Hi,
 
-    later:
-        separate SingleSelectionField, MultipleSelectionField
-        change default_selected
-            this for doing things like:
-            "--- select value below ---"
+I've made some good progress on tw2 in the past couple of weeks.
+
+Validation has had minor changes and the documentation is improved. Unicode conversion is now done all at once, instead of one field at a time (ticket 62). State is now passed between validators; this has enabled a refactor of MatchValidator (ticket 18). Previously you applied it to a CompoundWidget and specified the two child widgets that needed to match. Now you apply it to a Widget, and specify the sibling widget it needs to match. It you're using MatchWidget, you'll need to update your code.
+
+In tw2.forms, selection fields have been refactored. Previously, validation was applied even on validation failures; this is no longer the case. To make selection fields redisplay properly on failure, comparisons are done on Unicode objects. This behaviour has made it possible to implement more database functionality; it is not expect to break compatiblity. Also, the default_selected parameter is gone; it is now called prompt_text, and can be used to specify text in a selection field like "Please select an item".
+
+Work has started on tw2.sqla, a layer like Rum and Sprox. This is highly experimental, but already useful for my own applications. Some documentation exists, although no tutorial.
+
+An important job I will do soon is to merge my branches with Chris Perkin's. After that I plan to write some tutorials, and get the widget browser running on toscawidgets.org. Then it's probably time for another PyPI release.
+
+I will be at EuroPython this coming week, and working on tw2. Is anyone else going?
+
+Best wishes,
+
+Paul
+
+
+
+*** Tell people
+    update docs on website
+    send email
+
+    
+
+Make Page take charset from middleware
+Compound validation - go back to using name???
+tw2.core - unit test failure
+move future.txt out of mercurial (to where? needs to work offline)
+Make tw2.forms unit tests use genshi & mako
+
+
+Select refactor    
+    tidy/text prompt_text
+    test grouping
+    new unit tests
+    update documentation
+
+-----
     
 
 tw2.sqla
-
-    unit test RelatedValidator
-
     DbFormPage
         avoid hardcoded id
         robust against bad id
-        avoid elixir dependency
         unit test
 
+    DbSelectionField
+        Tidy up - make available for all selectionfields (relies on selection refactor)
+        unit test
+
+    avoid elixir dependency
+        add "tests_depends"
+
+    transactional_session - do a sys.argv check???
 
     later:
-        efficiency concerns with saving M:M (ask on sa list)
+        efficiency concerns with saving M:M
             http://groups.google.com/group/sqlalchemy/browse_thread/thread/fa5df9a15b27e877
+        cacheing DbSelectionField        
         eager loader?
             only a major concern if there are multiple levels of repeater
+        dbselection - more complex arrangements, e.g. TargetVulns
 
-    some support for (later)
-        -> these shouldn't be part of tw2.sqla
-        in widget libraries, if a widget could benefit from database integration, the developer:
-            MUST include a base widget with no integration
-            SHOULD include a widget with SQLAlchemy integration
-            MAY include widgets with any other database integration            
-
+    add database support to:
         FilteringGrid
         OtherSingleSelectField
         AjaxLookup
@@ -57,11 +102,8 @@ http://groups.google.com/group/turbogears-trunk/browse_thread/thread/ec921035779
 notes from tsrgen2
     tw2.forms: allow title to be a template    
     FormPage redirect - flexibility to include id
-
-    calling super classes can get messy 
-        if you copy and paste a method, have to change super calls
-        doesn't work neatly for a class defined inline
-        -> solution is Python 3
+        deferred?
+    
 
 
 http://www.facebook.com/alteris.ian - doing exactly the kind of work I'm interested in
@@ -85,6 +127,7 @@ tw2.core
     make resource injector work correctly with pylons cacheing
     nick more unit tests from tw1, e.g. leaks
     RepeatingWidget.rwbc is a bit of a hack - any improvements? may not be a problem, rarely need to call
+    is the to_python/validate_python separation beneficial?
 
 tw2.forms
     stop label names being post-to-able
@@ -188,6 +231,15 @@ yui
     Resize
     YUI CSS base
 
+calling super classes can get messy 
+    if you copy and paste a method, have to change super calls
+    doesn't work neatly for a class defined inline
+    -> solution is Python 3
+
+Later
+    Remove RadioButton? Is there any use case?    
+    LabelField - should have a version without the hiddenfield, for efficiency
+    Analyse the generated HTML and check for unnecessary bits, e.g. error spans on non-input fields
 
 
 
@@ -216,3 +268,4 @@ class OtherSingleSelectField(twc.CompoundWidget, HidingContainerMixin):
     def prepare(self):
         self.c.select.value = self.value
         self.c.select.options = self.options
+
