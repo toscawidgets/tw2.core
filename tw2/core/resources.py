@@ -220,16 +220,6 @@ class _ResourceInjector(util.MultipleReplacer):
     thread of execution and that its contents are freed when the request is
     finished) where they can be rendered and injected in the resulting html.
 
-    ToscaWidgets' middleware can take care of injecting them automatically (default)
-    but they can also be injected explicitly, example::
-
-
-       >>> from tw.api import JSLink, inject_resources
-       >>> JSLink(link="http://example.com").inject()
-       >>> html = "<html><head></head><body></body></html>"
-       >>> inject_resources(html)
-       '<html><head><script type="text/javascript" src="http://example.com"></script></head><body></body></html>'
-
     Once resources have been injected they are popped from request local and
     cannot be injected again (in the same request). This is useful in case
     :class:`injector_middleware` is stacked so it doesn't inject them again.
