@@ -399,7 +399,10 @@ tw2.core aims to take advantage of pkg_resources where it is available, but not 
 
 **Framework Interface**
 
-ToscaWidgets is designed to be standalone WSGI middeware and not have any framework interactions. However, when using ToscaWidgets with a framework, there are some configuration settings that need to be consistent with the framework, for correct interaction. Future vesions of ToscaWidgets may include framework-specific hooks to automatically gather this configuration.
+ToscaWidgets is designed to be standalone WSGI middeware and not have any framework interactions. However, when using ToscaWidgets with a framework, there are some configuration settings that need to be consistent with the framework, for correct interaction. Future vesions of ToscaWidgets may include framework-specific hooks to automatically gather this configuration. The settings are:
+
+ * default_view - the template engine used by the framework. When root widgets are rendered, they will return a type suitable for including in this template engine. This setting is not needed if only Page widgets are used as root widgets, as there is no containing template in that case.
+ * translator - needed for ToscaWidget to use the same i18n function as the framework.
 
 **Unit Tests**
 
