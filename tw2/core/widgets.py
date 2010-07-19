@@ -54,7 +54,7 @@ class Widget(pm.Parametered):
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
     css_class = pm.Param('CSS class name', default=None, attribute=True, view_name='class')
     value = pm.Param("The value for the widget.", default=None)
-    resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a :class:`Resource` subclass.", default=[], request_local=False)
+    resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a `Resource` subclass.", default=[], request_local=False)
 
     error_msg = pm.Variable("Validation error message.")
     parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
@@ -249,7 +249,7 @@ class Widget(pm.Parametered):
         """
         Validate form input. This should always be called on a class. It
         either returns the validated data, or raises a
-        :class:`ValidationError` exception.
+        `ValidationError` exception.
         """
         if cls.parent:
             raise core.WidgetError('Only call validate on root widgets')
@@ -302,7 +302,7 @@ class WidgetBunch(list):
 class CompoundWidget(Widget):
     """
     A widget that has an arbitrary number of children, this is common for
-    layout components, such as :class:`tw2.forms.TableLayout`.
+    layout components, such as `TableLayout`.
     """
     children = pm.Param('Children for this widget. This must be an interable, each item of which is a Widget')
     c = pm.Variable("Alias for children", default=property(lambda s: s.children))
@@ -454,7 +454,7 @@ class RepeatingWidgetBunch(object):
 class RepeatingWidget(Widget):
     """
     A widget that has a single child, which is repeated an arbitrary number
-    of times, such as :class:`tw2.forms.GridLayout`.
+    of times, such as `GridLayout`.
     """
     child = pm.Param('Child for this widget. The child must have no id.')
     repetitions = pm.Param('Fixed number of repetitions. If this is None, it dynamically determined, based on the length of the value list.', default=None)
@@ -540,7 +540,7 @@ class DisplayOnlyWidget(Widget):
     """
     A widget that has a single child. The parent widget is only used for display
     purposes; it does not affect value propagation or validation. This is used
-    by widgets like :class:`tw2.forms.FieldSet`.
+    by widgets like `FieldSet`.
     """
     child = pm.Param('Child for this widget.')
     children = pm.Param('children specified for this widget will be passed to the child', default=[])
@@ -617,8 +617,7 @@ def default_content_type():
 
 class Page(DisplayOnlyWidget):
     """
-    An HTML page. This widget includes a :meth:`request` method that serves
-    the page.
+    An HTML page. This widget includes a `request` method that serves the page.
     """
     title = pm.Param('Title for the page')
     content_type = pm.Param('Content type header', default=pm.Deferred(default_content_type), request_local=False)

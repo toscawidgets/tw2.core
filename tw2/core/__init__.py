@@ -1,4 +1,5 @@
-"""This file defines the ToscaWidgets public API.
+"""
+tw2.core contains the base Widgets from which all others are derived.
 """
 from core import (WidgetError)
 
