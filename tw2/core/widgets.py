@@ -612,13 +612,16 @@ class DisplayOnlyWidget(Widget):
         for c in cls.child.children_deep():
             yield c
 
+def default_content_type():
+    return "text/html; charset=%s" % core.request_local()['middleware'].config.encoding
+
 class Page(DisplayOnlyWidget):
     """
     An HTML page. This widget includes a :meth:`request` method that serves
     the page.
     """
     title = pm.Param('Title for the page')
-    content_type = pm.Param('Content type header', default="text/html; charset=UTF8", request_local=False)
+    content_type = pm.Param('Content type header', default=pm.Deferred(default_content_type), request_local=False)
     template = "tw2.core.templates.page"
     id_suffix = 'page'
     _no_autoid = True
@@ -632,10 +635,13 @@ class Page(DisplayOnlyWidget):
 
     @classmethod
     def request(cls, req):
-        resp = webob.Response(request=req, content_type=cls.content_type)
+        ct = cls.content_type
+        if isinstance(ct, pm.Deferred):
+            ct = ct.fn()
+        resp = webob.Response(request=req, content_type=ct)
         ins = cls.req()
         ins.fetch_data(req)
-        resp.body = ins.display().encode('utf-8')
+        resp.body = ins.display().encode(core.request_local()['middleware'].config.encoding)
         return resp
 
     def fetch_data(self, req):
