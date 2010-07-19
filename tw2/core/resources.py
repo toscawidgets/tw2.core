@@ -5,6 +5,9 @@ import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
 log = logging.getLogger(__name__)
 encoder = simplejson.encoder.JSONEncoder()
 
+# TBD is there a better place to put this?
+mimetypes.init()
+mimetypes.types_map['.ico'] = 'image/x-icon'
 
 class Resource(wd.Widget):
     location = pm.Param('Location on the page where the resource should be placed.' \
