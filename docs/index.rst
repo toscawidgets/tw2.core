@@ -28,6 +28,7 @@ Contents:
    :maxdepth: 2
 
    tutorial
+   standalone
    design
    devtools
    history
