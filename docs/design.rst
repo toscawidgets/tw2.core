@@ -125,15 +125,11 @@ Template
 
 Every widget has a template, this is core to the widget concept. ToscaWidgets aims to support any templating engine that support the ``buffet`` interface, which is an initiative by the TurboGears project to create a standard interface for template libraries. In practice, there are more differences between template engines than the buffet interface standardises. So, ToscaWidgets has some template-language hooks, and support is primarily for: Genshi, Mako, Kid and Cheetah.
 
-The :attr:`template` parameter takes the form ``engine_name:template_path``. The ``engine_name`` is the name that the template engine defines in the ``python.templating.engines`` entry point, e.g. ``genshi`` or ``mako``. The ``template_path`` is a string the engine can use to locate the template; usually this is dot-notation that mimics the semantics of Python's import statement, e.g. ``myapp.templates.mytemplate``.
+The :attr:`template` parameter takes the form ``engine_name:template_path``. The ``engine_name`` is the name that the template engine defines in the ``python.templating.engines`` entry point, e.g. ``genshi`` or ``mako``. The ``template_path`` is a string the engine can use to locate the template; usually this is dot-notation that mimics the semantics of Python's import statement, e.g. ``myapp.templates.mytemplate``. Genshi templates allow specifications like ``./template.html`` which is beneficial for simple applications.
 
-It is also possible to allow your widget to utilize multiple templates, or to have
-TW2 support any template language you provide a template for.  To do this, simply
-leave the name of the template engine off of the template parameter, and TW2
-will select the appropriate template, based on specifications in the TW2 middleware.
+It is also possible to allow your widget to utilize multiple templates, or to have TW2 support any template language you provide a template for.  To do this, simply leave the name of the template engine off of the template parameter, and TW2 will select the appropriate template, based on specifications in the TW2 middleware.
 
-For instance, you might have a form.mak and a form.html template (mako and genshi).
-TW2 will render the mako template if mako is listed ahead of genshi in the middleware config's ``preferred_rendering_engines``.  See the docs regarding :ref:`middleware` for more information on how to set up your middleware for desired output.
+For instance, you might have a form.mak and a form.html template (mako and genshi). TW2 will render the mako template if mako is listed ahead of genshi in the middleware config's ``preferred_rendering_engines``.  See the documentation regarding :ref:`middleware` for more information on how to set up your middleware for desired output.
 
 .. autoclass:: tw2.core.template.EngineManager
    :members: render, _get_adaptor_renderer

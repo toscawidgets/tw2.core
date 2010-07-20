@@ -87,7 +87,7 @@ class EngineManager(dict):
             template_path = template
             
 
-        if engine_name == 'genshi' and (template_path.startswith('/') or template_path[1] == ':'):
+        if engine_name == 'genshi' and '/' in template_path:
             engine_name = 'genshi_abs'
 
         if engine_name not in ['string', 'cheetah']:
@@ -146,7 +146,7 @@ class EngineManager(dict):
         orig_name = name
         if name == 'genshi_abs':
             name = 'genshi'
-            options.update({'genshi.search_path': '/'})
+            options.update({'genshi.search_path': '.'})
 
         try:
             factory = core.request_local()['middleware'].config.available_rendering_engines[name]
