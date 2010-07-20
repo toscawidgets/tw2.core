@@ -100,9 +100,9 @@ def numdict_to_list(dct):
 
 
 class ValidatorMeta(type):
-    """Metaclass for :class:`Validator`.
+    """Metaclass for `Validator`.
 
-    This makes the :attr:`msgs` dict copy from its base class.
+    This makes the `msgs` dict copy from its base class.
     """
     def __new__(meta, name, bases, dct):
         if 'msgs' in dct:
@@ -133,7 +133,7 @@ class Validator(object):
         any other validation. (default: True)
 
     To create your own validators, sublass this class, and override any of:
-    :meth:`to_python`, :meth:`validate_python`, or :meth:`from_python`.
+    `to_python`, `validate_python`, or `from_python`.
     """
     __metaclass__ = ValidatorMeta
 
@@ -186,7 +186,7 @@ class BlankValidator(Validator):
 class LengthValidator(Validator):
     """
     Confirm a value is of a suitable length. Usually you'll use
-    :class:`StringLengthValidator` or :class:`ListLengthValidator` instead.
+    `StringLengthValidator` or `ListLengthValidator` instead.
 
     `min`
         Minimum length (default: None)
@@ -259,7 +259,7 @@ class RangeValidator(Validator):
 
 class IntValidator(RangeValidator):
     """
-    Confirm the value is an integer. This is derived from :class:`RangeValidator`
+    Confirm the value is an integer. This is derived from `RangeValidator`
     so `min` and `max` can be specified.
     """
     msgs = {
@@ -327,7 +327,7 @@ class OneOfValidator(Validator):
 
 class DateValidator(RangeValidator):
     """
-    Confirm the value is a valid date. This is derived from :class:`RangeValidator`
+    Confirm the value is a valid date. This is derived from `RangeValidator`
     so `min` and `max` can be specified.
 
     `format`
@@ -369,7 +369,7 @@ class DateValidator(RangeValidator):
 
 class DateTimeValidator(DateValidator):
     """
-    Confirm the value is a valid date and time; otherwise just like :class:`DateValidator`.
+    Confirm the value is a valid date and time; otherwise just like `DateValidator`.
     """
     msgs = {
         'baddate': ('baddatetime', 'Must follow date/time format $format_str'),
