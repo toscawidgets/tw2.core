@@ -495,7 +495,9 @@ class RepeatingWidget(Widget):
         super(RepeatingWidget, self).prepare()
         value = self.value or []
         if self.repetitions is None:
-            reps = len(value) + self.extra_reps
+            reps = len(value)
+            if not hasattr(self, '_validated'):
+                reps += self.extra_reps
             if self.max_reps is not None and reps > self.max_reps:
                 reps = self.max_reps
             if self.min_reps is not None and reps < self.min_reps:
