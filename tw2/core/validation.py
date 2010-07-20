@@ -177,7 +177,7 @@ class Validator(object):
 class BlankValidator(Validator):
     """
     Always returns EmptyField. This is the default for hidden fields,
-    so their values are not included in validated data
+    so their values are not included in validated data.
     """
     def to_python(self, value):
         return EmptyField
@@ -457,8 +457,10 @@ class IpAddressValidator(Validator):
 
 
 class MatchValidator(Validator):
-    """
-    Confirm a field matches another field
+    """Confirm a field matches another field
+    
+    `other_field`
+        Name of the sibling field this must match
     """
     msgs = {
         'mismatch': "Must match $other_field_str"
