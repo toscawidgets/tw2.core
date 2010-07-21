@@ -204,7 +204,11 @@ class Widget(pm.Parametered):
             # you have None at your disposal.
             if formencode and self.value is None:
                 value = {}
-            value = self.validator.from_python(value)
+            try:
+                value = self.validator.from_python(value)
+            except (vd.Invalid, formencode.api.Invalid), e:
+                value = str(value)
+                self.error_msg = e.msg
             if formencode and value == {} and self.value is None:
                 value = None
             self.value = value
