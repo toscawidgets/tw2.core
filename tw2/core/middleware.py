@@ -70,6 +70,11 @@ class Config(object):
     `rendering_engine_lookup`
         A dictionary of file extensions you expect to use for each type of template engine.
         (default: {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'})
+
+    `script_name`
+        A name to prepend to the url for all resource links (different from res_prefix, as it may
+        Be shared across and entire wsgi app.
+        (default: '')
     '''
 
     translator = lambda s: s
@@ -89,6 +94,7 @@ class Config(object):
     preferred_rendering_engines = ['mako', 'genshi', 'cheetah', 'kid']
     strict_engine_selection = True
     rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
+    script_name = ''
 
     def __init__(self, **kw):
         for k, v in kw.items():
@@ -108,6 +114,7 @@ class Config(object):
         for engine_name in self.preferred_rendering_engines:
             if engine_name not in self.available_rendering_engines:
                 self.preferred_rendering_engines.remove(engine_name)
+
 
 class TwMiddleware(object):
     """ToscaWidgets middleware
@@ -131,10 +138,12 @@ class TwMiddleware(object):
         rl.clear()
         rl['middleware'] = self
         req = wo.Request(environ)
-        if self.config.serve_resources and req.path.startswith(self.config.res_prefix):
+
+        path = req.path_info
+        if self.config.serve_resources and path.startswith(self.config.res_prefix):
             return self.resources(environ, start_response)
         else:
-            if self.config.serve_controllers and req.path.startswith(self.config.controller_prefix):
+            if self.config.serve_controllers and path.startswith(self.config.controller_prefix):
                 resp = self.controllers(req)
             else:
                 if self.app:

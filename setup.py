@@ -27,15 +27,15 @@ _extra_mako = ["Mako >= 0.1.1"]
 
 setup(
     name='tw2.core',
-    version='2.0a1',
+    version='2.0b3',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=[
-        'WebOb',
+        'WebOb>=0.9.7',
         'simplejson >= 2.0',
         'decorator',
         ],
-    tests_require = ['BeautifulSoup', 'FormEncode', 'WebTest'],
+    tests_require = ['nose', 'BeautifulSoup', 'FormEncode', 'WebTest', 'strainer'],
     test_suite = 'nose.collector',
     extras_require = {
         'cheetah': _extra_cheetah,

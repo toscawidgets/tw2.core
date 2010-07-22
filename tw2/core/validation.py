@@ -1,4 +1,9 @@
-import core, re, util, string, webob, time, datetime, copy, decorator
+import core, re, util, string, time, datetime, copy, decorator, webob
+
+# This hack helps work with different versions of WebOb
+if not hasattr(webob, 'MultiDict'):
+    webob.MultiDict = webob.multidict.MultiDict
+
 try:
     import formencode
 except ImportError:
@@ -31,7 +36,7 @@ class ValidationError(BaseValidationError):
             msg = validator.msg_rewrites.get(msg, msg)
         if mw and msg in mw.config.validator_msgs:
             msg = mw.config.validator_msgs[msg]
-        else:
+        elif hasattr(validator, 'msgs') and msg in validator.msgs:
             msg = validator.msgs.get(msg, msg)
         msg = re.sub('\$(\w+)',
                 lambda m: str(getattr(validator, m.group(1))), msg)
@@ -377,6 +382,8 @@ class DateTimeValidator(DateValidator):
     format = '%d/%m/%Y %H:%M'
 
     def to_python(self, value):
+        if value is None:
+            return value
         try:
             return datetime.datetime.strptime(value, self.format)
         except ValueError:

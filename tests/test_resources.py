@@ -225,6 +225,7 @@ class TestResourcesApp:
         class Config(object):pass
         config = Config()
         config.res_prefix = ""
+        config.script_name = ''
         self.app = twr.ResourcesApp(config)
 
     def test_register_requirement(self):

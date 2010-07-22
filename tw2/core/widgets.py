@@ -1,4 +1,4 @@
-import copy, weakref, re, itertools, webob
+import copy, weakref, re, itertools, inspect, webob
 import template, core, util, validation as vd, params as pm
 try:
     import formencode
@@ -18,6 +18,16 @@ class WidgetMeta(pm.ParamMeta):
      * Calls post_define for the widget class and base classes. This
        is needed as it's not possible to call super() in post_define.
     """
+    @classmethod
+    def _collect_base_children(meta, bases):
+        ''' Collect the children from the base classes '''
+        children = []
+        for b in bases:
+            bcld = getattr(b, 'children', None)
+            if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
+                children.extend(bcld)
+        return children
+
     def __new__(meta, name, bases, dct):
         if name != 'Widget' and 'children' not in dct:
             new_children = []
@@ -25,11 +35,7 @@ class WidgetMeta(pm.ParamMeta):
                 if isinstance(v, type) and issubclass(v, Widget) and d not in reserved_names:
                     new_children.append((v, d))
                     del dct[d]
-            children = []
-            for b in bases:
-                bcld = getattr(b, 'children', None)
-                if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
-                    children.extend(bcld)
+            children = meta._collect_base_children(bases)
             new_children = sorted(new_children, key=lambda t: t[0]._seq)
             children.extend(hasattr(v, 'id') and v or v(id=d) for v,d in new_children)
             if children:
@@ -58,6 +64,9 @@ class Widget(pm.Parametered):
 
     error_msg = pm.Variable("Validation error message.")
     parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
+    Controller = pm.Variable("Default controller for this widget", default=None)
+    _check_authz = pm.Variable("Method for checking authorization, should be classmethod in form: def _check_authn(cls, req, method)", default=None)
+    _check_authn = pm.Variable("Method for checking authentication, should be classmethod in the form: def _check_authn(cls, req)", default=None)
 
     _sub_compound = False
     _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
@@ -75,11 +84,13 @@ class Widget(pm.Parametered):
         """
         New is overloaded to return a subclass of the widget, rather than an instance.
         """
+        newname = calc_name(cls, kw)
         return type(cls.__name__+'_s', (cls,), kw)
 
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
+        self._js_calls = []
 
     @classmethod
     def post_define(cls):
@@ -108,10 +119,14 @@ class Widget(pm.Parametered):
             cls.attrs = cls.attrs.copy()
             cls.attrs['id'] = cls.compound_id
 
-        if hasattr(cls, 'request') and getattr(cls, 'id', None):
+        cls.attrs['controller']   = getattr(cls, 'Controller')
+        cls.attrs['_check_authn'] = getattr(cls, '_check_authn')
+        cls.attrs['_check_authz'] = getattr(cls, '_check_authz')
+
+        if getattr(cls, 'id', None):
             import middleware
             capp = getattr(cls.__module__, 'tw2_controllers', middleware.global_controllers)
-            if capp:
+            if capp and hasattr(cls, 'request'):
                 capp.register(cls, cls._gen_compound_id(for_url=True))
 
         if cls.validator:
@@ -160,7 +175,7 @@ class Widget(pm.Parametered):
 
     def get_link(self):
         """
-        Get the URL to the controller. This is called at run time, not startup
+        Get the URL to the controller . This is called at run time, not startup
         time, so we know the middleware if configured with the controller path.
         Note: this function is a temporary measure, a cleaner API for this is
         planned.
@@ -187,7 +202,17 @@ class Widget(pm.Parametered):
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
         if not hasattr(self, '_validated') and self.validator:
-            self.value = self.validator.from_python(self.value)
+            # TBD: I'd like to make formencode support more transparent
+            if formencode and isinstance(self.validator, formencode.Validator):
+                value = self.value
+                if  self.value is None:
+                    value = {}
+                value = self.validator.from_python(value)
+                if self.value is None:
+                    value = None
+                self.value = value
+            else:
+                self.value = self.validator.from_python(self.value)
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.compound_id:
@@ -197,12 +222,22 @@ class Widget(pm.Parametered):
                 if self.attrs.get(view_name):
                     raise pm.ParameterError("Attribute parameter clashes with user-supplied attribute: '%s'" % a)
                 self.attrs[view_name] = getattr(self, a)
-        
+
     def iteritems(self):
         """An iterator which will provide the params of the widget in key, value pairs"""
         for param in self._params.keys():
             value = getattr(self, param)
             yield param, value
+
+    @util.class_or_instance
+    def add_call(self, extra_arg, call, location="bodybottom"):
+        """
+        not sure what the "extra_arg" needed is for, but it is needed, as is the decorator, or an infinite loop ensues
+        Adds a :func:`tw.api.js_function` call that will be made when the
+        widget is rendered.
+        """
+        #log.debug("Adding call <%s> for %r statically.", call, self)
+        self._js_calls.append([str(call), location])
 
     @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
@@ -218,14 +253,30 @@ class Widget(pm.Parametered):
             parent. Set this to ``string`` to get raw string output.
         """
         if not self:
-            vw = core.request_local().get('validated_widget')
+            vw = vw_class = core.request_local().get('validated_widget')
+            cls_class = None
             if vw:
-                return vw.display()
-            else:
-                return cls.req(**kw).display(displays_on)
+                # Pull out actual class instances to compare to see if this
+                # is really the widget that was actually validated
+                if not getattr(vw_class, '__bases__', None):
+                    vw_class = vw.__class__
+                if not getattr(cls, '__bases__', None):
+                    cls_class = cls.__class__
+                else:
+                    cls_class = cls
+                if vw_class.__name__ != cls_class.__name__:
+                    vw = None
+                if vw:
+                    return vw.display()
+            return cls.req(**kw).display(displays_on)
         else:
             if not self.parent:
                 self.prepare()
+            if self._js_calls:
+                #avoids circular reference
+                import resources as rs
+                for item in self._js_calls:
+                    self.resources.append(rs.JSFuncCall(src=str(item[0]), location=item[1]))
             if self.resources:
                 self.resources = WidgetBunch([r.req() for r in self.resources])
                 for r in self.resources:
@@ -257,6 +308,8 @@ class Widget(pm.Parametered):
         if hasattr(cls, 'id') and cls.id:
             value = value.get(cls.id, {})
         ins = cls.req()
+
+        # Key the validated widget by class id
         core.request_local()['validated_widget'] = ins
         return ins._validate(value)
 
@@ -283,6 +336,44 @@ class Widget(pm.Parametered):
     @classmethod
     def children_deep(cls):
         yield cls
+
+    if 0:
+        @classmethod
+        def request(cls, req):
+            """
+            Override this method to define your own way of handling a widget request.
+    
+            The default does TG-style object dispatch.
+            """
+    
+            authn = cls.attrs.get('_check_authn')
+            authz = cls.attrs.get('_check_authz')
+    
+            if authn and not authn(req):
+                return util.abort(req, 401)
+    
+            controller = cls.attrs.get('controller', cls.Controller)
+            if controller is None:
+                return util.abort(req, 404)
+    
+            path = req.path_info.split('/')[3:]
+            if len(path) == 0:
+                method_name = 'index'
+            else:
+                method_name = path[0]
+            # later we want to better handle .ext conditions, but hey
+            # this aint TG
+            if method_name.endswith('.json'):
+                method_name = method_name[:-5]
+            method = getattr(controller, method_name, None)
+            if method:
+                if authz and not authz(req, method):
+                    return util.abort(req, 403)
+    
+                controller = cls.Controller()
+                return method(controller, req)
+            return util.abort(req, 404)
+
 
 class LeafWidget(Widget):
     """
@@ -342,7 +433,7 @@ class CompoundWidget(Widget):
         super(CompoundWidget, self).prepare()
         v = self.value or {}
         if not hasattr(self, '_validated'):
-            if isinstance(v, dict):
+            if hasattr(v, '__getitem__'):
                 for c in self.children:
                     if c._sub_compound:
                         c.value = v
@@ -353,9 +444,7 @@ class CompoundWidget(Widget):
                     if c._sub_compound:
                         c.value = self.value
                     else:
-                        v = getattr(self.value, c.key or '', None)
-                        if v is not None:
-                            c.value = v
+                        c.value = getattr(self.value, c.key or '', None)
         for c in self.children:
             c.prepare()
 
@@ -363,7 +452,7 @@ class CompoundWidget(Widget):
         if isinstance(self.error_msg, basestring):
             if self.error_msg.startswith(name+':'):
                 return self.error_msg.split(':')[1]
-            
+
     @vd.catch_errors
     def _validate(self, value, state=None):
         """
@@ -383,6 +472,11 @@ class CompoundWidget(Widget):
         self.value = value
         any_errors = False
         data = {}
+
+        catch = vd.ValidationError
+        if formencode:
+            catch = (catch, formencode.Invalid)
+
         for c in self.children:
             try:
                 if c._sub_compound:
@@ -391,7 +485,12 @@ class CompoundWidget(Widget):
                     val = c._validate(value.get(c.id), data)
                     if val is not vd.EmptyField:
                         data[c.id] = val
-            except vd.ValidationError, e:
+            except catch, e:
+                if hasattr(e, 'msg'):
+                    c.error_msg = e.msg
+                # TBD - removed after merge
+                #if hasattr(e, 'value'):
+                #    c.value = e.value
                 if not c._sub_compound:
                     data[c.id] = vd.Invalid
                 any_errors = True
@@ -401,8 +500,16 @@ class CompoundWidget(Widget):
             if d and d is not vd.Invalid:
                 c._validate(d)
         if self.validator:
-            data = self.validator.to_python(data)
-            self.validator.validate_python(data, state)
+            try:
+                data = self.validator.to_python(data)
+                self.validator.validate_python(data, state)
+            except catch, e:
+                error_dict = getattr(e, 'error_dict', {})
+                for c in self.children:
+                    if error_dict and getattr(c, 'id', None) in error_dict:
+                        c.error_msg = error_dict[c.id]
+                        data[c.id] = vd.Invalid
+                any_errors=True
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data
@@ -537,6 +644,27 @@ class RepeatingWidget(Widget):
             raise vd.ValidationError('childerror', self.validator, self)
         return data
 
+class DisplayOnlyWidgetMeta(WidgetMeta):
+    @classmethod
+    def _collect_base_children(meta, bases):
+        children = []
+        for b in bases:
+            bchild = getattr(b, 'child', None)
+            if bchild:
+                b = b.child
+            bcld = getattr(b, 'children', None)
+            if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
+                children.extend(bcld)
+        return children
+
+def calc_name(cls, kw, char='s'):
+    if 'parent' in kw:
+        newname = kw['parent'].__name__ + '__' + cls.__name__
+    else:
+        newname = cls.__name__ + '_%s' % char
+    return newname
+
+
 
 class DisplayOnlyWidget(Widget):
     """
@@ -547,6 +675,12 @@ class DisplayOnlyWidget(Widget):
     child = pm.Param('Child for this widget.')
     children = pm.Param('children specified for this widget will be passed to the child', default=[])
     id_suffix = pm.Param('Suffix to append to compound IDs')
+
+    __metaclass__ = DisplayOnlyWidgetMeta
+
+    def __new__(cls, **kw):
+        newname = calc_name(cls, kw, 'd')
+        return type(newname, (cls,), kw)
 
     @classmethod
     def post_define(cls):
@@ -568,7 +702,7 @@ class DisplayOnlyWidget(Widget):
             Widget.post_define.im_func(cls)
             cls.child = cls.child(parent=cls)
         else:
-            cls.child = cls.child(id=cls_id, parent=cls)
+            cls.child = cls.child(id=cls_id, Controller=cls.Controller, _check_authz=cls._check_authz, _check_authn=cls._check_authn, parent=cls)
 
     @classmethod
     def _gen_compound_id(cls, for_url):
