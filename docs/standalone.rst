@@ -1,31 +1,8 @@
 Standalone Tutorial
 ===================
 
-Installing ToscaWidgets 2
--------------------------
-
-First of all, you need Python; version 2.5 is recommended. ToscaWidgets 2 is currently in early development, so take the latest version of each library from the repositories. You need to install Mercurial and issue the following::
-
-    hg clone http://bitbucket.org/paj/tw2core/ tw2.core
-    hg clone http://bitbucket.org/paj/tw2devtools/ tw2.devtools
-    hg clone http://bitbucket.org/paj/tw2forms/ tw2.forms
-    hg clone http://bitbucket.org/paj/tw2dynforms/ tw2.dynforms
-    hg clone http://bitbucket.org/paj/tw2.sqla/ tw2.sqla
-
-Then go into each directory in turn and issue::
-
-    python setup.py develop
-
 .. note::
-    These instructions will shortly change to using ``easy_install``, when the packages are released on PyPI.
-    
-This will install the widgets libraries and dependencies. Once this is complete, try running the widget browser to check the install worked. Issue::
-
-    paster tw2.browser
-    
-And browse to ``http://localhost:8000/``, where you should be able to see the installed widgets.
-
-If you have any problems during install, try asking on the mailing list.
+    The files created in this tutorial can be downloaded as a .zip file TBD
 
 
 Building a Page
@@ -53,9 +30,9 @@ Here were are creating a Page widget, called Index, with a template specified. I
         </body>
     </html>
 
-This is a Genshi template. This simple example just uses static HTML, but the template system has many other features to explore. Now, start the application::
+This is a `Genshi <http://genshi.edgewall.org/>`_ template. This simple example just uses static HTML, but the template system has many other features to explore. Now, start the application::
 
-    myapp.py
+    python myapp.py
 
 And browse to ``http://localhost:8000/`` to check that it's working.
 
@@ -64,7 +41,7 @@ To go beyond simple static HTML, the first step is to have Python code executed 
     def fetch_data(self, req):
         self.req = str(req)
 
-The ``req`` variable supplied is a WebOb ``Request`` object. To access a URL parameter, use ``req.GET['myparam']``. In this example, we simply use the string representation of the request.
+The ``req`` variable supplied is a `WebOb <http://pythonpaste.org/webob/>`_ ``Request`` object. To access a URL parameter, use ``req.GET['myparam']``. In this example, we simply use the string representation of the request.
 
 And in ``index.html``, change the ``<p>Hello World!</p>`` line to::
 
@@ -103,16 +80,13 @@ The form does not look particularly appealing. To try to improve this, lets add 
 
     TBD
 
-use CSS to make it a bit nicer
 use required class
-
-
 
 
 Connecting to a Database
 ------------------------
 
-The next step is to save movies to a database. To do this, we'll use SQLAlchemy and Elixir to define a database model. Create ``model.py`` with the following::
+The next step is to save movies to a database. To do this, we'll use `SQLAlchemy <http://www.sqlalchemy.org/>`_ and `Elixir <http://elixir.ematia.de/trac/wiki>`_ to define a database model. Create ``model.py`` with the following::
 
     import elixir as el, tw2.sqla as tws
     el.session = tws.transactional_session()
@@ -124,7 +98,7 @@ This is code is required to set up the database connection. It will use an SQLit
         title = el.Field(el.String)
         director = el.Field(el.String)
         genre = el.ManyToMany('Genre')
-        case = el.OneToMany('Cast')
+        cast = el.OneToMany('Cast')
     
     class Genre(el.Entity):
         name = el.Field(el.String)
@@ -136,21 +110,81 @@ This is code is required to set up the database connection. It will use an SQLit
         character = el.Field(el.String)
         actor = el.Field(el.String)    
 
+Finally, a small piece of boilerplate code is required at the bottom::
+
     el.setup_all()
 
-This defines three tables - Movie, Genre and Cast, with relations between them. To learn more about the Elixir syntax, read the Elixir tutorial. The next step is to create our database. Issue::
+This defines three tables - Movie, Genre and Cast, with relations between them. To learn more about the Elixir syntax, read the `Elixir tutorial <http://elixir.ematia.de/trac/wiki/TutorialDivingIn>`_. The next step is to create our database. In the python interpreter, issue::
 
-    python
-    >>> import model as db
-    >>> db.el.create_all()
+    import model as db
+    db.el.create_all()
 
-Make form use db
+We'll now add the genres to the database::
+
+    db.Genre(name='Action')
+    db.Genre(name='Comedy')
+    db.Genre(name='Romance')
+    db.Genre(name='Sci-fi')
+    db.el.session.commit() 
+    
+Now, exit the Python interpreter, and update ``myapp.py`` to connect the `Movie` form to the database. At the top of the file add::
+
+    import tw2.sqla as tws
+    import model as db
+
+Replace ``class Movie(twf.FormPage):`` with::
+
+    class Movie(tws.DbFormPage):
+        entity = db.Movie
+
+And replace ``genre = twf.CheckBoxList...`` with::
+
+    genre = tws.DbCheckBoxList(entity=db.Genre)
+
+With this done, restart the application and try submitting a movie.
 
 
-
-Next Steps
+Front Page
 ----------
 
-List front page
-Genres from database
+We want a front page that provides a list of our movies, and the ability to click on a movie to edit it. We can use a GridLayout for this; replace the `Index` class with::
+
+    class Index(tws.DbListPage):
+        entity = db.Movie
+        title = 'Movies'
+        class child(twf.GridLayout):
+            id = twf.LinkField()
+            title = twf.LabelField()
+            
+TBD: "new" link
+
+This gives our application just enough functionality to be a basic movie tracking system.
+
+
 GrowingGrid
+-----------
+
+The list of cast is somewhat limited; it's not possible to have more than five cast members. We can use a widget from tw2.dynforms to help with this. GrowingGridLayout is a dynamic grid that can grow client-side.
+
+To use this, update ``myapp.py``; at the top of the file add::
+
+    import tw2.dynforms as twd
+
+And replace this::
+
+    class cast(twf.GridLayout):
+        extra_reps = 5
+
+With::
+
+    class cast(twd.GrowingGridLayout):
+
+
+Conclusion
+----------
+
+This tutorial has demonstrated the basic concepts of ToscaWidgets 2. To further your knowledge, a good place to look is the widget browser. You can run this on your own machine::
+
+    paster tw2.browser
+
+There is also comprehensive design documentation, which explains how the different parts of ToscaWidgets work.

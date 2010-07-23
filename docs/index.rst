@@ -28,11 +28,26 @@ Contents:
    :maxdepth: 2
 
    tutorial
-   standalone
    design
    devtools
    history
    future
+
+
+Online Resources
+----------------
+
+The discussion group is `ToscaWidgets-discuss <http://groups.google.com/group/toscawidgets-discuss/>`_.
+
+The bug tracker is `here <http://bitbucket.org/paj/tw2core/issues?status=new&status=open>`_ - all ToscaWidgets 2 issues should go here, regardless of which component the issue exists in. However, ToscaWidgets 0.9 bugs must not go on this tracker.
+
+The official ToscaWidgets 2 repositories are:
+
+ * http://bitbucket.org/paj/tw2core/
+ * http://bitbucket.org/paj/tw2devtools/
+ * http://bitbucket.org/paj/tw2forms/
+ * http://bitbucket.org/paj/tw2dynforms/
+ * http://bitbucket.org/paj/tw2.sqla/
 
 
 Indices and tables
