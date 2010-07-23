@@ -83,7 +83,7 @@ class Link(Resource):
             if not self.filename:
                 raise pm.ParameterError("Either 'link' or 'filename' must be specified")
             resources = rl['middleware'].resources
-            self.link = resources.register(self.modname, self.filename)
+            self.link = resources.register(self.modname or '__anon__', self.filename)
         super(Link, self).prepare()
 
     def __hash__(self):
@@ -205,7 +205,6 @@ class ResourcesApp(object):
         """
         if isinstance(modname, pr.Requirement):
             modname = os.path.basename(pr.working_set.find(modname).location)
-        modname = modname or ''
         if whole_dir:
             path = modname + '/' + filename.lstrip('/')
             if path not in self._dirs:
@@ -220,7 +219,6 @@ class ResourcesApp(object):
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
         try:
-
             path = environ['PATH_INFO']
             path = path[len(self.config.res_prefix):]
 
@@ -234,7 +232,7 @@ class ResourcesApp(object):
                     raise IOError()
             modname, filename = path.lstrip('/').split('/', 1)
             ct, enc = mimetypes.guess_type(os.path.basename(filename))
-            if modname:
+            if modname and modname != '__anon__':
                 stream = pr.resource_stream(modname, filename)
             else:
                 stream = open(filename)

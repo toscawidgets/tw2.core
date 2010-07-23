@@ -78,9 +78,21 @@ The `FormPage` widget adds functionality beyond `Page` in that it handles POST r
 
 The form does not look particularly appealing. To try to improve this, lets add some CSS. We'll start with something simple; create ``myapp.css`` with the following::
 
-    TBD
+    th {
+        vertical-align: top;
+        text-align: left;
+        font-weight: normal;
+    }
+    
+    ul {
+        list-style-type: none;
+    }
 
-use required class
+    .required th {
+        font-weight: bold;
+    }
+
+Notice the use of the "required" class. TableForm applies this to rows that contain a field that is required.
 
 
 Connecting to a Database
@@ -153,10 +165,16 @@ We want a front page that provides a list of our movies, and the ability to clic
         entity = db.Movie
         title = 'Movies'
         class child(twf.GridLayout):
-            id = twf.LinkField()
+            id = twf.LinkField(link='movie?id=$', text='Edit')
             title = twf.LabelField()
-            
-TBD: "new" link
+
+When you browse to /, you will see a list of movies that have been submitted, and be able to edit each one. When you're done editing, we want to redirect back to this front page, so add the following to the `Movie` class::
+
+    redirect = '/'
+
+We also want a "new" link on the front page, so add to the `Index` class::
+
+    newlink = twf.LinkField(link='movie', text='New', value=1)
 
 This gives our application just enough functionality to be a basic movie tracking system.
 

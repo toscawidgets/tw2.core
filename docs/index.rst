@@ -8,6 +8,8 @@ ToscaWidgets 2 Documentation
 
 ToscaWidgets aims to be a practical and useful widgets framework that helps people build interactive websites with compelling features, faster and easier. Widgets are re-usable web components that can include a template, server-side code and JavaScripts/CSS resources. The library aims to be: flexible, reliable, documented, performant, and as simple as possible. For changes since ToscaWidgets 0.9, see :doc:`history`.
 
+You can see the available widgets in the `Widget Browser <http://toscawidgets.org:8000/>`_.
+
 ToscaWidgets comes in two main packages:
 
  * tw2.core - the core functionality needed to use widgets in an app
