@@ -369,7 +369,7 @@ class DateValidator(RangeValidator):
             raise ValidationError('baddate', self)
 
     def from_python(self, value):
-        return value.strftime(self.format)
+        return value and value.strftime(self.format) or ''
 
 
 class DateTimeValidator(DateValidator):
@@ -388,9 +388,6 @@ class DateTimeValidator(DateValidator):
             return datetime.datetime.strptime(value, self.format)
         except ValueError:
             raise ValidationError('baddate', self)
-
-    def from_python(self, value):
-        return value.strftime(self.format)
 
 
 class RegexValidator(Validator):
