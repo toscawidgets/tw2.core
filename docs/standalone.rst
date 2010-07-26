@@ -2,7 +2,7 @@ Standalone Tutorial
 ===================
 
 .. note::
-    The files created in this tutorial can be downloaded as a .zip file TBD
+    The files created in this tutorial can be downloaded as a :download:`.zip file <standalone.zip>`.
 
 
 Building a Page
@@ -153,6 +153,10 @@ And replace ``genre = twf.CheckBoxList...`` with::
 
     genre = tws.DbCheckBoxList(entity=db.Genre)
 
+Finally, we need to enable the wrapper that automatically commits transactions after each request. Replace ``twc.dev_server()`` with::
+
+    twc.dev_server(repoze_tm=True)
+
 With this done, restart the application and try submitting a movie.
 
 
@@ -196,13 +200,3 @@ And replace this::
 With::
 
     class cast(twd.GrowingGridLayout):
-
-
-Conclusion
-----------
-
-This tutorial has demonstrated the basic concepts of ToscaWidgets 2. To further your knowledge, a good place to look is the widget browser. You can run this on your own machine::
-
-    paster tw2.browser
-
-There is also comprehensive design documentation, which explains how the different parts of ToscaWidgets work.

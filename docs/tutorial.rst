@@ -31,12 +31,7 @@ ToscaWidgets can be used with a web framework, such as Pylons or TurboGears, or 
 If you are using a different framework, try asking on the `group <http://groups.google.com/group/toscawidgets-discuss/>`_.
 
 
-Advanced Topics
----------------
+Next Steps
+----------
 
-**Creating Widgets**
-
- * Decide what base class to use
- * Identify parameters
- * Write template
- * Add any ``prepare()`` code you need
+This tutorial has demonstrated the basic concepts of ToscaWidgets 2. To further your knowledge, a good place to look is the widget browser. There is also comprehensive design documentation, which explains how the different parts of ToscaWidgets work.
