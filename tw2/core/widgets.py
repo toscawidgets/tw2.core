@@ -612,6 +612,8 @@ class RepeatingWidget(Widget):
             self.children[i].value = v
         for c in self.children:
             c.prepare()
+        if not value:
+            self.children[0].prepare()
 
     @vd.catch_errors
     def _validate(self, value, state=None):
