@@ -8,9 +8,3 @@ Traceback (most recent call last):
 ValidationError: Must be a valid email address
 >>> w.display()
 u'<p>fred Must be a valid email address</p>'
-
-Check name is used for validation in preference to id
-
->>> cw=twc.CompoundWidget(children=[twc.Widget(id='paj', name='joe')])
->>> cw.validate({'joe':'hello'})
-{'joe': u'hello'}

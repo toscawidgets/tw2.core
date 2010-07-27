@@ -481,10 +481,6 @@ class CompoundWidget(Widget):
             try:
                 if c._sub_compound:
                     data.update(c._validate(value, data))
-                elif hasattr(c, 'name'):
-                    val = c._validate(value.get(c.name), data)
-                    if val is not vd.EmptyField:
-                        data[c.name] = val
                 elif hasattr(c, 'id'):
                     val = c._validate(value.get(c.id), data)
                     if val is not vd.EmptyField:
