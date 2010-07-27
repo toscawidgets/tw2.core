@@ -612,7 +612,7 @@ class RepeatingWidget(Widget):
             self.children[i].value = v
         for c in self.children:
             c.prepare()
-        if not value:
+        if not self.repetitions:
             self.children[0].prepare()
 
     @vd.catch_errors
