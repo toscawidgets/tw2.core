@@ -22,7 +22,7 @@ Widget Library Quick Start
 
 To create a widget library, issue::
 
-    paster quickstart -t tw2.library tw2.mylib
+    $ paster create -t tw2.library tw2.mylib
 
 This creates an empty template that gets you started.
 
