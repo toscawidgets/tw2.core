@@ -72,7 +72,7 @@ Now, add to this file, before ``twc.dev_server()``::
                 character = twf.TextField()
                 actor = twf.TextField()
 
-Before we explain this code, browse to ``http://localhost:8000/movie`` to see how the form looks. Have a go an entering values and submitting; notice the difference when you specify a title compared to not.
+Before we explain this code, restart the application and browse to ``http://localhost:8000/movie`` to see how the form looks. Have a go an entering values and submitting; notice the difference when you specify a title compared to not.
 
 The `FormPage` widget adds functionality beyond `Page` in that it handles POST requests and redisplays the form on validation failures. The `TableForm` widget displays the form, including the submit button, and does the table layout. The form fields are specified in a fairly self-explanatory manner, noting that validation is specified for `title`. Here, `GridLayout` is used as a kind of sub-form, which allows multiple cast members to be specified.
 
@@ -93,6 +93,12 @@ The form does not look particularly appealing. To try to improve this, lets add 
     }
 
 Notice the use of the "required" class. TableForm applies this to rows that contain a field that is required.
+
+Before TableForm will inject ``myapp.css`` into the page, we'll have to add it to the list of resources. Add the following to the top of the `Movie` class definition just above the line ``title = 'Movie'``::
+
+    resources = [twc.CSSLink(filename='myapp.css')]
+
+Restart ``myapp.py`` and and browse to ``http://localhost:8000/movie`` to see the new css in action.
 
 
 Connecting to a Database
