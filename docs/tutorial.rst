@@ -35,3 +35,16 @@ Next Steps
 ----------
 
 This tutorial has demonstrated the basic concepts of ToscaWidgets 2. To further your knowledge, a good place to look is the widget browser. There is also comprehensive design documentation, which explains how the different parts of ToscaWidgets work.
+
+
+Import Styles
+-------------
+
+The Python import statement is flexible and allows several styles to be used:
+
+ * The tutorials have import lines like ``import tw2.forms``, which makes each use of an imported widget quite long-winded, e.g. ``tw2.forms.TextField``.
+ * A common approach is to use ``from tw2.forms import TextField``, which makes each usage more concise - just ``TextField``. However, it's then necessary to add each widget that will be used to the import line.
+ * It is possible to use ``from tw2.forms import *``. However, this is discouraged for several reasons, including that it makes it difficult for a reader of the code to tell where a widget has been imported from.
+ * An alternative approach is to use ``import tw2.forms as twf``, with each use then being ``twf.TextField``.
+
+It is possible to use ToscaWidgets 2 with any of these. However, the latter form is favored, and documentation beyond the introductory tutorials will generally use that style.
