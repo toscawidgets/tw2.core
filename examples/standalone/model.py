@@ -1,23 +1,23 @@
-import elixir as el, tw2.sqla as tws
-el.session = tws.transactional_session()
-el.metadata = el.sqlalchemy.MetaData('sqlite:///myapp.db')
+import elixir, tw2.sqla
+elixir.session = tw2.sqla.transactional_session()
+elixir.metadata = elixir.sqlalchemy.MetaData('sqlite:///myapp.db')
 
 
-class Movie(el.Entity):
-    title = el.Field(el.String)
-    director = el.Field(el.String)
-    genre = el.ManyToMany('Genre')
-    cast = el.OneToMany('Cast')
+class Movie(elixir.Entity):
+    title = elixir.Field(elixir.String)
+    director = elixir.Field(elixir.String)
+    genre = elixir.ManyToMany('Genre')
+    cast = elixir.OneToMany('Cast')
 
-class Genre(el.Entity):
-    name = el.Field(el.String)
+class Genre(elixir.Entity):
+    name = elixir.Field(elixir.String)
     def __unicode__(self):
         return self.name
 
-class Cast(el.Entity):
-    movie = el.ManyToOne(Movie)
-    character = el.Field(el.String)
-    actor = el.Field(el.String)    
+class Cast(elixir.Entity):
+    movie = elixir.ManyToOne(Movie)
+    character = elixir.Field(elixir.String)
+    actor = elixir.Field(elixir.String)    
 
 
-el.setup_all()
+elixir.setup_all()

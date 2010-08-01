@@ -198,7 +198,7 @@ To use this, update ``myapp.py``; at the top of the file add::
 
     import tw2.dynforms
 
-And replace this::
+Replace this::
 
     class cast(tw2.forms.GridLayout):
         extra_reps = 5
@@ -206,3 +206,11 @@ And replace this::
 With::
 
     class cast(tw2.dynforms.GrowingGridLayout):
+
+Finally, change this::
+
+    class child(tw2.forms.TableForm):
+
+To this::
+
+    class child(tw2.dynforms.CustomisedTableForm):

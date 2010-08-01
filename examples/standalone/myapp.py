@@ -1,28 +1,28 @@
-import tw2.core as twc
-import tw2.forms as twf
-import tw2.sqla as tws
-import model as db
+import tw2.core
+import tw2.forms
+import tw2.sqla
+import tw2.dynforms
+import model
 
-class Index(tws.DbListPage):
-    entity = db.Movie
+class Index(tw2.sqla.DbListPage):
+    entity = model.Movie
     title = 'Movies'
-    newlink = twf.LinkField(link='movie', text='New', value=1)
-    class child(twf.GridLayout):
-        id = twf.LinkField(link='movie?id=$', text='Edit')
-        title = twf.LabelField()
+    newlink = tw2.forms.LinkField(link='movie', text='New', value=1)
+    class child(tw2.forms.GridLayout):
+        id = tw2.forms.LinkField(link='movie?id=$', text='Edit')
+        title = tw2.forms.LabelField()
 
-class Movie(tws.DbFormPage):
-    entity = db.Movie
+class Movie(tw2.sqla.DbFormPage):
+    entity = model.Movie
     title = 'Movie'
     redirect = '/'
-    resources = [twc.CSSLink(filename='myapp.css')]
-    class child(twf.TableForm):
-        title = twf.TextField(validator=twc.Required)
-        director = twf.TextField()
-        genre = tws.DbCheckBoxList(entity=db.Genre)
-        class cast(twf.GridLayout):
-            extra_reps = 5
-            character = twf.TextField()
-            actor = twf.TextField()
+    resources = [tw2.core.CSSLink(filename='myapp.css')]
+    class child(tw2.dynforms.CustomisedTableForm):
+        title = tw2.forms.TextField(validator=tw2.core.Required)
+        director = tw2.forms.TextField()
+        genre = tw2.sqla.DbCheckBoxList(entity=model.Genre)
+        class cast(tw2.dynforms.GrowingGridLayout):
+            character = tw2.forms.TextField()
+            actor = tw2.forms.TextField()
 
-twc.dev_server(repoze_tm=True)
+tw2.core.dev_server(repoze_tm=True)
