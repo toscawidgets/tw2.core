@@ -10,12 +10,12 @@ Building a Page
 
 To get started, we'll build a simple "Hello World" application. First, create ``myapp.py`` with the following::
 
-    import tw2.core as twc
+    import tw2.core
     
-    class Index(twc.Page):
+    class Index(tw2.core.Page):
         template = 'genshi:./index.html'
     
-    twc.dev_server()
+    tw2.core.dev_server()
 
 Here were are creating a Page widget, called Index, with a template specified. Index is a special name that matches the root URL. We need to create the template, so in the same directory, create ``index.html`` with the following content::
 
@@ -57,20 +57,20 @@ Building a Form
 
 We'll now create a simple form. In this example we're going to create a movie database. First, add to the top of ``myapp.py``::
 
-    import tw2.forms as twf
+    import tw2.forms
 
-Now, add to this file, before ``twc.dev_server()``::
+Now, add to this file, before ``tw2.core.dev_server()``::
 
-    class Movie(twf.FormPage):
+    class Movie(tw2.forms.FormPage):
         title = 'Movie'
-        class child(twf.TableForm):
-            title = twf.TextField(validator=twc.Required)
-            director = twf.TextField()
-            genre = twf.CheckBoxList(options=['Action', 'Comedy', 'Romance', 'Sci-fi'])
-            class cast(twf.GridLayout):
+        class child(tw2.forms.TableForm):
+            title = tw2.forms.TextField(validator=tw2.core.Required)
+            director = tw2.forms.TextField()
+            genre = tw2.forms.CheckBoxList(options=['Action', 'Comedy', 'Romance', 'Sci-fi'])
+            class cast(tw2.forms.GridLayout):
                 extra_reps = 5
-                character = twf.TextField()
-                actor = twf.TextField()
+                character = tw2.forms.TextField()
+                actor = tw2.forms.TextField()
 
 Before we explain this code, restart the application and browse to ``http://localhost:8000/movie`` to see how the form looks. Have a go an entering values and submitting; notice the difference when you specify a title compared to not.
 
@@ -96,7 +96,7 @@ Notice the use of the "required" class. TableForm applies this to rows that cont
 
 Before TableForm will inject ``myapp.css`` into the page, we'll have to add it to the list of resources. Add the following to the top of the `Movie` class definition just above the line ``title = 'Movie'``::
 
-    resources = [twc.CSSLink(filename='myapp.css')]
+    resources = [tw2.core.CSSLink(filename='myapp.css')]
 
 Restart ``myapp.py`` and and browse to ``http://localhost:8000/movie`` to see the new css in action.
 
@@ -106,62 +106,62 @@ Connecting to a Database
 
 The next step is to save movies to a database. To do this, we'll use `SQLAlchemy <http://www.sqlalchemy.org/>`_ and `Elixir <http://elixir.ematia.de/trac/wiki>`_ to define a database model. Create ``model.py`` with the following::
 
-    import elixir as el, tw2.sqla as tws
-    el.session = tws.transactional_session()
-    el.metadata = el.sqlalchemy.MetaData('sqlite:///myapp.db')
+    import elixir, tw2.sqla
+    elixir.session = tw2.sqla.transactional_session()
+    elixir.metadata = elixir.sqlalchemy.MetaData('sqlite:///myapp.db')
 
 This is code is required to set up the database connection. It will use an SQLite database, ``myapp.db`` in the current directory. Now, add the code to define our tables::
 
-    class Movie(el.Entity):
-        title = el.Field(el.String)
-        director = el.Field(el.String)
-        genre = el.ManyToMany('Genre')
-        cast = el.OneToMany('Cast')
+    class Movie(elixir.Entity):
+        title = elixir.Field(elixir.String)
+        director = elixir.Field(elixir.String)
+        genre = elixir.ManyToMany('Genre')
+        cast = elixir.OneToMany('Cast')
     
-    class Genre(el.Entity):
-        name = el.Field(el.String)
+    class Genre(elixir.Entity):
+        name = elixir.Field(elixir.String)
         def __unicode__(self):
             return self.name
     
-    class Cast(el.Entity):
-        movie = el.ManyToOne(Movie)
-        character = el.Field(el.String)
-        actor = el.Field(el.String)    
+    class Cast(elixir.Entity):
+        movie = elixir.ManyToOne(Movie)
+        character = elixir.Field(elixir.String)
+        actor = elixir.Field(elixir.String)    
 
 Finally, a small piece of boilerplate code is required at the bottom::
 
-    el.setup_all()
+    elixir.setup_all()
 
 This defines three tables - Movie, Genre and Cast, with relations between them. To learn more about the Elixir syntax, read the `Elixir tutorial <http://elixir.ematia.de/trac/wiki/TutorialDivingIn>`_. The next step is to create our database. In the python interpreter, issue::
 
-    import model as db
-    db.el.create_all()
+    import model
+    model.elxiir.create_all()
 
 We'll now add the genres to the database::
 
-    db.Genre(name='Action')
-    db.Genre(name='Comedy')
-    db.Genre(name='Romance')
-    db.Genre(name='Sci-fi')
-    db.el.session.commit() 
+    model.Genre(name='Action')
+    model.Genre(name='Comedy')
+    model.Genre(name='Romance')
+    model.Genre(name='Sci-fi')
+    model.elixir.session.commit() 
     
 Now, exit the Python interpreter, and update ``myapp.py`` to connect the `Movie` form to the database. At the top of the file add::
 
-    import tw2.sqla as tws
-    import model as db
+    import tw2.sqla
+    import model
 
-Replace ``class Movie(twf.FormPage):`` with::
+Replace ``class Movie(tw2.forms.FormPage):`` with::
 
-    class Movie(tws.DbFormPage):
-        entity = db.Movie
+    class Movie(tw2.sqla.DbFormPage):
+        entity = model.Movie
 
-And replace ``genre = twf.CheckBoxList...`` with::
+And replace ``genre = tw2.forms.CheckBoxList...`` with::
 
-    genre = tws.DbCheckBoxList(entity=db.Genre)
+    genre = tw2.sqla.DbCheckBoxList(entity=model.Genre)
 
-Finally, we need to enable the wrapper that automatically commits transactions after each request. Replace ``twc.dev_server()`` with::
+Finally, we need to enable the wrapper that automatically commits transactions after each request. Replace ``tw2.core.dev_server()`` with::
 
-    twc.dev_server(repoze_tm=True)
+    tw2.core.dev_server(repoze_tm=True)
 
 With this done, restart the application and try submitting a movie.
 
@@ -171,12 +171,12 @@ Front Page
 
 We want a front page that provides a list of our movies, and the ability to click on a movie to edit it. We can use a GridLayout for this; replace the `Index` class with::
 
-    class Index(tws.DbListPage):
-        entity = db.Movie
+    class Index(tw2.sqla.DbListPage):
+        entity = model.Movie
         title = 'Movies'
-        class child(twf.GridLayout):
-            id = twf.LinkField(link='movie?id=$', text='Edit')
-            title = twf.LabelField()
+        class child(tw2.forms.GridLayout):
+            title = tw2.forms.LabelField()
+            id = tw2.forms.LinkField(link='movie?id=$', text='Edit', label=None)
 
 When you browse to /, you will see a list of movies that have been submitted, and be able to edit each one. When you're done editing, we want to redirect back to this front page, so add the following to the `Movie` class::
 
@@ -184,7 +184,7 @@ When you browse to /, you will see a list of movies that have been submitted, an
 
 We also want a "new" link on the front page, so add to the `Index` class::
 
-    newlink = twf.LinkField(link='movie', text='New', value=1)
+    newlink = tw2.forms.LinkField(link='movie', text='New', value=1)
 
 This gives our application just enough functionality to be a basic movie tracking system.
 
@@ -196,13 +196,13 @@ The list of cast is somewhat limited; there's no easy way to delete a row, any y
 
 To use this, update ``myapp.py``; at the top of the file add::
 
-    import tw2.dynforms as twd
+    import tw2.dynforms
 
 And replace this::
 
-    class cast(twf.GridLayout):
+    class cast(tw2.forms.GridLayout):
         extra_reps = 5
 
 With::
 
-    class cast(twd.GrowingGridLayout):
+    class cast(tw2.dynforms.GrowingGridLayout):
