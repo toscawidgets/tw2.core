@@ -192,7 +192,7 @@ This gives our application just enough functionality to be a basic movie trackin
 GrowingGrid
 -----------
 
-The list of cast is somewhat limited; it's not possible to have more than five cast members. We can use a widget from tw2.dynforms to help with this. GrowingGridLayout is a dynamic grid that can grow client-side.
+The list of cast is somewhat limited; there's no easy way to delete a row, any you can't add more than five people at once. We can use a widget from tw2.dynforms to improve this. GrowingGridLayout is a dynamic grid that can grow client-side. Be aware that tw2.dynforms requires your site's visitors to have JavaScript enabled.
 
 To use this, update ``myapp.py``; at the top of the file add::
 

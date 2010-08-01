@@ -72,7 +72,7 @@ class Link(Resource):
     A link to a file.
     '''
     id = None
-    link = pm.Param('Direct web link to file. If this is not specified, it is automatically generated, based on :attr:`modname` and :attr:`filename`.')
+    link = pm.Param('Direct web link to file. If this is not specified, it is automatically generated, based on `modname` and `filename`.')
     modname = pm.Param('Name of Python module that contains the file.', default=None)
     filename = pm.Param('Path to file, relative to module base.', default=None)
 
@@ -270,8 +270,8 @@ class _ResourceInjector(util.MultipleReplacer):
     the current request.
 
     Usually widgets register them when they're displayed and they have instances of
-    :class:`tw.api.Resource` declared at their :attr:`tw.api.Widget.javascript` or
-    :attr:`tw.api.Widget.css` attributes.
+    :class:`tw.api.Resource` declared at their `tw.api.Widget.javascript` or
+    `tw.api.Widget.css` attributes.
 
     Resources can also be registered manually from a controller or template by
     calling their :meth:`tw.api.Resource.inject` method.

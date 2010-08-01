@@ -64,9 +64,6 @@ class Widget(pm.Parametered):
 
     error_msg = pm.Variable("Validation error message.")
     parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
-    Controller = pm.Variable("Default controller for this widget", default=None)
-    _check_authz = pm.Variable("Method for checking authorization, should be classmethod in form: def _check_authn(cls, req, method)", default=None)
-    _check_authn = pm.Variable("Method for checking authentication, should be classmethod in the form: def _check_authn(cls, req)", default=None)
 
     _sub_compound = False
     _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
@@ -118,10 +115,6 @@ class Widget(pm.Parametered):
         if cls.compound_id:
             cls.attrs = cls.attrs.copy()
             cls.attrs['id'] = cls.compound_id
-
-        cls.attrs['controller']   = getattr(cls, 'Controller')
-        cls.attrs['_check_authn'] = getattr(cls, '_check_authn')
-        cls.attrs['_check_authz'] = getattr(cls, '_check_authz')
 
         if getattr(cls, 'id', None):
             import middleware
@@ -336,43 +329,6 @@ class Widget(pm.Parametered):
     @classmethod
     def children_deep(cls):
         yield cls
-
-    if 0:
-        @classmethod
-        def request(cls, req):
-            """
-            Override this method to define your own way of handling a widget request.
-    
-            The default does TG-style object dispatch.
-            """
-    
-            authn = cls.attrs.get('_check_authn')
-            authz = cls.attrs.get('_check_authz')
-    
-            if authn and not authn(req):
-                return util.abort(req, 401)
-    
-            controller = cls.attrs.get('controller', cls.Controller)
-            if controller is None:
-                return util.abort(req, 404)
-    
-            path = req.path_info.split('/')[3:]
-            if len(path) == 0:
-                method_name = 'index'
-            else:
-                method_name = path[0]
-            # later we want to better handle .ext conditions, but hey
-            # this aint TG
-            if method_name.endswith('.json'):
-                method_name = method_name[:-5]
-            method = getattr(controller, method_name, None)
-            if method:
-                if authz and not authz(req, method):
-                    return util.abort(req, 403)
-    
-                controller = cls.Controller()
-                return method(controller, req)
-            return util.abort(req, 404)
 
 
 class LeafWidget(Widget):
@@ -702,7 +658,7 @@ class DisplayOnlyWidget(Widget):
             Widget.post_define.im_func(cls)
             cls.child = cls.child(parent=cls)
         else:
-            cls.child = cls.child(id=cls_id, Controller=cls.Controller, _check_authz=cls._check_authz, _check_authn=cls._check_authn, parent=cls)
+            cls.child = cls.child(id=cls_id, parent=cls)
 
     @classmethod
     def _gen_compound_id(cls, for_url):

@@ -26,7 +26,7 @@ Some minor differences to be aware of:
  * The *id* is always the short id; *compound_id* has the full id.
  * The compound ID separator is now a colon (:) and IDs may not contain colons.
  * engine_name is compulsory for templates, and there are no inline templates (yet, may be added later).
- * ToscaWidgets 2 requires Python 2.5. Support for 2.4 and 2.6 is planned.
+ * ToscaWidgets 2 requires Python 2.5, 2.6 or 2.7.
  * tw.api has been removed; just use tw2.core
  * The toscasidgets simple template engine has been removed.
  * Widget.__call__ is no longer an alias for display, as this causes problems for Cheetah.

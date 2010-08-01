@@ -4,7 +4,7 @@ Tutorial
 Installation
 ------------
 
-First of all, you need Python. Version 2.5 is recommended, while any version 2.4 - 2.7 is intended to work. The recommended way to install ToscaWidgets is using `pip <http://pip.openplans.org/>`_. Once you have pip itself installed, you should issue (with sudo if required)::
+First of all, you need Python - version 2.5, 2.6 or 2.7. The recommended way to install ToscaWidgets is using `pip <http://pip.openplans.org/>`_. Once you have pip itself installed, you should issue (with sudo if required)::
 
     pip install tw2.dynforms tw2.devtools tw2.sqla genshi elixir
     
