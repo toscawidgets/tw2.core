@@ -37,7 +37,6 @@ Record bugs and suggested enhancements on `the bug tracker <http://bitbucket.org
    design
    devtools
    history
-   future
 
 
 Indices and tables

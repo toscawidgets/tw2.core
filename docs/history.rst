@@ -25,7 +25,6 @@ Some minor differences to be aware of:
  * A widget does not automatically get the ``resources`` from its base class.
  * The *id* is always the short id; *compound_id* has the full id.
  * The compound ID separator is now a colon (:) and IDs may not contain colons.
- * engine_name is compulsory for templates, and there are no inline templates (yet, may be added later).
  * ToscaWidgets 2 requires Python 2.5, 2.6 or 2.7.
  * tw.api has been removed; just use tw2.core
  * The toscasidgets simple template engine has been removed.
