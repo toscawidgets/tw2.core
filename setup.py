@@ -1,23 +1,6 @@
 """Setuptools setup file"""
 
-import sys, os
-
 from setuptools import setup
-
-def get_description(fname='README.txt'):
-    # Adapted from PEAK-Rules' setup.py
-    # Get our long description from the documentation
-    f = file(fname)
-    lines = []
-    for line in f:
-        if not line.strip():
-            break     # skip to first blank line
-    for line in f:
-        if line.startswith('Documentation contents'):
-            break     # read to "Documentation contents..."
-        lines.append(line)
-    f.close()
-    return ''.join(lines)
 
 # Requirements to install buffet plugins and engines
 _extra_cheetah = ["Cheetah>=1.0", "TurboCheetah>=0.9.5"]
@@ -29,7 +12,7 @@ setup(
     name='tw2.core',
     version='2.0b4',
     description="Web widget creation toolkit based on TurboGears widgets",
-    long_description = get_description(),
+    long_description = open('README.txt').read().split('\n\n', 1)[1],
     install_requires=[
         'WebOb>=0.9.7',
         'simplejson >= 2.0',
