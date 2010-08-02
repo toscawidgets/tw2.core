@@ -56,9 +56,6 @@ setup(
     [tw2.widgets]
     tw2.core = tw2.core
 
-    [turbogears.extensions]
-    toscawidgets=tw.core.framework:tg
-
     [paste.filter_app_factory]
     middleware = tw2.core.middleware:make_middleware
 
