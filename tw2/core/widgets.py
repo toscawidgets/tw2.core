@@ -318,11 +318,11 @@ class Widget(pm.Parametered):
         self.value = value
         if self.validator:
             if isinstance(self.validator, vd.Validator):
+                #Calling to_python automatically calls validate_python (if required)
                 value = self.validator.to_python(value)
-                self.validator.validate_python(value)
             else:
+                #Calling to_python automatically calls validate_python (if required)
                 value = self.validator.to_python(value)
-                self.validator.validate_python(value, None)
         return value
 
     def safe_modify(self, attr):
