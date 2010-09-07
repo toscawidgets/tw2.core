@@ -144,6 +144,8 @@ class Validator(object):
             setattr(self, k, kw[k])
 
     def to_python(self, value):
+        if self.required and (value is None or not value):
+            raise ValidationError('required', self)
         if isinstance(value, basestring):
             try:
                 if self.encoding:
