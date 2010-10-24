@@ -147,7 +147,7 @@ class TwMiddleware(object):
                 resp = self.controllers(req)
             else:
                 if self.app:
-                    resp = req.get_response(self.app)
+                    resp = req.get_response(self.app, catch_exc_info=True)
                 else:
                     resp = wo.Response(status="404 Not Found")
             content_type = resp.headers.get('Content-Type','text/plain').lower()
