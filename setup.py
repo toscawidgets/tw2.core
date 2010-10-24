@@ -1,6 +1,6 @@
 """Setuptools setup file"""
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # Requirements to install buffet plugins and engines
 _extra_cheetah = ["Cheetah>=1.0", "TurboCheetah>=0.9.5"]
@@ -30,7 +30,7 @@ setup(
     author='Paul Johnston, Christopher Perkins, Alberto Valverde & contributors',
     author_email='paj@pajhome.org.uk',
     license='MIT',
-    packages = ['tw2', 'tw2.core'],
+    packages=find_packages(exclude=['ez_setup', 'tests']),
     namespace_packages = ['tw2'],
     include_package_data=True,
     exclude_package_data={"thirdparty" : ["*"]},
