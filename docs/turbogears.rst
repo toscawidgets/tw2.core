@@ -15,10 +15,29 @@ First, you need to create a TurboGears project. The full instructions are in the
     
     cd myapp
     python setup.py develop
-    
-To enable ToscaWidgets 2.0, edit ``middleware.py`` and add, just before the ``return app`` line::
 
-    app = twc.make_middleware(app, default_engine='genshi')
+There are two different sets of steps to enable ToscaWidgets 2.0 in different versions of TurboGears.  If you don't know what version of TurboGears you have installed, fire up a python interpreter and type::
+
+    >>> import tg
+    >>> tg.__version__
+    '2.1b2'
+
+If you're using TurboGears 2.1, edit ``myapp/config/app_cfg.py`` and add at the end::
+
+    base_config.use_toscawidgets2 = True
+
+If you're using TurboGears 2.0, instead edit ``myapp/config/middleware.py``, add ``import tw2.core as twc`` to the top of the file, and replace the line::
+
+    app = make_base_app(global_conf, full_stack=True, **app_conf) 
+
+with the following two lines::
+
+      custom = lambda app : twc.make_middleware(app, default_engine='genshi') 
+      app = make_base_app(global_conf, wrap_app=custom, full_stack=True, **app_conf) 
+
+For -both- TurboGears versions 2.0 and 2.1, you will need to also remove a single spurious reference to ToscaWidgets 1.0.  Edit ``myapp/lib/base.py`` and remove the line::
+
+    from tw.api import WidgetBunch
 
 To check this worked::
 
