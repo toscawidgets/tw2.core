@@ -263,7 +263,7 @@ For the :meth:`request` method to be called, the widget must be registered with 
 
 For convenience, widgets that have a :meth:`request` method, and an :attr:`id` will be registered automatically. By default, this uses a global :class:`ControllersApp` instance, which is also the default controllers_app for :func:`make_middleware`. If you want to use multiple controller applications in a single python instance, you will need to override this. Set :attr:`tw2_controllers` as a global variable, and this will affect all widgets defined in that module. Set this to None to disable automatic registration. You can also manually register widgets::
 
-    mw = twc.make_middleware()
+    mw = twc.core.request_local()['middleware']
     mw.controllers.register(MyWidget, 'mywidget')
 
 **Methods to override**
