@@ -3,6 +3,8 @@ import core, re, util, string, time, datetime, copy, decorator, webob
 # This hack helps work with different versions of WebOb
 if not hasattr(webob, 'MultiDict'):
     webob.MultiDict = webob.multidict.MultiDict
+if not hasattr(webob, 'UnicodeMultiDict'):
+    webob.UnicodeMultiDict = webob.multidict.UnicodeMultiDict
 
 try:
     import formencode
@@ -75,7 +77,8 @@ def unflatten_params(params):
     this into a nested dict/list structure. It also performs unicode decoding,
     with the encoding specified in the middleware config.
     """
-    if isinstance(params, webob.MultiDict):
+    if ( isinstance(params, webob.MultiDict) or
+         isinstance(params, webob.UnicodeMultiDict) ):
         params = params.mixed()    
     mw = core.request_local().get('middleware')
     enc = mw.config.encoding if mw else 'utf-8'
@@ -91,11 +94,7 @@ def unflatten_params(params):
         elements = pname.split(':')
         for e in elements[:-1]:
             dct = dct.setdefault(e, {})
-
-        try:
-            dct[elements[-1]] = params.getone(pname)
-        except KeyError:
-            dct[elements[-1]] = params.getall(pname)
+        dct[elements[-1]] = params[pname]
 
     numdict_to_list(out)
     return out
