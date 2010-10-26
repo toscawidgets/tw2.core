@@ -91,7 +91,12 @@ def unflatten_params(params):
         elements = pname.split(':')
         for e in elements[:-1]:
             dct = dct.setdefault(e, {})
-        dct[elements[-1]] = params[pname]
+
+        try:
+            dct[elements[-1]] = params.getone(pname)
+        except KeyError:
+            dct[elements[-1]] = params.getall(pname)
+
     numdict_to_list(out)
     return out
 
