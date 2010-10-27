@@ -5,7 +5,7 @@ try:
 except ImportError:
     formencode = None
 
-reserved_names = ('parent', 'demo_for', 'child', 'submit', 'datasrc', 'newlink')
+reserved_names = ('parent', 'demo_for', 'child', 'submit', 'datasrc', 'newlink', 'edit')
 _widget_seq = itertools.count(0)
 
 class WidgetMeta(pm.ParamMeta):
