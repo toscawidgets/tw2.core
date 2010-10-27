@@ -1,5 +1,9 @@
-TurboGears 2
-============
+TurboGears 2 Tutorial
+=====================
+
+.. note::
+       The files created in this tutorial can be downloaded as a :download:`.zip file <turbogears.zip>`.
+
 
 Enabling ToscaWidgets
 ---------------------
