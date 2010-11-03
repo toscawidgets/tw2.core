@@ -39,10 +39,6 @@ with the following two lines::
       custom = lambda app : twc.make_middleware(app, default_engine='genshi') 
       app = make_base_app(global_conf, wrap_app=custom, full_stack=True, **app_conf) 
 
-For -both- TurboGears versions 2.0 and 2.1, you will need to also remove a single spurious reference to ToscaWidgets 1.0.  Edit ``myapp/lib/base.py`` and remove the line::
-
-    from tw.api import WidgetBunch
-
 To check this worked::
 
     paster serve development.ini
@@ -317,9 +313,13 @@ By default, TurboGears 2 has ToscaWidgets 0.9 enabled. The two libraries can co-
 To disable ToscaWidgets 0.9, edit ``app_cfg.py`` and add at the end::
 
     base_config.use_toscawidgets = False
-    
+
 This prevents Catwalk from working, so in ``root.py`` comment out the following lines::
 
     #from catwalk.tg2 import Catwalk
     
     #admin = Catwalk(model, DBSession)
+
+You will also need to remove all references to Toscawidgets < 2.0 in your project.  If you're working from a freshly quickstarted application, you will need to remove only a single spurious reference.  Edit ``myapp/lib/base.py`` and comment out::
+
+    #from tw.api import WidgetBunch
