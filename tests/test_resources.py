@@ -1,5 +1,6 @@
 import webob as wo, webtest as wt, tw2.core as twc, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
 from nose.tools import eq_, raises
+from strainer.operators import eq_xhtml
 
 js = twc.JSLink(link='paj')
 css = twc.CSSLink(link='joe')
@@ -128,17 +129,17 @@ class TestResources(object):
     def test_inject_head(self):
         rl = testapi.request(1, mw)
         out = twc.inject_resources(html, [js.req()])
-        assert(out == '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
+        assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
 
     def test_inject_body(self):
         rl = testapi.request(1, mw)
         out = twc.inject_resources(html, [jssrc.req()])
-        assert(out == '<html><head><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
+        assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
     def test_inject_both(self):
         rl = testapi.request(1, mw)
         out = twc.inject_resources(html, [js.req(), jssrc.req()])
-        assert(out == '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
+        assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
     def test_detect_clear(self):
         widget = twc.Widget(id='a', template='genshi:tw2.core.test_templates.inner_genshi', test='test', resources=[js])
@@ -171,7 +172,7 @@ class TestResources(object):
 
     def test_mw_inject(self):
         testapi.request(1, mw)
-        eq_(tst_mw.get('/').body, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
+        assert eq_xhtml(tst_mw.get('/').body, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
 
     def test_mw_inject_html_only(self):
         testapi.request(1, mw)
