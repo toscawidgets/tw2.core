@@ -25,6 +25,10 @@ ValidationError: Value is too long
 Traceback (most recent call last):
     ...
 ValidationError: Must be at least 1 characters
+>>> twc.StringLengthValidator(required=True).validate_python('')
+Traceback (most recent call last):
+    ...
+ValidationError: Enter a value
 >>> twc.StringLengthValidator(min=1).validate_python('a')
 >>> twc.StringLengthValidator(max=2).validate_python('aa')
 >>> twc.StringLengthValidator(max=2).validate_python('aaa')
