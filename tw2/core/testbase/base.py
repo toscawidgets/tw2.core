@@ -198,6 +198,8 @@ class WidgetTest(object):
         global _request_id, _request_local
         _request_local = {}
         _request_id = None
+        if hasattr(super(WidgetTest, self), 'setup'):
+            super(WidgetTest, self).setup()
         self.mw = tmw.make_middleware(None, default_engine=self.template_engine)
         if self.declarative:
             self.widget = TW2WidgetBuilder(self.widget, **self.attrs)
@@ -319,6 +321,8 @@ class ValidatorTest(object):
         global _request_id, _request_local
         _request_local = {}
         _request_id = None
+        if hasattr(super(ValidatorTest, self), 'setup'):
+            super(ValidatorTest, self).setup()
         self.mw = tmw.make_middleware(None)
         return self.request(1)
 
