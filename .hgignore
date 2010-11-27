@@ -8,3 +8,4 @@ glob:html
 glob:dist
 glob:build
 glob:strainer*
+glob:virtualenv
