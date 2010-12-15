@@ -47,7 +47,9 @@ class ValidationError(BaseValidationError):
 
 def safe_validate(validator, value):
     try:
-        return validator.to_python(value)
+        value = validator.to_python(value)
+        validator.validate_python(value)
+        return value
     except ValidationError:
         return Invalid
 
