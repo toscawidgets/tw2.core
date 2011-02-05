@@ -266,11 +266,11 @@ class _ResourceInjector(util.MultipleReplacer):
     the current request.
 
     Usually widgets register them when they're displayed and they have instances of
-    :class:`tw.api.Resource` declared at their :attr:`tw.api.Widget.javascript` or
-    :attr:`tw.api.Widget.css` attributes.
+    :class:`tw2.core.resources.Resource` declared at their :attr:`tw2.core.Widget.javascript` or
+    :attr:`tw2.core.Widget.css` attributes.
 
     Resources can also be registered manually from a controller or template by
-    calling their :meth:`tw.api.Resource.inject` method.
+    calling their :meth:`tw2.core.resources.Resource.inject` method.
 
     When a page including widgets is rendered, Resources that are registered for
     injection are collected in a request-local
@@ -282,7 +282,7 @@ class _ResourceInjector(util.MultipleReplacer):
     but they can also be injected explicitly, example::
 
 
-       >>> from tw.api import JSLink, inject_resources
+       >>> from tw2.core.resources import JSLink, inject_resources
        >>> JSLink(link="http://example.com").inject()
        >>> html = "<html><head></head><body></body></html>"
        >>> inject_resources(html)
