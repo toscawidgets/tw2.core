@@ -7,3 +7,6 @@ glob:.noseids
 glob:html
 glob:dist
 glob:build
+glob:*.orig
+glob:*.reject
+glob:external
