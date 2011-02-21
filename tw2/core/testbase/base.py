@@ -7,6 +7,8 @@ from nose.tools import eq_
 
 from xhtmlify import xhtmlify, ValidationError
 
+from strainer.operators import remove_whitespace_nodes, remove_namespace, eq_xhtml, in_xhtml, assert_in_xhtml, assert_eq_xhtml, normalize_to_xhtml
+
 #try:
 import xml.etree.ElementTree as etree
 from xml.parsers.expat import ExpatError
@@ -15,26 +17,6 @@ from xml.parsers.expat import ExpatError
 
 rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
 rm = pk.ResourceManager()
-
-def remove_whitespace_nodes(node):
-    new_node = copy.copy(node)
-    new_node._children = []
-    if new_node.text and new_node.text.strip() == '':
-        new_node.text = ''
-    if new_node.tail and new_node.tail.strip() == '':
-        new_node.tail = ''
-    for child in node.getchildren():
-        if child is not None:
-            child = remove_whitespace_nodes(child)
-        new_node.append(child)
-    return new_node
-
-def remove_namespace(doc):
-    """Remove namespace in the passed document in place."""
-    for elem in doc.getiterator():
-        match = re.match('(\{.*\})(.*)', elem.tag)
-        if match:
-            elem.tag = match.group(2)
 
 def replace_escape_chars(needle):
     needle = needle.replace('&nbsp;', ' ')
@@ -77,35 +59,10 @@ def fix_xml(needle):
     needle_s = etree.tostring(needle_node)
     return needle_s
 
-def in_xml(needle, haystack):
-    try:
-        needle_s = fix_xml(needle)
-    except ValidationError:
-        raise ValidationError('Could not parse needle: %s into xml.'%needle)
-    try:
-        haystack_s = fix_xml(haystack)
-    except ValidationError:
-        raise ValidationError('Could not parse haystack: %s into xml.'%haystack)
-    return needle_s in haystack_s
-
-def eq_xml(needle, haystack):
-    try:
-        needle_s = fix_xml(needle)
-    except ValidationError, e:
-        raise Exception('Could not parse needle: %s into xml. %s'%(needle, e.message))
-    try:
-        haystack_s = fix_xml(haystack)
-    except ValidationError, e:
-        raise Exception('Could not parse haystack: %s into xml. %s'%(haystack, e.message))
-#    needle_s, haystack_s = map(fix_xml, (needle, haystack))
-    return needle_s == haystack_s
-
-def assert_in_xml(needle, haystack):
-    assert in_xml(needle, haystack), "%s not found in %s"%(needle, haystack)
-
-def assert_eq_xml(needle, haystack):
-    assert eq_xml(needle, haystack), "%s does not equal %s"%(needle, haystack)
-
+in_xml = in_xhtml
+eq_xml = eq_xhtml
+assert_in_xml = assert_in_xhtml
+assert_eq_xml = assert_eq_xhtml
 
 import tw2.core as twc
 
