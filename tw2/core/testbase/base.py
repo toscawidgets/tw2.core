@@ -125,6 +125,10 @@ class WidgetTest(object):
         [2] - expected output
 
         [3] - the expected validation error type (optional)
+
+    `wrap`
+        Wrap expected and the result in an element.  Useful if the template
+        generates an xml snippet with more than one top level element.
     """
     
     template_engine = 'string'
@@ -135,6 +139,7 @@ class WidgetTest(object):
     expected = ""
     declarative = False
     validate_params = None
+    wrap = False
 
     def request(self, requestid, mw=None):
         if mw is None:
@@ -175,7 +180,7 @@ class WidgetTest(object):
         self.request(1, mw)
         r = self.widget(_no_autoid=True, **attrs).display(**params)
         # reset the cache as not to affect other tests
-        assert_eq_xml(r, expected)
+        assert_eq_xml(r, expected, self.wrap)
 
     def test_display(self):
         for engine in self._get_all_possible_engines():
