@@ -7,7 +7,7 @@ from nose.tools import eq_
 
 from xhtmlify import xhtmlify, ValidationError
 
-from strainer.operators import remove_whitespace_nodes, remove_namespace, eq_xhtml, in_xhtml, assert_in_xhtml, assert_eq_xhtml, normalize_to_xhtml
+from strainer.operators import remove_whitespace_nodes, remove_namespace, eq_xhtml, in_xhtml, assert_in_xhtml, assert_eq_xhtml, normalize_to_xhtml, replace_escape_chars
 
 #try:
 import xml.etree.ElementTree as etree
@@ -17,11 +17,6 @@ from xml.parsers.expat import ExpatError
 
 rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
 rm = pk.ResourceManager()
-
-def replace_escape_chars(needle):
-    needle = needle.replace('&nbsp;', ' ')
-    needle = needle.replace(u'\xa0', ' ')
-    return needle
 
 _BOOLEAN_ATTRS = frozenset(['selected', 'checked', 'compact', 'declare',
                             'defer', 'disabled', 'ismap', 'multiple',
