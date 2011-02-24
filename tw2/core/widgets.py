@@ -335,6 +335,22 @@ class Widget(pm.Parametered):
         yield cls
 
     @classmethod
+    def dispatch(cls, req, controller):
+        path = req.path_info.strip('/').split('/')[2:]
+        if len(path) == 0:
+            method_name = 'index'
+        else:
+            method_name = path[0]
+        # later we want to better handle .ext conditions, but hey
+        # this aint TG
+        if method_name.endswith('.json'):
+            method_name = method_name[:-5]
+        method = getattr(controller, method_name, None)
+        if not method:
+            method = getattr(controller, 'default', None)
+        return method
+
+    @classmethod
     def request(cls, req):
         """
         Override this method to define your own way of handling a widget request.
@@ -352,16 +368,7 @@ class Widget(pm.Parametered):
         if controller is None:
             return util.abort(req, 404)
 
-        path = req.path_info.split('/')[3:]
-        if len(path) == 0:
-            method_name = 'index'
-        else:
-            method_name = path[0]
-        # later we want to better handle .ext conditions, but hey
-        # this aint TG
-        if method_name.endswith('.json'):
-            method_name = method_name[:-5]
-        method = getattr(controller, method_name, None)
+        method = cls.dispatch(req, controller)
         if method:
             if authz and not authz(req, method):
                 return util.abort(req, 403)
