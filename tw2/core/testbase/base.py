@@ -304,3 +304,40 @@ class ValidatorTest(object):
         if self.to_python_expected:
             for attrs, params, expected in it.izip(self.to_python_attrs, self.to_python_params, self.to_python_expected):
                 yield self._check_validation, attrs, params, expected, 'to_python'
+
+import webob as wo, webtest as wt, tw2.core as twc, os
+
+js = twc.JSLink(link='paj')
+css = twc.CSSLink(link='joe')
+TestWidget = twc.Widget(template='genshi:tw2.core.test_templates.inner_genshi', test='test')
+
+class TestInPage(object):
+    content_type = 'text/html'
+    charset = 'UTF8'
+
+    html = "<html><head><title>TITLE</title></head><body>%s</body></html>"
+
+    inject_widget = TestWidget(id='a', resources=[js,css])
+
+    def setup(self):
+        self.mw = twc.make_middleware(self)
+        self.app = wt.TestApp(self.mw)
+        global _request_local
+        _request_local = {}
+
+    def __call__(self, environ, start_response):
+        req = wo.Request(environ)
+        resp = wo.Response(request=req, content_type="%s; charset=%s" % (self.content_type, self.charset))
+        if hasattr(self, 'custom_display'):
+            widg = self.custom_display()
+        else:
+            widg = self.inject_widget.display()
+        resp.unicode_body = self.html % widg
+        return resp(environ, start_response)
+
+class TestInPageTest(TestInPage):
+    def test_base(self):
+        res = self.app.get('/')
+        assert_in_xhtml('<script type="text/javascript" src="paj"></script>', res.body)
+        assert_in_xhtml('<link type="text/css" rel="stylesheet" media="all" href="joe" />', res.body)
+        assert_in_xhtml('<p>TEST test</p>', res.body)
