@@ -60,6 +60,7 @@ from decorator import decorator
 import simplejson
 import webob
 
+import warnings
 import logging
 log = logging.getLogger(__name__)
 
