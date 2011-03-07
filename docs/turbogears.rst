@@ -137,7 +137,7 @@ Before TableForm will inject ``myapp.css`` into the page, we'll have to add it t
 
     resources = [tw2.core.CSSLink(link='/css/myapp.css')]
 
-Restart ``paster`` and and browse to ``http://localhost:8080/movie/movie``
+Restart ``paster`` and browse to ``http://localhost:8080/movie/movie``
 to see the new css in action.
 
 Connecting to a Database
