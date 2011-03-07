@@ -98,7 +98,7 @@ Before TableForm will inject ``myapp.css`` into the page, we'll have to add it t
 
     resources = [tw2.core.CSSLink(filename='myapp.css')]
 
-Restart ``myapp.py`` and and browse to ``http://localhost:8000/movie`` to see the new css in action.
+Restart ``myapp.py`` and browse to ``http://localhost:8000/movie`` to see the new css in action.
 
 
 Connecting to a Database
