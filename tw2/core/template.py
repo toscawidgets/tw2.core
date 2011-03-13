@@ -139,6 +139,7 @@ class EngineManager(dict):
     def load_engine(self, name, options={}, extra_vars_func=None):
         if name in self:
             raise EngineError("Template engine '%s' is already loaded" % name)
+        # TODO -- produce a nicer error message here when dotted_template_lookup == None
         if name == 'mako':
             self[name] = dotted_template_lookup
             return self[name]
