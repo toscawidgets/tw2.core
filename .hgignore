@@ -9,3 +9,4 @@ glob:dist
 glob:build
 glob:strainer*
 glob:virtualenv
+glob:*.egg
