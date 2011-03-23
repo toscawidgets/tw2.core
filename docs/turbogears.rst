@@ -10,6 +10,10 @@ Enabling ToscaWidgets
 
 First, you need to create a TurboGears project. The full instructions are in the `TurboGears documentation <http://www.turbogears.org/2.0/docs/main/QuickStart.html>`_, briefly::
 
+    virtualenv --no-site-packages tg2env
+    source tg2env/bin/activate
+    pip install tg.devtools
+
     paster quickstart
     
     Enter project name: myapp
