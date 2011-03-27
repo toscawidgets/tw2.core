@@ -83,6 +83,28 @@ class TestValidation(object):
         assert(twc.validation.unflatten_params({'a:1':20, 'a:x':10}) ==
             {'a':{'1':20, 'x':10}})
 
+    def test_compound_validation(self):
+        """ Tests that compound widgets can do validation
+
+        Not just leaf widgets anymore.
+
+        """
+        class NeverValid(Validator):
+            msgs = {"never": "this is never valid"}
+            def to_python(self, value):
+                raise ValidationError("never", self)
+
+        class FailWidget(twc.CompoundWidget):
+            b = twc.Widget
+            validator = NeverValid
+
+        try:
+            FailWidget.validate({'b':'whatever'})
+            assert(False)
+        except ValidationError as ve:
+            assert(ve.widget.error_msg == NeverValid.msgs['never'])
+        
+
     def test_auto_unflatten(self):
         test = twc.CompoundWidget(id='a', children=[
             twc.Widget(id='b', validator=twc.Validator(required=True)),
