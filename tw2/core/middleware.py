@@ -1,5 +1,6 @@
 import webob as wo, core, resources, template
 from pkg_resources import iter_entry_points, DistributionNotFound
+from paste.deploy.converters import asbool, asint
 
 class Config(object):
     '''
@@ -95,6 +96,17 @@ class Config(object):
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
+
+        # Set boolean properties
+        for prop in ('inject_resources', 'serve_resources', 'serve_controllers',
+                     'params_as_vars', 'auto_reload_templates',
+                     'strict_engine_selection', 'debug'):
+            setattr(self, prop, asbool(getattr(self, prop)))
+
+        # Set integer properties
+        for prop in ('res_max_age', 'bufsize'):
+            setattr(self, prop, asint(getattr(self, prop)))
+
         if self.auto_reload_templates is None:
             self.auto_reload_templates = self.debug
 
