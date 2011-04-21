@@ -116,10 +116,10 @@ class Widget(pm.Parametered):
             cls.attrs = cls.attrs.copy()
             cls.attrs['id'] = cls.compound_id
 
-        if getattr(cls, 'id', None):
+        if hasattr(cls, 'request') and getattr(cls, 'id', None):
             import middleware
             capp = getattr(cls.__module__, 'tw2_controllers', middleware.global_controllers)
-            if capp and hasattr(cls, 'request'):
+            if capp:
                 capp.register(cls, cls._gen_compound_id(for_url=True))
 
         if cls.validator:
