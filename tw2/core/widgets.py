@@ -460,14 +460,12 @@ class CompoundWidget(Widget):
                 data = self.validator.to_python(data)
                 self.validator.validate_python(data, state)
             except catch, e:
-                if not hasattr(e, 'error_dict') or e.error_dict == None:
-                    raise e
                 error_dict = getattr(e, 'error_dict', {})
                 for c in self.children:
                     if error_dict and getattr(c, 'id', None) in error_dict:
                         c.error_msg = error_dict[c.id]
                         data[c.id] = vd.Invalid
-                any_errors=True
+                raise
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data

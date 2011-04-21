@@ -101,7 +101,7 @@ class TestValidation(object):
         try:
             FailWidget.validate({'b':'whatever'})
             assert(False)
-        except ValidationError as ve:
+        except ValidationError, ve:
             assert(ve.widget.error_msg == NeverValid.msgs['never'])
         
 
