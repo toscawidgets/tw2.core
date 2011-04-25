@@ -7,6 +7,8 @@ from nose.tools import eq_
 
 from xhtmlify import xhtmlify, ValidationError
 
+from strainer.operators import remove_whitespace_nodes, remove_namespace, eq_xhtml, in_xhtml, assert_in_xhtml, assert_eq_xhtml, normalize_to_xhtml, replace_escape_chars
+
 #try:
 import xml.etree.ElementTree as etree
 from xml.parsers.expat import ExpatError
@@ -15,31 +17,6 @@ from xml.parsers.expat import ExpatError
 
 rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
 rm = pk.ResourceManager()
-
-def remove_whitespace_nodes(node):
-    new_node = copy.copy(node)
-    new_node._children = []
-    if new_node.text and new_node.text.strip() == '':
-        new_node.text = ''
-    if new_node.tail and new_node.tail.strip() == '':
-        new_node.tail = ''
-    for child in node.getchildren():
-        if child is not None:
-            child = remove_whitespace_nodes(child)
-        new_node.append(child)
-    return new_node
-
-def remove_namespace(doc):
-    """Remove namespace in the passed document in place."""
-    for elem in doc.getiterator():
-        match = re.match('(\{.*\})(.*)', elem.tag)
-        if match:
-            elem.tag = match.group(2)
-
-def replace_escape_chars(needle):
-    needle = needle.replace('&nbsp;', ' ')
-    needle = needle.replace(u'\xa0', ' ')
-    return needle
 
 _BOOLEAN_ATTRS = frozenset(['selected', 'checked', 'compact', 'declare',
                             'defer', 'disabled', 'ismap', 'multiple',
@@ -77,35 +54,10 @@ def fix_xml(needle):
     needle_s = etree.tostring(needle_node)
     return needle_s
 
-def in_xml(needle, haystack):
-    try:
-        needle_s = fix_xml(needle)
-    except ValidationError:
-        raise ValidationError('Could not parse needle: %s into xml.'%needle)
-    try:
-        haystack_s = fix_xml(haystack)
-    except ValidationError:
-        raise ValidationError('Could not parse haystack: %s into xml.'%haystack)
-    return needle_s in haystack_s
-
-def eq_xml(needle, haystack):
-    try:
-        needle_s = fix_xml(needle)
-    except ValidationError, e:
-        raise Exception('Could not parse needle: %s into xml. %s'%(needle, e.message))
-    try:
-        haystack_s = fix_xml(haystack)
-    except ValidationError, e:
-        raise Exception('Could not parse haystack: %s into xml. %s'%(haystack, e.message))
-#    needle_s, haystack_s = map(fix_xml, (needle, haystack))
-    return needle_s == haystack_s
-
-def assert_in_xml(needle, haystack):
-    assert in_xml(needle, haystack), "%s not found in %s"%(needle, haystack)
-
-def assert_eq_xml(needle, haystack):
-    assert eq_xml(needle, haystack), "%s does not equal %s"%(needle, haystack)
-
+in_xml = in_xhtml
+eq_xml = eq_xhtml
+assert_in_xml = assert_in_xhtml
+assert_eq_xml = assert_eq_xhtml
 
 import tw2.core as twc
 
@@ -173,6 +125,10 @@ class WidgetTest(object):
         [2] - expected output
 
         [3] - the expected validation error type (optional)
+
+    `wrap`
+        Wrap expected and the result in an element.  Useful if the template
+        generates an xml snippet with more than one top level element.
     """
     
     template_engine = 'string'
@@ -183,6 +139,7 @@ class WidgetTest(object):
     expected = ""
     declarative = False
     validate_params = None
+    wrap = False
 
     def request(self, requestid, mw=None):
         if mw is None:
@@ -225,7 +182,7 @@ class WidgetTest(object):
         self.request(1, mw)
         r = self.widget(_no_autoid=True, **attrs).display(**params)
         # reset the cache as not to affect other tests
-        assert_eq_xml(r, expected)
+        assert_eq_xml(r, expected, self.wrap)
 
     def test_display(self):
         for engine in self._get_all_possible_engines():
@@ -356,3 +313,40 @@ class ValidatorTest(object):
         if self.to_python_expected:
             for attrs, params, expected in it.izip(self.to_python_attrs, self.to_python_params, self.to_python_expected):
                 yield self._check_validation, attrs, params, expected, 'to_python'
+
+import webob as wo, webtest as wt, tw2.core as twc, os
+
+js = twc.JSLink(link='paj')
+css = twc.CSSLink(link='joe')
+TestWidget = twc.Widget(template='genshi:tw2.core.test_templates.inner_genshi', test='test')
+
+class TestInPage(object):
+    content_type = 'text/html'
+    charset = 'UTF8'
+
+    html = "<html><head><title>TITLE</title></head><body>%s</body></html>"
+
+    inject_widget = TestWidget(id='a', resources=[js,css])
+
+    def setup(self):
+        self.mw = twc.make_middleware(self)
+        self.app = wt.TestApp(self.mw)
+        global _request_local
+        _request_local = {}
+
+    def __call__(self, environ, start_response):
+        req = wo.Request(environ)
+        resp = wo.Response(request=req, content_type="%s; charset=%s" % (self.content_type, self.charset))
+        if hasattr(self, 'custom_display'):
+            widg = self.custom_display()
+        else:
+            widg = self.inject_widget.display()
+        resp.unicode_body = self.html % widg
+        return resp(environ, start_response)
+
+class TestInPageTest(TestInPage):
+    def test_base(self):
+        res = self.app.get('/')
+        assert_in_xhtml('<script type="text/javascript" src="paj"></script>', res.body)
+        assert_in_xhtml('<link type="text/css" rel="stylesheet" media="all" href="joe" />', res.body)
+        assert_in_xhtml('<p>TEST test</p>', res.body)

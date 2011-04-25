@@ -29,6 +29,12 @@ else:
 
 class ValidationError(BaseValidationError):
     """Invalid data was encountered during validation.
+
+    The constructor can be passed a short message name, which is looked up in
+    a validator's :attr:`msgs` dictionary. Any values in this, like
+    ``$val``` are substituted with that attribute from the validator. An
+    explicit validator instance can be passed to the constructor, or this
+    defaults to :class:`Validator` otherwise.
     """
     def __init__(self, msg, validator=None, widget=None):
         self.widget = widget
@@ -116,9 +122,9 @@ def numdict_to_list(dct):
 
 
 class ValidatorMeta(type):
-    """Metaclass for `Validator`.
+    """Metaclass for :class:`Validator`.
 
-    This makes the `msgs` dict copy from its base class.
+    This makes the :attr:`msgs` dict copy from its base class.
     """
     def __new__(meta, name, bases, dct):
         if 'msgs' in dct:
@@ -149,7 +155,7 @@ class Validator(object):
         any other validation. (default: True)
 
     To create your own validators, sublass this class, and override any of:
-    `to_python`, `validate_python`, or `from_python`.
+    :meth:`to_python`, :meth:`validate_python`, or :meth:`from_python`.
     """
     __metaclass__ = ValidatorMeta
 
@@ -167,6 +173,8 @@ class Validator(object):
             setattr(self, k, kw[k])
 
     def to_python(self, value):
+        if self.required and (value is None or not value):
+            raise ValidationError('required', self)
         if isinstance(value, basestring) and self.strip:
             value = value.strip()
         return value
@@ -202,7 +210,7 @@ class BlankValidator(Validator):
 class LengthValidator(Validator):
     """
     Confirm a value is of a suitable length. Usually you'll use
-    `StringLengthValidator` or `ListLengthValidator` instead.
+    :class:`StringLengthValidator` or :class:`ListLengthValidator` instead.
 
     `min`
         Minimum length (default: None)
@@ -275,7 +283,7 @@ class RangeValidator(Validator):
 
 class IntValidator(RangeValidator):
     """
-    Confirm the value is an integer. This is derived from `RangeValidator`
+    Confirm the value is an integer. This is derived from :class:`RangeValidator`
     so `min` and `max` can be specified.
     """
     msgs = {
@@ -294,6 +302,8 @@ class IntValidator(RangeValidator):
 
     def validate_python(self, value, state=None):
         # avoid super().validate_python, as it sees int(0) as missing
+		# TODO -- TBD -- is this still necessary after epic merge?
+        value = self.to_python(value) # TBD: I wanted to avoid this; needed to make unit tests pass
         if self.required and value is None:
             raise ValidationError('required', self)
         if value is not None:
@@ -343,7 +353,7 @@ class OneOfValidator(Validator):
 
 class DateValidator(RangeValidator):
     """
-    Confirm the value is a valid date. This is derived from `RangeValidator`
+    Confirm the value is a valid date. This is derived from :class:`RangeValidator`
     so `min` and `max` can be specified.
 
     `format`
@@ -385,7 +395,7 @@ class DateValidator(RangeValidator):
 
 class DateTimeValidator(DateValidator):
     """
-    Confirm the value is a valid date and time; otherwise just like `DateValidator`.
+    Confirm the value is a valid date and time; otherwise just like :class:`DateValidator`.
     """
     msgs = {
         'baddate': ('baddatetime', 'Must follow date/time format $format_str'),

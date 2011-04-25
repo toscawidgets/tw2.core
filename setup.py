@@ -1,6 +1,23 @@
 """Setuptools setup file"""
 
-from setuptools import setup, find_packages
+import sys, os
+
+from setuptools import setup
+
+def get_description(fname='README.txt'):
+    # Adapted from PEAK-Rules' setup.py
+    # Get our long description from the documentation
+    f = file(fname)
+    lines = []
+    for line in f:
+        if not line.strip():
+            break     # skip to first blank line
+    for line in f:
+        if line.startswith('Documentation contents'):
+            break     # read to "Documentation contents..."
+        lines.append(line)
+    f.close()
+    return ''.join(lines)
 
 # Requirements to install buffet plugins and engines
 _extra_cheetah = ["Cheetah>=1.0", "TurboCheetah>=0.9.5"]
@@ -12,14 +29,14 @@ setup(
     name='tw2.core',
     version='2.0b4',
     description="Web widget creation toolkit based on TurboGears widgets",
-    long_description = open('README.txt').read().split('\n\n', 1)[1],
+    long_description = get_description(),
     install_requires=[
         'WebOb>=0.9.7',
         'simplejson >= 2.0',
         'decorator',
         'PasteDeploy',
         ],
-    tests_require = ['nose', 'BeautifulSoup', 'FormEncode', 'WebTest', 'strainer'] + _extra_cheetah + _extra_genshi + _extra_kid + _extra_mako,
+    tests_require = ['nose', 'BeautifulSoup', 'FormEncode', 'WebTest', 'strainer'] + _extra_kid + _extra_cheetah + _extra_genshi + _extra_mako,
     test_suite = 'nose.collector',
     extras_require = {
         'cheetah': _extra_cheetah,
@@ -27,11 +44,12 @@ setup(
         'genshi': _extra_genshi,
         'mako': _extra_mako,
         },
-    url = "http://toscawidgets.org/documentation/tw2.core/",
+    url = "http://toscawidgets.org/",
+    download_url = "http://toscawidgets.org/download/",
     author='Paul Johnston, Christopher Perkins, Alberto Valverde & contributors',
     author_email='paj@pajhome.org.uk',
     license='MIT',
-    packages=find_packages(exclude=['ez_setup', 'tests']),
+    packages = ['tw2', 'tw2.core'],
     namespace_packages = ['tw2'],
     include_package_data=True,
     exclude_package_data={"thirdparty" : ["*"]},

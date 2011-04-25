@@ -60,7 +60,7 @@ class Widget(pm.Parametered):
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
     css_class = pm.Param('CSS class name', default=None, attribute=True, view_name='class')
     value = pm.Param("The value for the widget.", default=None)
-    resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a `Resource` subclass.", default=[], request_local=False)
+    resources = pm.Param("Resources used by the widget. This must be an iterable, each item of which is a :class:`Resource` subclass.", default=[], request_local=False)
 
     error_msg = pm.Variable("Validation error message.")
     parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
@@ -195,18 +195,21 @@ class Widget(pm.Parametered):
             dfr = getattr(self, a)
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
-        if not hasattr(self, '_validated') and self.validator:
-            # TBD: I'd like to make formencode support more transparent
-            if formencode and isinstance(self.validator, formencode.Validator):
-                value = self.value
-                if  self.value is None:
-                    value = {}
+        if self.validator and not hasattr(self, '_validated'):
+            value = self.value
+
+            # Handles the case where FE expects dict-like object, but
+            # you have None at your disposal.
+            if formencode and self.value is None:
+                value = {}
+            try:
                 value = self.validator.from_python(value)
-                if self.value is None:
-                    value = None
-                self.value = value
-            else:
-                self.value = self.validator.from_python(self.value)
+            except (vd.Invalid, formencode.api.Invalid), e:
+                value = str(value)
+                self.error_msg = e.msg
+            if formencode and value == {} and self.value is None:
+                value = None
+            self.value = value
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.compound_id:
@@ -294,7 +297,7 @@ class Widget(pm.Parametered):
         """
         Validate form input. This should always be called on a class. It
         either returns the validated data, or raises a
-        `ValidationError` exception.
+        :class:`ValidationError` exception.
         """
         if cls.parent:
             raise core.WidgetError('Only call validate on root widgets')
@@ -331,6 +334,49 @@ class Widget(pm.Parametered):
     def children_deep(cls):
         yield cls
 
+    @classmethod
+    def dispatch(cls, req, controller):
+        path = req.path_info.strip('/').split('/')[2:]
+        if len(path) == 0:
+            method_name = 'index'
+        else:
+            method_name = path[0]
+        # later we want to better handle .ext conditions, but hey
+        # this aint TG
+        if method_name.endswith('.json'):
+            method_name = method_name[:-5]
+        method = getattr(controller, method_name, None)
+        if not method:
+            method = getattr(controller, 'default', None)
+        return method
+
+    @classmethod
+    def request(cls, req):
+        """
+        Override this method to define your own way of handling a widget request.
+
+        The default does TG-style object dispatch.
+        """
+
+        authn = cls.attrs.get('_check_authn')
+        authz = cls.attrs.get('_check_authz')
+
+        if authn and not authn(req):
+            return util.abort(req, 401)
+
+        controller = cls.attrs.get('controller', cls.Controller)
+        if controller is None:
+            return util.abort(req, 404)
+
+        method = cls.dispatch(req, controller)
+        if method:
+            if authz and not authz(req, method):
+                return util.abort(req, 403)
+
+            controller = cls.Controller()
+            return method(controller, req)
+        return util.abort(req, 404)
+
 
 class LeafWidget(Widget):
     """
@@ -350,7 +396,7 @@ class WidgetBunch(list):
 class CompoundWidget(Widget):
     """
     A widget that has an arbitrary number of children, this is common for
-    layout components, such as `TableLayout`.
+    layout components, such as :class:`tw2.forms.TableLayout`.
     """
     children = pm.Param('Children for this widget. This must be an interable, each item of which is a Widget')
     c = pm.Variable("Alias for children", default=property(lambda s: s.children))
@@ -385,7 +431,7 @@ class CompoundWidget(Widget):
 
     def prepare(self):
         """
-        Propagate the value for this widget to the children, based on their key (usually id).
+        Propagate the value for this widget to the children, based on their id.
         """
         super(CompoundWidget, self).prepare()
         v = self.value or {}
@@ -518,7 +564,7 @@ class RepeatingWidgetBunch(object):
 class RepeatingWidget(Widget):
     """
     A widget that has a single child, which is repeated an arbitrary number
-    of times, such as `GridLayout`.
+    of times, such as :class:`tw2.forms.GridLayout`.
     """
     child = pm.Param('Child for this widget. The child must have no id.')
     repetitions = pm.Param('Fixed number of repetitions. If this is None, it dynamically determined, based on the length of the value list.', default=None)
@@ -627,7 +673,7 @@ class DisplayOnlyWidget(Widget):
     """
     A widget that has a single child. The parent widget is only used for display
     purposes; it does not affect value propagation or validation. This is used
-    by widgets like `FieldSet`.
+    by widgets like :class:`tw2.forms.FieldSet`.
     """
     child = pm.Param('Child for this widget.')
     children = pm.Param('children specified for this widget will be passed to the child', default=[])
@@ -710,7 +756,8 @@ def default_content_type():
 
 class Page(DisplayOnlyWidget):
     """
-    An HTML page. This widget includes a `request` method that serves the page.
+    An HTML page. This widget includes a :meth:`request` method that serves
+    the page.
     """
     title = pm.Param('Title for the page')
     content_type = pm.Param('Content type header', default=pm.Deferred(default_content_type), request_local=False)

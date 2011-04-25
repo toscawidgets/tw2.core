@@ -10,3 +10,6 @@ glob:build
 glob:strainer*
 glob:virtualenv
 glob:*.egg
+glob:*.orig
+glob:*.reject
+glob:external
