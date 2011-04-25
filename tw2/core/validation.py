@@ -43,6 +43,11 @@ class ValidationError(BaseValidationError):
         msg = re.sub('\$(\w+)',
                 lambda m: str(getattr(validator, m.group(1))), msg)
         super(ValidationError, self).__init__(msg)
+        
+    @property
+    def message(self):
+        """ Added for backwards compatibility.  Synonymous with `msg` """
+        return self.msg
 
 
 def safe_validate(validator, value):
