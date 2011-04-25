@@ -133,7 +133,8 @@ class Widget(pm.Parametered):
                 raise pm.ParameterError("Validator must be either a tw2 or FormEncode validator")
 
         cls.resources = [r(parent=cls) for r in cls.resources]
-        cls._deferred = [a for a in dir(cls) if isinstance(getattr(cls, a), pm.Deferred)]
+        cls._deferred = [k for k, v in cls.__dict__.items()
+                         if isinstance(v, pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
 
         if cls.parent:
