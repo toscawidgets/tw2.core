@@ -85,7 +85,7 @@ class Widget(pm.Parametered):
         return type(cls.__name__+'_s', (cls,), kw)
 
     def __init__(self, **kw):
-        for k, v in kw.items():
+        for k, v in kw.iteritems():
             setattr(self, k, v)
         self._js_calls = []
 
@@ -133,7 +133,7 @@ class Widget(pm.Parametered):
                 raise pm.ParameterError("Validator must be either a tw2 or FormEncode validator")
 
         cls.resources = [r(parent=cls) for r in cls.resources]
-        cls._deferred = [k for k, v in cls.__dict__.items()
+        cls._deferred = [k for k, v in cls.__dict__.iteritems()
                          if isinstance(v, pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
 
