@@ -17,7 +17,7 @@ A key feature for widgets is their dynamic capabilities, the ability to for a wi
 In ToscaWidgets 1, widget instances are singletons that exist for the life of the application. For thread safety, it's vital that their attributes are not modified during a request. This means that all dynamic parameters must be passed around as dictionaries, resulting in highly-complex code that is prone to bugs. The equivalent code would be::
 
     def update_params(self, params):
-        super(MyWidget, self).update_params(params)        
+        super(MyWidget, self).update_params(params)
         if params['value_for']('cost') > 100:
             params.setdefault('child_args', {}).setdefault('insurance', {})['css_class'] = 'bold'
 
@@ -30,7 +30,7 @@ ToscaWidgets 2 places great emphasis on making the application code that defines
     class MovieForm(twf.TableForm):
         id = twf.HiddenField()
         title = twf.TextField()
-        
+
 For comparison, the equivalent code in ToscaWidgets 1 is::
 
     class MovieForm(twf.TableForm):
@@ -121,13 +121,13 @@ ToscaWidgets as a Framework
 ToscaWidgets 1 was always intended to be used with another web framework, primarily TurboGears and Pylons. ToscaWidgets 2 has gained features that allow it to be used as a framework in its own right. This is primarily the ``Page`` and ``FormPage`` widgets, which enable applications to be coded like this::
 
     import tw2.core as twc, tw2.forms as twc
-    
+
     class Index(twf.FormPage):
         title = 'My app'
         class child(twf.TableForm):
             name = twf.TextField()
             email = twf.TextField(validator=twc.EmailValidator)
-    
+
     twc.dev_server()
 
 
@@ -146,7 +146,7 @@ In tw2.dynforms:
 
  * WriteOnlyTextField is removed; tw2.forms PasswordField has similar functionality
  * AjaxLookupField is removed; there are better widgets like this in libraries like YUI
-    
+
 
 ToscaWidgets 1
 --------------
@@ -159,4 +159,4 @@ Python web widgets were pioneered in TurboGears and many of the key ideas remain
  * The forms library is separate from the core widget library.
  * The tw namespace exists for widget libraries to be located in.
 
-ToscaWidgets had some success, but did not gain as much usage as hoped, in part due to a lack of documentation in the beginning. 
+ToscaWidgets had some success, but did not gain as much usage as hoped, in part due to a lack of documentation in the beginning.

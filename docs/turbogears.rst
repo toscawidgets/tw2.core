@@ -15,12 +15,12 @@ First, you need to create a TurboGears project. The full instructions are in the
     pip install tg.devtools
 
     paster quickstart
-    
+
     Enter project name: myapp
     Enter package name [myapp]: myapp
     Do you need authentication and authorization in this project? [yes] no
     ...
-    
+
     cd myapp
     python setup.py develop
 
@@ -36,12 +36,12 @@ If you're using TurboGears 2.1, edit ``myapp/config/app_cfg.py`` and add at the 
 
 If you're using TurboGears 2.0, instead edit ``myapp/config/middleware.py``, add ``import tw2.core as twc`` to the top of the file, and replace the line::
 
-    app = make_base_app(global_conf, full_stack=True, **app_conf) 
+    app = make_base_app(global_conf, full_stack=True, **app_conf)
 
 with the following two lines::
 
-      custom = lambda app : twc.make_middleware(app, default_engine='genshi') 
-      app = make_base_app(global_conf, wrap_app=custom, full_stack=True, **app_conf) 
+      custom = lambda app : twc.make_middleware(app, default_engine='genshi')
+      app = make_base_app(global_conf, wrap_app=custom, full_stack=True, **app_conf)
 
 To check this worked::
 
@@ -56,15 +56,15 @@ create a movie controller and mount it from our root controller.
 Create a new file ``myapp/controllers/movie.py`` with the contents::
 
     from tg import expose, request
-    
+
     from myapp.lib.base import BaseController
     from myapp import model
-    
+
     __all__ = ['MovieController']
-    
+
     import tw2.core
     import tw2.forms
-    
+
     class MovieForm(tw2.forms.FormPage):
         title = 'Movie'
         class child(tw2.forms.TableForm):
@@ -75,7 +75,7 @@ Create a new file ``myapp/controllers/movie.py`` with the contents::
                 extra_reps = 5
                 character = tw2.forms.TextField()
                 actor = tw2.forms.TextField()
-    
+
     class MovieController(BaseController):
         @expose('myapp.templates.widget')
         def movie(self, *args, **kw):
@@ -84,20 +84,20 @@ Create a new file ``myapp/controllers/movie.py`` with the contents::
 
 Add another new file ``myapp/templates/widget.html`` with the contents::
 
-    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
                           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
     <html xmlns="http://www.w3.org/1999/xhtml"
           xmlns:py="http://genshi.edgewall.org/"
           xmlns:xi="http://www.w3.org/2001/XInclude">
-    
+
       <xi:include href="master.html" />
-    
+
     <head>
       <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace
-      <title>Welcome to TurboGears 2.0, standing on the 
+      <title>Welcome to TurboGears 2.0, standing on the
       shoulders of giants, since 2007</title>
     </head>
-    
+
     <body>
     ${widget.display()}
     </body>
@@ -126,7 +126,7 @@ create ``myapp/public/css/myapp.css`` with the following::
         text-align: left;
         font-weight: normal;
     }
-    
+
     ul {
         list-style-type: none;
     }
@@ -164,24 +164,24 @@ Next add a brand new file ``myapp/model/movie.py`` with the contents::
     from sqlalchemy import Table, ForeignKey, Column
     from sqlalchemy.types import Unicode, Integer
     from sqlalchemy.orm import relation, backref
-    
+
     from myapp.model import DeclarativeBase, metadata, DBSession
-    
+
     __all__ = ['Movie', 'Genre', 'Cast']
-    
+
     movie_genre_table = Table('movie_genre', metadata,
         Column('movie_id', Integer, ForeignKey('movies.id',
             onupdate="CASCADE", ondelete="CASCADE"), primary_key=True),
         Column('genre_id', Integer, ForeignKey('genres.id',
             onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
     )
-    
+
     class Movie(DeclarativeBase):
         __tablename__ = 'movies'
         id = Column(Integer, primary_key=True)
         title = Column(Unicode(255))
         director = Column(Unicode(255))
-    
+
     class Genre(DeclarativeBase):
         __tablename__ = 'genres'
         id = Column(Integer, primary_key=True)
@@ -189,7 +189,7 @@ Next add a brand new file ``myapp/model/movie.py`` with the contents::
         movies = relation('Movie', secondary=movie_genre_table, backref='genres')
         def __unicode__(self):
             return unicode(self.name)
-    
+
     class Cast(DeclarativeBase):
         __tablename__ = 'casts'
         id = Column(Integer, primary_key=True)
@@ -197,7 +197,7 @@ Next add a brand new file ``myapp/model/movie.py`` with the contents::
         movie = relation(Movie, backref=backref('cast'))
         character = Column(Unicode(255))
         actor = Column(Unicode(255))
-    
+
 Next edit ``myapp/model/__init__.py`` and uncomment the line that reads::
 
     DeclarativeBase.query = DBSession.query_property()
@@ -240,7 +240,7 @@ And the last for the `MovieForm`, change::
 to::
 
     genres = tw2.sqla.DbCheckBoxList(entity=model.Genre)
-    
+
 And (still in ``myapp/controllers/movie.py``) inside the MovieController's movie method, just below the line ``w = MovieForm(...`` add the three lines::
 
     w.fetch_data(request)
@@ -321,7 +321,7 @@ To disable ToscaWidgets 0.9, edit ``app_cfg.py`` and add at the end::
 This prevents Catwalk from working, so in ``root.py`` comment out the following lines::
 
     #from catwalk.tg2 import Catwalk
-    
+
     #admin = Catwalk(model, DBSession)
 
 You will also need to remove all references to Toscawidgets < 2.0 in your project.  If you're working from a freshly quickstarted application, you will need to remove only a single spurious reference.  Edit ``myapp/lib/base.py`` and comment out::

@@ -11,15 +11,15 @@ Building a Page
 To get started, we'll build a simple "Hello World" application. First, create ``myapp.py`` with the following::
 
     import tw2.core
-    
+
     class Index(tw2.core.Page):
         template = 'genshi:./index.html'
-    
+
     tw2.core.dev_server()
 
 Here were are creating a Page widget, called Index, with a template specified. Index is a special name that matches the root URL. We need to create the template, so in the same directory, create ``index.html`` with the following content::
 
-    <html xmlns="http://www.w3.org/1999/xhtml" 
+    <html xmlns="http://www.w3.org/1999/xhtml"
           xmlns:py="http://genshi.edgewall.org/">
         <head>
             <title>My Application</title>
@@ -46,7 +46,7 @@ The ``req`` variable supplied is a `WebOb <http://pythonpaste.org/webob/>`_ ``Re
 And in ``index.html``, change the ``<p>Hello World!</p>`` line to::
 
     <pre>$w.req</pre>
-    
+
 The ``$w`` variable refers to the Python widget object that called the template.
 
 Restart the application and refresh your browser to see this.
@@ -83,7 +83,7 @@ The form does not look particularly appealing. To try to improve this, lets add 
         text-align: left;
         font-weight: normal;
     }
-    
+
     ul {
         list-style-type: none;
     }
@@ -117,16 +117,16 @@ This is code is required to set up the database connection. It will use an SQLit
         director = elixir.Field(elixir.String)
         genre = elixir.ManyToMany('Genre')
         cast = elixir.OneToMany('Cast')
-    
+
     class Genre(elixir.Entity):
         name = elixir.Field(elixir.String)
         def __unicode__(self):
             return self.name
-    
+
     class Cast(elixir.Entity):
         movie = elixir.ManyToOne(Movie)
         character = elixir.Field(elixir.String)
-        actor = elixir.Field(elixir.String)    
+        actor = elixir.Field(elixir.String)
 
 Finally, a small piece of boilerplate code is required at the bottom::
 
@@ -143,8 +143,8 @@ We'll now add the genres to the database::
     model.Genre(name='Comedy')
     model.Genre(name='Romance')
     model.Genre(name='Sci-fi')
-    model.elixir.session.commit() 
-    
+    model.elixir.session.commit()
+
 Now, exit the Python interpreter, and update ``myapp.py`` to connect the `Movie` form to the database. At the top of the file add::
 
     import tw2.sqla
