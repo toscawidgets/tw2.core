@@ -35,6 +35,7 @@ setup(
         'simplejson >= 2.0',
         'decorator',
         'PasteDeploy',
+        'weberror',
         ],
     tests_require = ['nose', 'BeautifulSoup', 'FormEncode', 'WebTest', 'strainer'] + _extra_kid + _extra_cheetah + _extra_genshi + _extra_mako,
     test_suite = 'nose.collector',
