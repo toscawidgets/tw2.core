@@ -213,7 +213,10 @@ def make_middleware(app=None, config=None, repoze_tm=False, **kw):
     return app
 
 
-def dev_server(app=None, host='127.0.0.1', port=8000, logging=True, weberror=True, **config):
+def dev_server(
+    app=None, host='127.0.0.1', port=8000, logging=True, weberror=True,
+    use_threadpool=None, threadpool_workers=10, request_queue_size=5,
+    **config):
     """
     Run a development server, hosting the ToscaWidgets application.
     This requires Paste and WebError, which are only sure to be available if
@@ -232,6 +235,9 @@ def dev_server(app=None, host='127.0.0.1', port=8000, logging=True, weberror=Tru
         app = pt.TransLogger(app)
 
     import paste.httpserver as ph
-    ph.serve(app, host=host, port=port)
+    ph.serve(app, host=host, port=port,
+             use_threadpool=use_threadpool,
+             threadpool_workers=threadpool_workers,
+             request_queue_size=request_queue_size)
 
 # TBD: autoreload
