@@ -139,6 +139,9 @@ the new css in action.
 Connecting to a Database
 ------------------------
 
+.. WARNING -- this section depends on having tw2.sqla>=2.0b4 which is not yet
+   released to pypi at the time of this writing.
+
 The next step is to save movies to a database. To do this, we'll use
 `SQLAlchemy <http://www.sqlalchemy.org/>`_ and
 `Elixir <http://elixir.ematia.de/trac/wiki>`_ to define a database model.
