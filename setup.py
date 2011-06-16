@@ -27,7 +27,7 @@ _extra_mako = ["Mako >= 0.1.1"]
 
 setup(
     name='tw2.core',
-    version='2.0b4',
+    version='2.0b5',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=[
