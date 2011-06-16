@@ -21,6 +21,7 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
     """
 
     def __init__(self, *args, **kw):
+        self.unescape_pattern = re.compile('"TW2Encoder_unescape_([0-9]*)"')
         super(TW2Encoder, self).__init__(*args, **kw)
 
     def default(self, obj):
@@ -40,7 +41,6 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
         return 'TW2Encoder_unescape_' + str(id(obj))
 
     def unescape_marked(self, encoded):
-        unescape_pattern = re.compile('"TW2Encoder_unescape_([0-9]*)"')
         def unescape(match):
             try:
                 obj_id = int(match.group(1))
@@ -49,7 +49,7 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
             except:
                 # Simply return the match if there is a problem
                 return match.group(0)
-        return unescape_pattern.sub(unescape, encoded)
+        return self.unescape_pattern.sub(unescape, encoded)
 
 encoder = TW2Encoder()
 
