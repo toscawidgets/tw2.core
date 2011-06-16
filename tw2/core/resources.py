@@ -62,9 +62,14 @@ class Resource(wd.Widget):
 
     def prepare(self):
         super(Resource, self).prepare()
-        res = core.request_local().setdefault('resources', [])
-        if self not in res:
-            res.append(self)
+
+        rl_resources = core.request_local().setdefault('resources', [])
+
+        if self not in rl_resources:
+            for r in self.resources:
+                r.req().prepare()
+
+            rl_resources.append(self)
 
 
 class Link(Resource):
