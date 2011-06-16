@@ -13,3 +13,5 @@ glob:*.egg
 glob:*.orig
 glob:*.reject
 glob:external
+glob:htmlcov
+glob:*.swp
