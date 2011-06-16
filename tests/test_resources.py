@@ -59,6 +59,20 @@ class TestResources(object):
         we.display()
         assert(len(rl['resources']) == 3)
 
+    def test_res_order(self):
+        """ Expect [foo1 foo3 foo2 foo4] since foo2 depends on foo3 """
+        foo1 = twc.JSLink(link='foo1')
+        foo3 = twc.JSLink(link='foo3')
+        foo2 = twc.JSLink(link='foo2', resources=[foo3])
+        foo4 = twc.JSLink(link='foo4')
+        wa = TestWidget(id='a', resources=[foo1, foo2, foo4])
+
+        rl = testapi.request(1, mw)
+        wa.display()
+
+        print rl['resources']
+        assert(rl['resources'] == [foo1, foo3, foo2, foo4])
+
 
     #--
     # ResourcesApp
