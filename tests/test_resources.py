@@ -102,7 +102,7 @@ class TestResources(object):
     def test_cache_header(self):
         mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
         cache = tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').headers['Cache-Control']
-        assert(cache == 'max_age=3600')
+        assert(cache == 'max-age=3600')
 
     #--
     # Links register resources
