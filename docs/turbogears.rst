@@ -2,7 +2,13 @@ TurboGears 2 Tutorial
 =====================
 
 .. note::
-       The files created in this tutorial can be downloaded as a :download:`.zip file <turbogears.zip>`.
+    The files created in this tutorial can be downloaded as a `.zip file
+    <https://github.com/ralphbean/tw2.core-docs-turbogears/zipball/master>`_,
+    a `.tar file
+    <https://github.com/ralphbean/tw2.core-docs-turbogears/tarball/master>`_,
+    or can be cloned from a `github repository
+    <http://github.com/ralphbean/tw2.core-docs-turbogears>`_.
+
 
 
 Enabling ToscaWidgets
@@ -10,25 +16,41 @@ Enabling ToscaWidgets
 
 First, you need to create a TurboGears project. The full instructions are in the `TurboGears documentation <http://www.turbogears.org/2.0/docs/main/QuickStart.html>`_, briefly::
 
-    virtualenv --no-site-packages tg2env
-    source tg2env/bin/activate
-    pip install tg.devtools
+    $ mkvirtualenv --no-site-packages tw2-and-tg
+    $ pip install tg.devtools
 
-    paster quickstart
+    $ paster quickstart
 
     Enter project name: myapp
-    Enter package name [myapp]: myapp
-    Do you need authentication and authorization in this project? [yes] no
+    Enter package name [myapp]:
+    Would you prefer mako templates? (yes/[no]): yes
+    Do you need authentication and authorization in this project? ([yes]/no): yes
     ...
 
-    cd myapp
-    python setup.py develop
+    $ cd myapp
+
+Open ``setup.py`` and add the following to the ``install_requires=[...]`` entry::
+
+    install_requires=[
+
+        ...
+
+        "tw2.core",
+        "tw2.forms",
+        "tw2.dynforms",
+        "tw2.sqla",
+        "tw2.jqplugins.jqgrid",
+        ],
+
+Once that's done.  Install your dependencies by running::
+
+    $ python setup.py develop
 
 There are two different sets of steps to enable ToscaWidgets 2.0 in different versions of TurboGears.  If you don't know what version of TurboGears you have installed, fire up a python interpreter and type::
 
     >>> import tg
     >>> tg.__version__
-    '2.1b2'
+    '2.1.1'
 
 If you're using TurboGears 2.1, edit ``myapp/config/app_cfg.py`` and add at the end::
 
@@ -40,7 +62,7 @@ If you're using TurboGears 2.0, instead edit ``myapp/config/middleware.py``, add
 
 with the following two lines::
 
-      custom = lambda app : twc.make_middleware(app, default_engine='genshi')
+      custom = lambda app : twc.make_middleware(app, default_engine='mako')
       app = make_base_app(global_conf, wrap_app=custom, full_stack=True, **app_conf)
 
 To check this worked::
@@ -82,24 +104,17 @@ Create a new file ``myapp/controllers/movie.py`` with the contents::
             w = MovieForm(redirect='/movie/').req()
             return dict(widget=w, page='movie')
 
-Add another new file ``myapp/templates/widget.html`` with the contents::
+Add another new file ``myapp/templates/widget.mak`` with the contents::
 
-    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-    <html xmlns="http://www.w3.org/1999/xhtml"
-          xmlns:py="http://genshi.edgewall.org/"
-          xmlns:xi="http://www.w3.org/2001/XInclude">
+    <html>
+    <%inherit file="local:templates.master"/>
 
-      <xi:include href="master.html" />
-
-    <head>
-      <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace
-      <title>Welcome to TurboGears 2.0, standing on the
-      shoulders of giants, since 2007</title>
-    </head>
+    <%def name="title()">
+      TurboGears 2.1 and ToscaWidgets 2, like jelly and jam with no bread:  Great!
+    </%def>
 
     <body>
-    ${widget.display()}
+    ${widget.display()|n}
     </body>
     </html>
 
@@ -115,7 +130,7 @@ And just below the ``error = ErrorController()`` line::
 With those three file edits in place, you should be able to restart the
 application with ``paster serve development.ini`` (there is a ``--reload``
 option for convenience) and point your browser
-at ``http://localhost:8080/movie/movie``.
+at http://localhost:8080/movie/movie.
 
 The form does not look particularly appealing. To try to improve this, lets
 add some CSS. We'll start with something simple;
@@ -135,21 +150,27 @@ create ``myapp/public/css/myapp.css`` with the following::
         font-weight: bold;
     }
 
-Notice the use of the "required" class. TableForm applies this to rows that contain a field that is required.
+Notice the use of the "required" class. TableForm applies this to rows that
+contain a field that is required.
 
-Before TableForm will inject ``myapp.css`` into the page, we'll have to add it to the list of resources. Add the following to the top of the `Movie` class definition just above the line ``title = 'Movie'``::
+Before TableForm will inject ``myapp.css`` into the page, we'll have to add
+it to the list of resources. Add the following to the top of the `MovieForm`
+class definition in ``myapp/controllers/movie.py`` just above the line
+``title = 'Movie'``::
 
     resources = [tw2.core.CSSLink(link='/css/myapp.css')]
 
-Restart ``paster`` and browse to ``http://localhost:8080/movie/movie``
+Restart ``paster`` and browse to http://localhost:8080/movie/movie
 to see the new css in action.
 
 Connecting to a Database
 ------------------------
 
 The next step is to save movies to a database.  To do this, we'll use only
-`SQLAlchemy <http://www.sqlalchemy.org/>`_ which is built into TurboGears by
-default.  Edit ``myapp/config/app_config.py`` and add near the top::
+`SQLAlchemy <http://www.sqlalchemy.org/>`_ (and not `elixir
+<http://elixir.ematia.de/trac/wiki>`_ as in the standalone tutorial).
+SQLAlchemy is built into TurboGears by default.  Edit
+``myapp/config/app_config.py`` and add near the top::
 
     from tw2.core.middleware import ControllersApp as TW2ControllersApp
 
@@ -211,18 +232,13 @@ bootstrap function definition::
 
     for name in ['Action', 'Comedy', 'Romance', 'Sci-fi']:
         model.DBSession.add(model.Genre(name=name))
-    transaction.commit()
 
 And finally, get your controller ready to redirect everything as necessary.
 Edit ``myapp/controllers/movie.py`` and add to the very top::
 
     import tw2.sqla
 
-As well, change::
-
-    class MovieForm(tw2.forms.FormPage):
-
-to instead read::
+As well, change ``class MovieForm(tw2.forms.FormPage):`` to instead read::
 
     class MovieForm(tw2.sqla.DbFormPage):
         entity = model.Movie
@@ -233,11 +249,7 @@ add::
     action = '/tw2_controllers/movie_submit'
     id = tw2.forms.HiddenField()
 
-And the last for the `MovieForm`, change::
-
-    genres = tw2.forms.CheckBoxList(options=['Action', 'Comedy', 'Romance', 'Sci-fi'])
-
-to::
+And the last for the `MovieForm`, change ``genres = tw2.forms.CheckBoxList( ... )`` to::
 
     genres = tw2.sqla.DbCheckBoxList(entity=model.Genre)
 
@@ -255,9 +267,9 @@ This will create and initialize your database in a sqlite DB.
 
 We're almost done, but not quite.  Nonetheless, this is a good point to restart
 your app and test to see if any mistakes have cropped up.  Restart `paster`
-and visit `http://localhost:8080/movie/movie`.  Submit your first entry.  It
+and visit http://localhost:8080/movie/movie.  Submit your first entry.  It
 should give you an `Error 404`, but don't worry.  Point your browser now to
-`http://localhost:8080/movie/movie?id=1` and you should see the same
+http://localhost:8080/movie/movie?id=1 and you should see the same
 movie entry that you just submitted.
 
 Great -- we can write to the database and read back an entry, now how about
@@ -275,7 +287,7 @@ Add a whole new class to ``myapp/controllers/movie.py``::
 
 And add the following method to your `MovieController`::
 
-    @expose('foo.templates.widget')
+    @expose('myapp.templates.widget')
     def index(self, **kw):
         w = MovieIndex.req()
         w.fetch_data(request)
@@ -286,9 +298,9 @@ Getting Fancy
 
 And if we wanted to start getting fancy we could add::
 
-    <li><a href="${tg.url('/movie')}" class="${('', 'active')[defined('page') and page=='movie']}">Movies</a></li>
+    <li><a href="${tg.url('/movie')}" class="${('', 'active')[page=='movie']}">Movies</a></li>
 
-to the list of ``<ul>`` items in ``myapp/templates/master.html``.
+to the list of ``<ul id="mainmenu"> ... </ul>`` items in ``myapp/templates/master.html``.
 
 We could also make things dynamic by editing ``myapp/controllers/movie.py`` and adding at the top::
 
@@ -307,23 +319,41 @@ with::
 
     class cast(tw2.dynforms.GrowingGridLayout):
 
+Getting Fancier
+---------------
 
+There are a lot of `non-core` TW2 widget libraries out there, and just to give
+you a taste, we'll use one to add one more view to our Movie app.
 
-Deployment to Production
-------------------------
+Edit ``myapp/controllers/movie.py`` and add the following to the top::
 
-By default, TurboGears 2 has ToscaWidgets 0.9 enabled. The two libraries can co-exist, but for production sites it is recommended to only run one, for efficiency.
+    import tw2.jqplugins.jqgrid
 
-To disable ToscaWidgets 0.9, edit ``app_cfg.py`` and add at the end::
+Add the following class definition to the same file::
 
-    base_config.use_toscawidgets = False
+    class GridWidget(tw2.jqplugins.jqgrid.SQLAjqGridWidget):
+        id = 'grid_widget'
+        entity = model.Movie
+        excluded_columns = ['id']
+        prmFilter = {'stringResult': True, 'searchOnEnter': False}
+        pager_options = { "search" : True, "refresh" : True, "add" : False, }
+        options = {
+            'url': '/tw2_controllers/db_jqgrid/',
+            'rowNum':15,
+            'rowList':[15,30,50],
+            'viewrecords':True,
+            'imgpath': 'scripts/jqGrid/themes/green/images',
+            'width': 900,
+            'height': 'auto',
+        }
 
-This prevents Catwalk from working, so in ``root.py`` comment out the following lines::
+And add the following method to the ``MovieController`` class::
 
-    #from catwalk.tg2 import Catwalk
+    @expose('myapp.templates.widget')
+    def grid(self, *args, **kw):
+        mw = tw2.core.core.request_local()['middleware']
+        mw.controllers.register(GridWidget, 'db_jqgrid')
+        return dict(widget=GridWidget, page='movie')
 
-    #admin = Catwalk(model, DBSession)
-
-You will also need to remove all references to Toscawidgets < 2.0 in your project.  If you're working from a freshly quickstarted application, you will need to remove only a single spurious reference.  Edit ``myapp/lib/base.py`` and comment out::
-
-    #from tw.api import WidgetBunch
+Redirect your browser to http://localhost:8080/movie/grid and you should
+see the sortable, searchable jQuery grid.
