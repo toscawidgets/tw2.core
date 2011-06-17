@@ -291,3 +291,47 @@ Finally, change this::
 To this::
 
     class child(tw2.dynforms.CustomisedTableForm):
+
+jQuery's jqGrid
+---------------
+
+There are a lot of `non-core` TW2 widget libraries out there, and just to give
+you a taste, we'll use one to add one more view to our Movie app.
+
+In your handy-dandy terminal, run::
+
+    $ pip install tw2.jqplugins.jqgrid
+
+Go back to editing ``myapp.py`` and add to the top::
+
+    import tw2.jqplugins.jqgrid
+
+And add another two whole classes near the bottom of the file but above
+``tw2.core.dev_server(repoze_tm=True)``::
+
+    class GridWidget(tw2.jqplugins.jqgrid.SQLAjqGridWidget):
+        entity = model.Movie
+        excluded_columns = ['id']
+        prmFilter = {'stringResult': True, 'searchOnEnter': False}
+        pager_options = { "search" : True, "refresh" : True, "add" : False, }
+        options = {
+            'url': '/db_jqgrid/',
+            'rowNum':15,
+            'rowList':[15,30,50],
+            'viewrecords':True,
+            'imgpath': 'scripts/jqGrid/themes/green/images',
+            'width': 900,
+            'height': 'auto',
+        }
+
+        def prepare(self):
+            # This controller registration does not generally have to occur inside
+            # 'prepare', but we place it here so we're sure the middleware has
+            # been initialized by tw2.core.dev_server before we make demands of it.
+            mw = tw2.core.core.request_local()['middleware']
+            mw.controllers.register(self.__class__, 'db_jqgrid')
+            super(GridWidget, self).prepare()
+
+    class Grid(tw2.core.Page):
+        title = 'jQuery jqGrid'
+        child = GridWidget
