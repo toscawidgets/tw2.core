@@ -10,6 +10,24 @@ Standalone Tutorial
     or can be cloned from a `github repository
     <http://github.com/ralphbean/tw2.core-docs-standalone>`_.
 
+Installing ToscaWidgets2
+------------------------
+
+Your operating system may provide another way of installing ToscaWidgets2
+(`yum`, `apt-get`, etc...).  Failing that, you can use `pip`::
+
+    $ pip install tw2.core tw2.forms tw2.dynforms tw2.devtools tw2.sqla
+
+TW2 supports many different `templating engines`.  For this tutorial we'll be
+writing ``genshi`` templates, so install support for that as well::
+
+    $ pip install genshi
+
+In this tutorial, we're also going to be showing off some of the database
+features of ``tw2.sqla``.  For our application we're going to use ``elixir``;
+install it too::
+
+    $ pip install elixir
 
 Building a Page
 ---------------
@@ -202,7 +220,12 @@ Replace ``class Movie(tw2.forms.FormPage):`` with::
     class Movie(tw2.sqla.DbFormPage):
         entity = model.Movie
 
-And replace ``genre = tw2.forms.CheckBoxList...`` with::
+Add a line just below the ``class child(tw2.forms.TableForm):`` line that
+reads::
+
+    id = tw2.forms.HiddenField
+
+And replace ``genre = tw2.forms.CheckBoxList(...)`` with::
 
     genre = tw2.sqla.DbCheckBoxList(entity=model.Genre)
 

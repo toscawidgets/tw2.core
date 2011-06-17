@@ -6,7 +6,7 @@ ToscaWidgets 2 Documentation
 ToscaWidgets aims to be a practical and useful widgets framework that helps people build interactive websites with compelling features, faster and easier. Widgets are re-usable web components that can include a template, server-side code and JavaScripts/CSS resources. The library aims to be: flexible, reliable, documented, performant, and as simple as possible. For changes since ToscaWidgets 0.9, see :doc:`history`.
 
 You can see the available widgets in the `Widget Browser
-<http://craftsman.rc.rit.edu:8000/>`_.
+<http://tw2-demos.threebean.org/>`_.
 
 ToscaWidgets 2 library packages follow the same naming convention, for example:
 
@@ -33,7 +33,7 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
 **Online Resources**
 
  * Live demos -- Pick and choose from available libraries from the `tw2 Widget
-   Browser <http://craftsman.rc.rit.edu:8080>`_.
+   Browser <http://tw2-demos.threebean.org/>`_.
  * Tutorials for doing --
 
    * Dynamic database-driven forms with :doc:`tw2 and Pyramid </pyramid>`.
@@ -49,7 +49,7 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
      <http://threebean.wordpress.com/2011/04/30/tutorial-melting-your-face-off-with-tw2-and-turbogears2-1>`_.
    * `Bubble charts with tw2.protovis
      <http://threebean.wordpress.com/2010/10/24/python-wsgi-protovis-barcamproc-fall-2010/>`_.
-
+ * Nightly run `test results <http://tw2-tests.threebean.org/>`_.
  * Email list:  `toscawidgets-discuss
    <http://groups.google.com/group/toscawidgets-discuss/>`_.
  * IRC channel: ``#toscawidgets`` on ``irc.freenode.net``
