@@ -72,7 +72,7 @@ To check this worked::
 
 Building a Form
 ---------------
-We'll create a movie database as in the standalone example.  First, let's
+We'll create a movie database as in the :doc:`standalone` example.  First, let's
 create a movie controller and mount it from our root controller.
 
 Create a new file ``myapp/controllers/movie.py`` with the contents::
@@ -168,7 +168,7 @@ Connecting to a Database
 
 The next step is to save movies to a database.  To do this, we'll use only
 `SQLAlchemy <http://www.sqlalchemy.org/>`_ (and not `elixir
-<http://elixir.ematia.de/trac/wiki>`_ as in the standalone tutorial).
+<http://elixir.ematia.de/trac/wiki>`_ as in the :doc:`standalone` tutorial).
 SQLAlchemy is built into TurboGears by default.  Edit
 ``myapp/config/app_config.py`` and add near the top::
 
