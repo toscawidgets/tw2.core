@@ -147,6 +147,7 @@ class EngineManager(dict):
         orig_name = name
         if name == 'genshi_abs':
             name = 'genshi'
+            options = dict(options)
             options.update({'genshi.search_path': '.'})
 
         try:
