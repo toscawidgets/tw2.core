@@ -69,6 +69,7 @@ class TestResources(object):
 
         rl = testapi.request(1, mw)
         wa.display()
+        rl = twc.core.request_local()
 
         print rl['resources']
         assert(rl['resources'] == [foo1, foo3, foo2, foo4])
