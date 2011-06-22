@@ -80,10 +80,6 @@ def catch_errors(fn, self, *args, **kw):
         raise ValidationError(str(e), widget=self)
 
 
-# This hack helps work with different versions of WebOb
-if not hasattr(webob, 'MultiDict'):
-    webob.MultiDict = webob.multidict.MultiDict
-
 def unflatten_params(params):
     """This performs the first stage of validation. It takes a dictionary where
     some keys will be compound names, such as "form:subform:field" and converts
