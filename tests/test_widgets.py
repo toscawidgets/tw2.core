@@ -151,6 +151,12 @@ class TestWidget(tb.WidgetTest):
 class SubCompoundTestWidget(wd.CompoundWidget):
     children = [CompoundTestWidget()]
 
+class TestWidgetNoneBug(tb.WidgetTest):
+    widget = wd.Widget(template='genshi:tw2.core.test_templates.field_genshi')
+    attrs = {'validator':twc.IntValidator}
+    params = {'value':None}
+    expected = '<p> </p>'
+
 
 class TestSubCompoundWidget(tb.WidgetTest):
     widget = SubCompoundTestWidget
