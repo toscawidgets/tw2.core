@@ -33,9 +33,11 @@ setup(
     install_requires=[
         'WebOb>=0.9.7',
         'simplejson >= 2.0',
-        'decorator',
         'PasteDeploy',
         'weberror',
+
+        # There is a ticket about removing the dependency on decorator.  Why?
+        'decorator',
         ],
     tests_require = ['nose', 'BeautifulSoup', 'FormEncode', 'WebTest', 'strainer'] + _extra_kid + _extra_cheetah + _extra_genshi + _extra_mako,
     test_suite = 'nose.collector',
@@ -60,6 +62,9 @@ setup(
 
     [paste.filter_app_factory]
     middleware = tw2.core.middleware:make_middleware
+
+    [distutils.commands]
+    archive_tw2_resources = tw2.core.command:archive_tw2_resources
 
     """,
     zip_safe=False,

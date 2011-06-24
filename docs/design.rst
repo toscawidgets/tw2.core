@@ -145,6 +145,9 @@ Widgets often need to access resources, such as JavaScript or CSS files. A key f
  * The resource injection middleware detects resources in request-local storage, and rewrites the generated page to include appropriate links.
  * The resource server middleware serves static files used by widgets
  * Widgets can also access resources at display time, e.g. to get links
+ * Resources can themselves declare dependency on other resources, e.g.
+   jquery-ui.js depends on jquery.js and must be included on the page
+   subsequently.
 
 **Defining Resources**
 
@@ -156,6 +159,22 @@ To define a resource, just add a :class:`tw2.core.Resource` subclass to the widg
 .. autoclass:: tw2.core.JSFuncCall
 
 Resources are widgets, but follow a slightly different lifecycle. Resource subclasses are passed into the :attr:`resources` parameter. An instance is created for each request, but this is only done at the time of the parent Widget's :meth:`display` method. This gives widgets a chance to add dynamic resources in their :meth:`prepare` method.
+
+**Deploying Resources**
+
+If running behind mod_wsgi, tw2 resource provisioning will typically fail.
+Resources are only served when they are registered with the request-local
+thread, and resources are only registered when their dependant widget is
+displayed in a request.  An initial page request may make available resource
+``A``, but the subsequent request to actually retrieve resource ``A`` will not
+have that resource registered.
+
+To solve this problem (and to introduce a speed-up for production deployment),
+Toscawidgets2 provides an ``archive_tw2_resources`` distutils command::
+
+    $ python setup.py archive_tw2_resources \
+        --distributions=myapplication \
+        --output=/var/www/myapplication
 
 .. _middleware:
 
