@@ -141,4 +141,4 @@ class TestTemplate(object):
                 assert(test.display().replace(kid_prefix, '') == '<p>TEST <p>TEST bob</p></p>')
 
     def test_genshi_abs(self):
-        twc.Widget(template='genshi:./test.html').display()
+        twc.Widget(template='genshi_abs:tests/test.html').display()
