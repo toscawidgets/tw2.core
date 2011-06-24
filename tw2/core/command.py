@@ -19,6 +19,10 @@ import pkg_resources
 from setuptools import Command
 from distutils import log
 
+from tw2.core import core
+from tw2.core import widgets
+from tw2.core import middleware
+
 #from abl.vpath.base import URI
 #from abl.cssprocessor.rewriter import CSSRewriter, MD5ImagePreprocessor
 
@@ -26,6 +30,22 @@ from distutils import log
 #from tw.core.util import OrderedSet
 #from tw.core.resources import registry
 
+def request_local_fake():
+    global _request_local, _request_id
+#    if _request_id is None:
+#        raise KeyError('must be in a request')
+    if _request_local == None:
+        _request_local = {}
+    try:
+        return _request_local[_request_id]
+    except KeyError:
+        rl_data = {}
+        _request_local[_request_id] = rl_data
+        return rl_data
+
+core.request_local = request_local_fake
+_request_local = {}
+_request_id = 'whatever'
 
 class archive_tw2_resources(Command):
     """
@@ -38,11 +58,11 @@ class archive_tw2_resources(Command):
     (http://www.julienlecomte.net/yuicompressor)
 
     In order for resources from widget eggs to be properly collected these
-    need to have a 'toscawidgets.widgets' 'widgets' entry-point which points
+    need to have a 'tw2.widgets' 'widgets' entry-point which points
     to a module which, when imported, instantiates all needed JS and CSS Links.
 
     The result is laid out in the output directory in such a way that when
-    a a web server such as Apache or Nginx is configured to map URLS that
+    a web server such as Apache or Nginx is configured to map URLS that
     begin with /toscawidgets to that directory static files will be served
     from there bypassing python completely.
 
@@ -84,7 +104,7 @@ class archive_tw2_resources(Command):
         ("distributions=", "d",
          "List of widget dists. to include resources from "
          "(dependencies will be handled recursively). Note that "
-         "these distributions need to define a 'toscawidgets.widgets' "
+         "these distributions need to define a 'tw2.widgets' "
          "'widgets' entrypoint pointing to a a module where "
          "resources are located."),
         ("requireonce", "r",
@@ -149,31 +169,48 @@ class archive_tw2_resources(Command):
             self.execute(shutil.rmtree, (self.output,),
                          "Deleting old output dir %s" % self.output)
         self.execute(os.makedirs, (self.output,), "Creating output dir")
-        final_dest = os.path.join(self.output, registry.prefix.strip('/'))
+
+        prefix = '/resources'   # TODO -- get this from config.
+
+        final_dest = os.path.join(self.output, prefix.strip('/'))
         self.execute(shutil.move, (tempdir, final_dest),
                      "Moving build to %s" % final_dest)
 
-    def _load_widgets(self, distribution):
+    def _load_widgets(self, mod):
+        """ Register the widgets' resources with the middleware. """
+        for key, value in mod.__dict__.iteritems():
+            if isinstance(value, widgets.WidgetMeta):
+                value(id='fake').req().prepare()
+
+    def _load_widget_entry_points(self, distribution):
         try:
             requires = [r.project_name for r in
                         pkg_resources.get_distribution(distribution).requires()]
-            map(self._load_widgets, requires)
+            map(self._load_widget_entry_points, requires)
             mod = pkg_resources.load_entry_point(distribution,
-                                                 'toscawidgets.widgets',
+                                                 'tw2.widgets',
                                                  'widgets')
+            self._load_widgets(mod)
             self.announce("Loaded %s" % mod.__name__)
         except ImportError, e:
             self.announce("%s has no widgets entrypoint" % distribution)
 
     def _copy_resources(self):
-        map(self._load_widgets, self.distributions)
-        for webdir, dirname in registry:
-            parts = filter(None, webdir.split('/'))
-            modname = parts[0]
-            fname = '/'.join(parts[1:])
-            self.execute(self._copy_resource_tree, (modname, fname),
+
+        # Set up fake middleware with which widgets can register their resources
+        core.request_local = request_local_fake
+        core.request_local()['middleware'] = middleware.make_middleware()
+
+        # Load widgets and have them prepare their resources
+        map(self._load_widget_entry_points, self.distributions)
+
+        rl_resources = core.request_local().setdefault('resources', [])
+        for resource in rl_resources:
+            modname = resource.modname
+            fbase = resource.filename.split('/')[0]
+            self.execute(self._copy_resource_tree, (modname, fbase),
                          "Copying %s recursively into %s" %
-                         (dirname, self.writer.base))
+                         (modname, self.writer.base))
 
 
     def _copy_resource_tree(self, modname, fname):
@@ -210,149 +247,6 @@ class archive_tw2_resources(Command):
         except OSError, e:
             if e.errno == errno.ENOENT:
                 self.warn("Could not copy %s" % repr((modname, fname, e)))
-
-
-class ResourceAggregator(object):
-    """
-    The aggregation of files is delegated to instances of this class.
-
-    That allows for pre/postprocessing.
-    """
-
-    def __new__(cls, command, filename, immediate_write=True, add_separator_comments=True):
-        kind = command.kind
-        cls = None
-        if kind == "js":
-            cls = JSResourceAggregator
-        elif kind == "css":
-            cls = CSSResourceAggregator
-        if cls is not None:
-            return object.__new__(cls, filename, immediate_write, add_separator_comments)
-        raise Exception("Unknown resource kind, must be 'js' or 'css'.")
-
-
-    def __init__(self, command, filename, immediate_write=True, add_separator_comments=True):
-        self.command = command
-        self.out_name = filename
-        self.added_files = []
-        if immediate_write:
-            self.outf = open(self.out_name, "w")
-        self.immediate_write = immediate_write
-        self.add_separator_comments = add_separator_comments
-
-
-    def add_file(self, modname, filename, variant_mapping, dependencies):
-        inf_name = self.resolve_filename(modname, filename)
-        if not os.path.exists(inf_name):
-            self.command.announce("WARNING: missing resource: %s.%s" % (modname, filename))
-            return
-
-        self.command.announce("Size: %.1fKB" % (os.stat(inf_name)[stat.ST_SIZE] / 1024.0))
-        self.added_files.append((modname, filename))
-
-        # we need *all* variants, because otherwise
-        # the wouldn't be suppressed if the variant is
-        # different.
-        for value in variant_mapping.values():
-            if value != filename:
-                self.added_files.append((modname, value))
-
-        if self.immediate_write:
-            # we need universal line ending support here
-            # to not mix file line endings.
-            stream = open(inf_name, "U")
-            tempname = tempfile.mktemp(suffix=self.SUFFIX)
-            self.command.writer.write_file(stream, tempname)
-            if self.add_separator_comments:
-                self.outf.write("\n// -- %s %s --\n" % (modname, filename))
-            self.outf.write(open(tempname).read())
-
-
-    def __nonzero__(self):
-        return bool(self.added_files)
-
-
-    def flush(self):
-        if self.immediate_write:
-            self.outf.close()
-
-
-    def write_mapfile(self, outf):
-        for entry in self.added_files:
-            outf.write("%s|%s\n" % entry)
-
-
-    def resolve_filename(self, modname, filename):
-        inf_name = pkg_resources.resource_filename(modname, filename)
-        return inf_name
-
-
-    def post_hook(self, out_filename):
-        pass
-
-
-class JSResourceAggregator(ResourceAggregator):
-
-    SUFFIX = ".js"
-    """
-    Needed for CompressingWriter
-    """
-
-
-class CSSResourceAggregator(ResourceAggregator):
-    """
-    This class allows to splice in the abl.cssprocessor.CSSRewriter
-    so that image-references are re-written.
-    """
-
-    SUFFIX = ".css"
-    """
-    Needed for CompressingWriter
-    """
-
-
-    def __init__(self, command, filename):
-        immediate_write = True
-        self.use_css_rewriter = False
-
-        if command.rewrite:
-            immediate_write = False
-            self.use_css_rewriter = True
-
-        super(CSSResourceAggregator, self).__init__(command, filename, immediate_write)
-        if self.use_css_rewriter:
-            output = URI(filename)
-            images = output / "images"
-            # we need to remove this to prevent
-            # duplicates to appear.
-            if images.exists():
-                images.remove()
-            image_processor = None
-            if command.md5_images:
-                image_processor = MD5ImagePreprocessor()
-            self.rewriter = CSSRewriter(output, image_processor=image_processor)
-
-
-    def add_file(self, modname, filename, variant_mapping, dependencies):
-        super(CSSResourceAggregator, self).add_file(modname, filename, variant_mapping, dependencies)
-        if self.use_css_rewriter:
-            css_file = URI(self.resolve_filename(modname, filename))
-            dependencies = [URI(self.resolve_filename(modname, filename)) for modname, filename, _ in dependencies]
-            self.rewriter.add_css(css_file, dependencies)
-
-
-    def flush(self):
-        super(CSSResourceAggregator, self).flush()
-        if self.use_css_rewriter:
-            self.rewriter.rewrite()
-
-
-    def post_hook(self, out_filename):
-        if self.use_css_rewriter:
-            # move the images to the destination
-            out_dir = URI(out_filename).dirname()
-            output = self.rewriter.output
-            (output.dirname() / "images").copy(out_dir, "r")
 
 
 class FileWriter(object):
