@@ -200,7 +200,7 @@ class Widget(pm.Parametered):
 
             # Handles the case where FE expects dict-like object, but
             # you have None at your disposal.
-            if formencode and self.value is None:
+            if formencode and isinstance(self.validator, formencode.Validator) and self.value is None:
                 value = {}
             try:
                 value = self.validator.from_python(value)
