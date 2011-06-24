@@ -7,8 +7,12 @@ import os
 import stat
 import tempfile
 import subprocess
-import md5
 import mimetypes
+
+try:
+    from hashlib import md5
+except ImportError:
+    import md5
 
 try:
     from cStringIO import StringIO
