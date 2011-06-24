@@ -58,7 +58,7 @@ class archive_tw2_resources(Command):
 
     The result is laid out in the output directory in such a way that when
     a web server such as Apache or Nginx is configured to map URLS that
-    begin with /toscawidgets to that directory static files will be served
+    begin with /resources to that directory static files will be served
     from there bypassing python completely.
 
 
@@ -66,7 +66,7 @@ class archive_tw2_resources(Command):
     to ``setup.cfg``::
 
         [archive_tw2_resources]
-        output = /home/someuser/public_html/toscawidgets/
+        output = /home/someuser/public_html/resources/
         compresslevel = 2
         distributions = MyProject
         yuicompressor = /home/someuser/bin/yuicompressor.jar
@@ -173,6 +173,7 @@ class archive_tw2_resources(Command):
 
     def _load_widgets(self, mod):
         """ Register the widgets' resources with the middleware. """
+        print "Doing", mod.__name__
         for key, value in mod.__dict__.iteritems():
             if isinstance(value, widgets.WidgetMeta):
                 try:
@@ -180,17 +181,41 @@ class archive_tw2_resources(Command):
                 except Exception:
                     self.announce("Failed to register %s" % key)
 
+                for res in value.resources:
+                    try:
+                        res.req().prepare()
+                    except Exception:
+                        self.announce("Failed to register %s" % key)
+
 
     def _load_widget_entry_points(self, distribution):
         try:
             requires = [r.project_name for r in
                         pkg_resources.get_distribution(distribution).requires()]
+
             map(self._load_widget_entry_points, requires)
-            mod = pkg_resources.load_entry_point(distribution,
-                                                 'tw2.widgets',
-                                                 'widgets')
-            self._load_widgets(mod)
-            self.announce("Loaded %s" % mod.__name__)
+
+            # Here we only look for a [tw2.widgets] entry point listing and we
+            # don't care what data is listed in it.  We do this, because many of
+            # the existing tw2 libraries do not conform to a standard, e.g.:
+            #
+            #     ## Doing it wrong:
+            #     [tw2.widgets]
+            #     tw2.core = tw2.core
+            #
+            #     ## Doing it right:
+            #     [tw2.widgets]
+            #     widgets = tw2.jquery
+            #
+            # For now, anything with a [tw2.widgets] listing at all is loaded.
+            # TODO -- this should be resolved and standardized in the future.
+
+            for ep in pkg_resources.iter_entry_points('tw2.widgets'):
+                if ep.module_name == distribution:
+                    mod = ep.load()
+                    self._load_widgets(mod)
+                    self.announce("Loaded %s" % mod.__name__)
+
         except ImportError, e:
             self.announce("%s has no widgets entrypoint" % distribution)
 
@@ -204,12 +229,16 @@ class archive_tw2_resources(Command):
         map(self._load_widget_entry_points, self.distributions)
 
         rl_resources = core.request_local().setdefault('resources', [])
+
         for resource in rl_resources:
-            modname = resource.modname
-            fbase = resource.filename.split('/')[0]
-            self.execute(self._copy_resource_tree, (modname, fbase),
-                         "Copying %s recursively into %s" %
-                         (modname, self.writer.base))
+            try:
+                modname = resource.modname
+                fbase = resource.filename.split('/')[0]
+                self.execute(self._copy_resource_tree, (modname, fbase),
+                             "Copying %s recursively into %s" %
+                             (modname, self.writer.base))
+            except AttributeError as e:
+                pass
 
 
     def _copy_resource_tree(self, modname, fname):

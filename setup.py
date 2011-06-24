@@ -58,7 +58,7 @@ setup(
     exclude_package_data={"thirdparty" : ["*"]},
     entry_points="""
     [tw2.widgets]
-    tw2.core = tw2.core
+    widgets = tw2.core
 
     [paste.filter_app_factory]
     middleware = tw2.core.middleware:make_middleware
