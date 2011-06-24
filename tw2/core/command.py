@@ -23,17 +23,8 @@ from tw2.core import core
 from tw2.core import widgets
 from tw2.core import middleware
 
-#from abl.vpath.base import URI
-#from abl.cssprocessor.rewriter import CSSRewriter, MD5ImagePreprocessor
-
-#from tw.core.resources import registry, merge_resources, _JavascriptFileIter
-#from tw.core.util import OrderedSet
-#from tw.core.resources import registry
-
 def request_local_fake():
     global _request_local, _request_id
-#    if _request_id is None:
-#        raise KeyError('must be in a request')
     if _request_local == None:
         _request_local = {}
     try:
@@ -180,7 +171,11 @@ class archive_tw2_resources(Command):
         """ Register the widgets' resources with the middleware. """
         for key, value in mod.__dict__.iteritems():
             if isinstance(value, widgets.WidgetMeta):
-                value(id='fake').req().prepare()
+                try:
+                    value(id='fake').req().prepare()
+                except Exception:
+                    self.announce("Failed to register %s" % key)
+
 
     def _load_widget_entry_points(self, distribution):
         try:
