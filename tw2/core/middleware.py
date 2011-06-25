@@ -103,7 +103,7 @@ class Config(object):
 
         # Set boolean properties
         for prop in ('inject_resources', 'serve_resources', 'serve_controllers',
-                     'params_as_vars', 'auto_reload_templates',
+                     'params_as_vars', 
                      'strict_engine_selection', 'debug'):
             setattr(self, prop, asbool(getattr(self, prop)))
 
