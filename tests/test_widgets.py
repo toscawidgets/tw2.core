@@ -5,6 +5,7 @@ from webob import Request
 from nose.tools import raises
 import formencode as fe
 from strainer.operators import eq_xhtml
+from unittest import TestCase
 
 class Test6(twc.Widget):
     test = twc.Param(attribute=True)
@@ -273,3 +274,100 @@ class TestPage(tb.WidgetTest):
 <head><title>some title</title></head>
 <body><h1>some title</h1></body>
 </html>""")
+
+
+class TestWidgetMisc(TestCase):
+    def setUp(self):
+        testapi.setup()
+
+    def testCircularParent(self):
+        """
+        should raise WidgetError
+        """
+        class Child(wd.Widget):
+            pass
+
+        class Parent(wd.Widget):
+            pass
+
+        Parent.parent = Child(id="child")
+        Parent.child = Parent
+        Parent.child.parent = Parent
+        try:
+            Parent(id="loopy").compound_id
+        except twc.WidgetError, we:
+            self.assert_("loop" in str(we).lower(), str(we))
+        else:
+            self.assert_(False)
+
+    def testCompoundIDForUrlRepeater(self):
+        class Parent(wd.RepeatingWidget):
+            pass
+
+        class Child(wd.Widget):
+            pass
+
+        Child.parent = Parent
+        wid = Child(id="forurl")._compound_id_elem(for_url=True)
+        self.assert_(not wid)
+
+    def testGetLinkNoID(self):
+        try:
+            w = wd.Widget().req()
+            w.get_link()
+            self.assert_(False)
+        except twc.WidgetError:
+            self.assert_(True)
+
+    def testGetLinkID(self):
+        from tw2.core.middleware import TwMiddleware
+        mw = TwMiddleware(None)
+        testapi.request(1, mw)
+        self.assert_(wd.Widget(id="foo").req().get_link())
+
+    def testValidationError(self):
+        class MockInvalid(Exception):
+            def __init__(self, msg):
+                self.msg = msg
+                super(MockInvalid, self).__init__(msg)
+
+        vd.Invalid = MockInvalid
+        err_msg = "NO"
+
+        class MockValidator(vd.Validator):
+            def from_python(self, value):
+                raise vd.Invalid(err_msg)
+
+        class T(wd.Widget):
+            validator = MockValidator()
+
+        i = T.req()
+        i.prepare()
+        self.assert_(err_msg in i.error_msg)
+
+    def testIterParams(self):
+        class T(wd.Widget):
+            template = "goo"
+            foo = pm.Param(default="foo")
+            bar = pm.Param(default="bar")
+
+        i = T(id="testme").req()
+        params = dict(i.iteritems())
+        self.assert_("foo" in params)
+        self.assert_("bar" in params)
+
+    def testAddCall(self):
+
+        class T(wd.Widget):
+            test = twc.Param('blah', default='hello')
+            template = 'mako:tw2.core.test_templates.simple_mako'
+
+        i = T(id="foo").req()
+        jscall = ["somefunc", "bodybottom"]
+        i.add_call(jscall[0], jscall[1])
+        self.assert_(jscall in i._js_calls)
+        testapi.request(1)
+        twc.core.request_local()['middleware'] = twc.make_middleware(None, params_as_vars=True)
+        res = i.display(displays_on="string")
+        self.assert_(res)
+        self.assert_(i.resources)
