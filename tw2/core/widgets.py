@@ -412,10 +412,12 @@ class CompoundWidget(Widget):
         if not hasattr(cls, 'children'):
             return
         joined_cld = []
+
         for c in cls.children:
             if not isinstance(c, type) or not issubclass(c, Widget):
                 raise pm.ParameterError("All children must be widgets")
             joined_cld.append(c(parent=cls))
+
         ids = set()
         for c in cls.children_deep():
             if getattr(c, 'id', None):
@@ -499,9 +501,9 @@ class CompoundWidget(Widget):
                 any_errors = True
         for cid in self.keyed_children:
             c = getattr(self.children, cid)
-            d = data.get(c.key)
+            d = value.get(c.key)
             if d and d is not vd.Invalid:
-                c._validate(d)
+                data[c.id] = c._validate(d, data)
         if self.validator:
             try:
                 data = self.validator.to_python(data)
@@ -513,6 +515,7 @@ class CompoundWidget(Widget):
                         c.error_msg = error_dict[c.id]
                         data[c.id] = vd.Invalid
                 raise
+
         if any_errors:
             raise vd.ValidationError('childerror', self.validator)
         return data

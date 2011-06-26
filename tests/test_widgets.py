@@ -1,7 +1,7 @@
 import tw2.core as twc, testapi, tw2.core.testbase as tb
 import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
 from nose.tools import eq_
-from webob import Request
+from webob import Request, Response
 from nose.tools import raises
 import formencode as fe
 from strainer.operators import eq_xhtml
@@ -326,24 +326,30 @@ class TestWidgetMisc(TestCase):
         self.assert_(wd.Widget(id="foo").req().get_link())
 
     def testValidationError(self):
+
+        originalInvalid = vd.Invalid
+
         class MockInvalid(Exception):
             def __init__(self, msg):
                 self.msg = msg
                 super(MockInvalid, self).__init__(msg)
 
-        vd.Invalid = MockInvalid
-        err_msg = "NO"
+        vd.Invalid = MockInvalid  # patch Invalid for this test
+        try:
+            err_msg = "NO"
 
-        class MockValidator(vd.Validator):
-            def from_python(self, value):
-                raise vd.Invalid(err_msg)
+            class MockValidator(vd.Validator):
+                def from_python(self, value):
+                    raise vd.Invalid(err_msg)
 
-        class T(wd.Widget):
-            validator = MockValidator()
+            class T(wd.Widget):
+                validator = MockValidator()
 
-        i = T.req()
-        i.prepare()
-        self.assert_(err_msg in i.error_msg)
+            i = T.req()
+            i.prepare()
+            self.assert_(err_msg in i.error_msg)
+        finally:
+            vd.Invalid = originalInvalid  # reverse patch
 
     def testIterParams(self):
         class T(wd.Widget):
@@ -367,7 +373,329 @@ class TestWidgetMisc(TestCase):
         i.add_call(jscall[0], jscall[1])
         self.assert_(jscall in i._js_calls)
         testapi.request(1)
-        twc.core.request_local()['middleware'] = twc.make_middleware(None, params_as_vars=True)
+        twc.core.request_local()['middleware'] = twc.make_middleware(None,
+                                                                     params_as_vars=True)
         res = i.display(displays_on="string")
         self.assert_(res)
         self.assert_(i.resources)
+
+    def testSafeModify(self):
+        """
+        this method isn't called anywhere in the code, so not sure
+        whether it's dead code or not. also ... no docstring
+        """
+        class BT(wd.Widget):
+            myresources = ["a"]
+
+        class T(BT):
+            pass
+
+        i = T.req()
+        self.assert_("myresources" not in i.__dict__)
+        i.safe_modify("myresources")
+        self.assert_("a" in i.myresources, i.myresources)
+
+    def testDispatch(self):
+        """
+        why this logic is in the base widget and is a classmethod and
+        takes a controller as a param doesn't make sense but we'll
+        test it anyway
+        """
+        class T(wd.Widget):
+            def default(self):
+                pass
+
+            def index(self):
+                pass
+
+            def foo(self):
+                pass
+
+        req = Request.blank("/prefix/T/foo")
+        method = wd.Widget.dispatch(req, T)
+        self.assert_(method == T.foo, str(method))
+
+        req = Request.blank("/prefix/T")
+        method = wd.Widget.dispatch(req, T)
+        self.assert_(method == T.index, str(method))
+
+        req = Request.blank("/prefix/T/foo.json")
+        method = wd.Widget.dispatch(req, T)
+        self.assert_(method == T.foo, str(method))
+
+        req = Request.blank("/prefix/T/404.json")
+        method = wd.Widget.dispatch(req, T)
+        self.assert_(method == T.default, str(method))
+
+    def testRequest(self):
+        """
+        handle a widget request...
+        """
+        def allow(req):
+            return True
+
+        def deny(req):
+            return False
+
+        def not_authd(req, method):
+            return False
+
+        class R(wd.Widget):
+            class Controller(object):
+                pass
+
+        req = Request.blank("/prefix/T")
+        res = R.request(req)
+        self.assert_(res)
+        self.assert_(res.status_int == 404, res.status_int)
+
+        class S(wd.Widget):
+            Controller = None
+
+        req = Request.blank("/prefix/T")
+        res = S.request(req)
+        self.assert_(res)
+        self.assert_(res.status_int == 404, res.status_int)
+
+        class T(wd.Widget):
+            class Controller(object):
+                def default(self, req):
+                    return Response("default")
+
+                def index(self, req):
+                    return Response("index")
+
+                def foo(self, req):
+                    return Response("foo")
+
+        T.attrs["_check_authn"] = deny
+        req = Request.blank("/")
+        res = T.request(req)
+        self.assert_(res)
+        self.assert_(res.status_int == 401, res.status_int)
+
+        T.attrs["_check_authn"] = allow
+
+        req = Request.blank("/prefix/T")
+        res = T.request(req)
+        self.assert_(res)
+        self.assert_(res.status_int == 200, res.status_int)
+        self.assert_("index" in res.body, str(res.body))
+
+        req = Request.blank("/prefix/T/foo")
+        res = T.request(req)
+        self.assert_(res)
+        self.assert_(res.status_int == 200, res.status_int)
+        self.assert_("foo" in res.body, str(res.body))
+
+        req = Request.blank("/prefix/T/foo.json")
+        res = T.request(req)
+        self.assert_(res)
+        self.assert_(res.status_int == 200, res.status_int)
+        self.assert_("foo" in res.body, str(res.body))
+
+        req = Request.blank("/prefix/T/bar")
+        res = T.request(req)
+        self.assert_(res)
+        self.assert_(res.status_int == 200, res.status_int)
+        self.assert_("default" in res.body, str(res.body))
+
+        T.attrs["_check_authz"] = not_authd
+        res = T.request(req)
+        self.assert_(res)
+        self.assert_(res.status_int == 403, res.status_int)
+
+
+    def testGetChildErrorMsgs(self):
+        """
+        this code doesn't seem to be called anywhere, bare minimum for
+        test coverage
+        """
+        class T(wd.CompoundWidget):
+            error_msg ="child:child error"
+            children = []
+        i = T.req()
+        self.assert_(i.get_child_error_message("child") == "child error")
+
+    def testValidateKeyedChildren(self):
+        """
+        if children have a key attribute then values passed in by key
+        will be routed to the children whose key. still returned as a
+        dict by id though
+        """
+        class T(wd.CompoundWidget):
+            children = [wd.Widget(id="ct", key="kct"),
+                        wd.Widget(id="oct", key="koct")]
+
+        i = T(id="test").req()
+        self.assert_(i.keyed_children)
+        data = dict(kct="foo", koct="bar")
+        expected = dict(ct="foo", oct="bar")
+        res = i._validate(data)
+        self.assert_(res == expected, res)
+
+    def testRollupChildValidationErrors(self):
+        """
+        a validator on a compound widget can propogate error_msgs to
+        the children
+        """
+        expected = dict(c1="foo", c2="bar")
+
+        class V(vd.Validator):
+            def validate_python(self, value, state):
+                err = vd.ValidationError("fail")
+                err.error_dict = expected
+                raise err
+
+        class T(wd.CompoundWidget):
+            validator = V()
+            children = [wd.Widget(id="c1"),
+                        wd.Widget(id="c2")]
+
+        i = T(id="goo").req()
+        try:
+            i.validate({})
+            self.assert_(False)
+        except vd.ValidationError, ve:
+            for c in ve.widget.children:
+                self.assert_(expected[c.id] == c.error_msg, (expected,
+                                                                  c.id,
+                                                                  c.error_msg))
+
+
+class TestRepeatingWidget(TestCase):
+    def testChildsChildren(self):
+        """
+        if child and childen defined, children become children of child
+        """
+        class T(wd.RepeatingWidget):
+            child = wd.Widget
+            children = [wd.Widget(id="foo")]
+        self.assert_(len(T().req().child.children) == 1)
+
+    def testNonWidgetChild(self):
+        """
+        should throw an error if child is not a widget
+        """
+        try:
+            class T(wd.RepeatingWidget):
+                child = ""
+            self.assert_(False)
+        except pm.ParameterError:
+            self.assert_(True)
+    def testChildWIdgetWithID(self):
+        """
+        parameter error raised if child has id
+        """
+        try:
+            class T(wd.RepeatingWidget):
+                child = wd.Widget(id="foo")
+            self.assert_(False)
+        except pm.ParameterError:
+            self.assert_(True)
+
+    def testMaxRepitions(self):
+        """
+        truncate reps based on max_reps??
+        """
+        class T(wd.RepeatingWidget):
+            child = wd.Widget()
+            max_reps = 1
+            extra_reps = 2
+
+        i = T().req()
+        i.prepare()
+        self.assert_(i.repetitions == T.max_reps, i.repetitions)
+
+    def testPrepareNoRepitions(self):
+        """
+        for coverage. call prepare on self.children[0](self.child) when other params aren't specified
+        """
+        class K(wd.Widget):
+            def prepare(self):
+                self._prepared = True
+
+        class T(wd.RepeatingWidget):
+            child = K()
+
+        i = T().req()
+        i.prepare()
+        self.assert_(i.children[0]._prepared)
+
+
+    def testValidator(self):
+        class V(vd.Validator):
+            def to_python(self, data):
+                self._called = True
+        class T(wd.RepeatingWidget):
+            child = wd.Widget()
+            validator = V()
+
+        i = T().req()
+        i.validate({})
+        self.assert_(i.validator._called)
+
+class TestDisplayOnlyWidget(TestCase):
+
+    def testInvalidChildError(self):
+        class NotAWidget(object):
+            pass
+        try:
+            class T(wd.DisplayOnlyWidget):
+                child=NotAWidget()
+
+            self.assert_(False)
+        except pm.ParameterError, pe:
+            self.assert_("must be" in pe.message)
+    def testChildNoID(self):
+        try:
+            class T(wd.DisplayOnlyWidget):
+                id="bar"
+                child=wd.Widget(id="foo")
+
+            self.assert_(False)
+        except pm.ParameterError, pe:
+            self.assert_(" id" in pe.message)
+
+
+    def testCompoundIDElem(self):
+        class Parent(wd.RepeatingWidget):
+            child = wd.DisplayOnlyWidget
+        self.assert_(Parent(id="goo").req()._compound_id_elem("url"))
+
+    def testChildError(self):
+        """
+        call validate on child when validated
+        """
+        err = vd.ValidationError("Failed")
+
+        class V(vd.Validator):
+            def to_python(self, value):
+                raise err
+
+        class C(wd.Widget):
+            validator = V()
+
+        class T(wd.DisplayOnlyWidget):
+            child = C(id="foo")
+
+        try:
+            T().req().validate({})
+            self.assert_(False)
+        except vd.ValidationError, ve:
+            self.assert_(ve.widget.child.error_msg == err.message,
+                         (ve.widget.child.error_msg))
+
+    def testChildrenDeep(self):
+        """
+        delegates to it's child for children_deep method
+        """
+        class C(wd.Widget):
+            @classmethod
+            def children_deep(cls):
+                yield "called"
+
+        class T(wd.DisplayOnlyWidget):
+            child = C(id="foo")
+
+        self.assert_(list(T.children_deep())[0] == "called")
