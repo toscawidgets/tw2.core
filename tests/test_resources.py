@@ -1,6 +1,7 @@
 import webob as wo, webtest as wt, tw2.core as twc, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
 from nose.tools import eq_, raises
 from strainer.operators import eq_xhtml
+from unittest import TestCase
 
 js = twc.JSLink(link='paj')
 css = twc.CSSLink(link='joe')
@@ -250,3 +251,67 @@ class TestResourcesApp:
 
 def test_find_charset():
     eq_(twc.resources.find_charset('charset=iso-8859-1'), 'iso-8859-1')
+
+
+class TestResourcesMisc(TestCase):
+    def testJSSymbol(self):
+        """
+        should set the src attribute
+        """
+        s = twr.JSSymbol("source")
+        self.assert_(s.src=="source")
+
+    def testEncoderDefault(self):
+        enc = twr.TW2Encoder()
+        enc.encode("")
+        res = enc.default(twr.JSSymbol("X"))
+        self.assert_(res.startswith(enc.__class__.__name__))
+
+        try:
+            res = enc.default(None)
+            self.assert_(False)
+        except TypeError, te:
+            self.assert_(te.message.endswith("is not JSON serializable"))
+
+    def testUnEscapeMarked(self):
+        enc = twr.TW2Encoder()
+        data = dict(foo=twr.JSSymbol("foo"),
+                    bar=twr.JSSymbol("bar"))
+        res = enc.unescape_marked(enc.encode(data))
+        self.assert_("foo" in  res, res)
+        self.assert_("bar" in res, res)
+
+    def testLinkHash(self):
+        l = twr.Link(link="http://google.com")
+        self.assert_(hash(l.req()))  # meh
+
+
+    def testDirLink(self):
+        dl = twr.DirLink(modname="tw2.core", filename="somefile")
+        i = dl.req()
+        i.prepare()
+        self.assert_(i.link)
+
+
+    def testJSSource(self):
+        import uuid
+        token = str(uuid.uuid4())
+        s = twr.JSSource(src=token)
+        res = str(s.req())
+        self.assert_(token in res, res)
+
+    def testJSFuncCallDictArgs(self):
+        args = dict(foo="foo", bar="bar")
+        function = "jquery"
+        s = twr.JSFuncCall(function=function, args=args).req()
+        s.prepare()
+        self.assert_(function in str(s))
+        for k in args:
+            self.assert_("\"%s\": " % k in str(s))
+
+        self.assert_(hash(s))
+        s.args = [1, 2, 3]
+        self.assert_(hash(s))
+        s.args = None
+        self.assert_(hash(s))
+        self.assert_(s == s)

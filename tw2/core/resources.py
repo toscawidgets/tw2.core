@@ -155,9 +155,16 @@ class JSFuncCall(JSSource):
             self.src = '%s(%s)' % (self.function, args)
         super(JSFuncCall, self).prepare()
 
-
     def __hash__(self):
-        return hash((hasattr(self, 'src') and self.src or '') + (hasattr('args') and self.args or ''))
+        if self.args:
+            if isinstance(self.args, dict):
+                sargs = encoder.encode(self.args)
+            else:
+                sargs = ', '.join(encoder.encode(a) for a in self.args)
+        else:
+            sargs = None
+
+        return hash((hasattr(self, 'src') and self.src or '') + (sargs or ''))
 
     def __eq__(self, other):
         return (getattr(self, 'src', None) == getattr(other, 'src', None)
