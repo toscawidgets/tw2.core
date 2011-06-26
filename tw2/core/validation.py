@@ -271,9 +271,9 @@ class RangeValidator(Validator):
 
     def validate_python(self, value, state=None):
         super(RangeValidator, self).validate_python(value, state)
-        if self.min and value < self.min:
+        if self.min is not None and value < self.min:
             raise ValidationError('toosmall', self)
-        if self.max and value > self.max:
+        if self.max is not None and value > self.max:
             raise ValidationError('toobig', self)
 
 

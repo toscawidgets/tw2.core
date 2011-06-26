@@ -6,6 +6,7 @@ import datetime
 import formencode
 from nose.tools import eq_, raises
 from webob.multidict import MultiDict
+from unittest import TestCase
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -391,3 +392,85 @@ class TestIPAddressValidator(tb.ValidatorTest):
     attrs =    [{}, {}]
     params =   ['123.123.123.123', 'asdf']
     expected = [None, ValidationError]
+
+
+class TestValidatorMisc(TestCase):
+    def testRequired(self):
+        v = Validator(required=True)
+        self.assert_(v.required)
+        try:
+            v.validate_python(None)
+            assert False
+        except ValidationError, ve:
+            self.assert_(ve.message == v.msgs["required"], ve.message)
+
+    def testBlankValidator(self):
+        v = BlankValidator()
+        self.assert_(v.to_python(None) == EmptyField)
+
+    def testRangeValidator(self):
+        v = RangeValidator(min=0, max=2)
+        self.assert_(v.min is not None)
+        self.assert_(v.max is not None)
+        try:
+            v.validate_python(v.min - 1)
+            assert False
+        except ValidationError, ve:
+            self.assert_(ve.message.startswith(v.msgs["toosmall"][:5]),
+                         (ve.message, v.msgs))
+
+        try:
+            v.validate_python(v.max + 1)
+            assert False
+        except ValidationError, ve:
+            self.assert_(ve.message.startswith(v.msgs["toobig"][:5]),
+                         (ve.message, v.msgs))
+
+        v.validate_python(v.min)
+        v.validate_python(v.max)
+
+    def testIPAddressValidator(self):
+        ip_block = "192.168.0.0/24"
+        bad_ip_block = "192.168.0.0/64"
+        ip = "192.168.1.1"
+        v = IpAddressValidator(allow_netblock=False)
+
+        try:
+            v.validate_python(ip_block)
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(ve.message.startswith(v.msgs["badipaddress"][:5]))
+
+        v.allow_netblock = True
+
+        try:
+            v.validate_python(bad_ip_block)
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(ve.message.startswith(v.msgs["badnetblock"][:5]))
+
+        v.require_netblock = True
+
+        try:
+            v.validate_python(ip)
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(ve.message.startswith(v.msgs["badnetblock"][:5]))
+
+    def testMatchValidator(self):
+        v = MatchValidator(other_field="foo")
+
+        try:
+            v.validate_python("bar", {v.other_field: "foo"})
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(ve.message.startswith(v.msgs["mismatch"][:5]))
+
+    def testInValidatorRequired(self):
+        v = IntValidator(required=True)
+        self.assert_(v.required)
+        try:
+            v.validate_python(None)
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_("Enter a value" in ve.message, ve.message)
