@@ -297,9 +297,6 @@ class IntValidator(RangeValidator):
             raise ValidationError('notint', self)
 
     def validate_python(self, value, state=None):
-        # avoid super().validate_python, as it sees int(0) as missing
-		# TODO -- TBD -- is this still necessary after epic merge?
-        value = self.to_python(value) # TBD: I wanted to avoid this; needed to make unit tests pass
         if self.required and value is None:
             raise ValidationError('required', self)
         if value is not None:
