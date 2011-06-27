@@ -102,9 +102,6 @@ class archive_tw2_resources(Command):
          "these distributions need to define a 'tw2.widgets' "
          "'widgets' entrypoint pointing to a a module where "
          "resources are located."),
-        ("requireonce", "r",
-         "Surround the gathered Javascript with a require_once-guard."
-         )
         ]
 
 
@@ -121,7 +118,6 @@ class archive_tw2_resources(Command):
         self.compresslevel = 0
         self.distributions = []
         self.yuicompressor = 'yuicompressor.jar'
-        self.requireonce = False
 
 
     def finalize_options(self):
@@ -140,7 +136,7 @@ class archive_tw2_resources(Command):
             return
         if os.path.exists(self.output) and not self.force:
             print >> sys.stderr, ("Destination dir %s exists. " % self.output)+\
-                                  "Use -f to ovewrite"
+                                  "Use -f to overwrite."
             return
         if self.compresslevel > 0 and not os.path.exists(self.yuicompressor):
             print >> sys.stderr, "Could not find YUICompressor at " + \
@@ -254,23 +250,10 @@ class archive_tw2_resources(Command):
                 else:
                     full_name = pkg_resources.resource_filename(modname, name)
                     ct, _  = mimetypes.guess_type(full_name)
-                    require_once = None
-                    if self.requireonce and ct == "application/javascript":
-                        require_once = _JavascriptFileIter._marker_name(modname, name)
                     stream = pkg_resources.resource_stream(modname, name)
                     filename = '/'.join((modname, name))
                     self.execute(self.writer.write_file, (stream, filename),
                                  "Processing " + filename)
-                    if require_once is not None:
-                        filename = os.path.join(self.tempdir, filename)
-                        inf = open(filename)
-                        outname = tempfile.mktemp()
-                        outf = open(outname, "w")
-                        outf.write(_JavascriptFileIter.START_TEMPLATE % require_once)
-                        outf.write(inf.read())
-                        outf.write(_JavascriptFileIter.END_TEMPLATE % require_once)
-                        outf.close()
-                        shutil.move(outname, filename)
                     stream.close()
         except OSError, e:
             if e.errno == errno.ENOENT:
@@ -393,7 +376,7 @@ class OnePassCompressingWriter(CompressingWriter):
         cache = self._caches.get(typ)
         if not cache:
             self.announce("Will not consider %s for onepass" % path)
-            return CompressingWriter.write_file(self, stream, path, require_once)
+            return CompressingWriter.write_file(self, stream, path)
         print >> cache, self._marker % locals()
         self.announce("Defering %s for compression in one pass" % path)
         shutil.copyfileobj(stream, cache)
