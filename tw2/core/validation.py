@@ -1,4 +1,4 @@
-import core, re, util, string, time, datetime, copy, decorator, webob
+import core, re, util, string, time, datetime, copy, functools, webob
 
 # This hack helps work with different versions of WebOb
 if not hasattr(webob, 'MultiDict'):
@@ -69,16 +69,17 @@ catch = ValidationError
 if formencode:
     catch = formencode.Invalid
 
-@decorator.decorator
-def catch_errors(fn, self, *args, **kw):
-    try:
-        d = fn(self, *args, **kw)
-        return d
-    except catch, e:
-        if self:
-            self.error_msg = str(e)
-        raise ValidationError(str(e), widget=self)
-
+def catch_errors(fn):
+    @functools.wraps(fn)
+    def wrapper(self, *args, **kw):
+        try:
+            d = fn(self, *args, **kw)
+            return d
+        except catch, e:
+            if self:
+                self.error_msg = str(e)
+            raise ValidationError(str(e), widget=self)
+    return wrapper
 
 def unflatten_params(params):
     """This performs the first stage of validation. It takes a dictionary where

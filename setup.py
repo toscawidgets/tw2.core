@@ -35,9 +35,6 @@ setup(
         'simplejson >= 2.0',
         'PasteDeploy',
         'weberror',
-
-        # There is a ticket about removing the dependency on decorator.  Why?
-        'decorator',
         ],
     tests_require = ['nose', 'BeautifulSoup', 'FormEncode', 'WebTest', 'strainer'] + _extra_kid + _extra_cheetah + _extra_genshi + _extra_mako,
     test_suite = 'nose.collector',
