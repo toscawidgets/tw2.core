@@ -1,4 +1,4 @@
-import core, re, util, string, time, datetime, copy, decorator, webob
+import core, re, util, string, time, datetime, copy, functools, webob
 
 # This hack helps work with different versions of WebOb
 if not hasattr(webob, 'MultiDict'):
@@ -69,16 +69,17 @@ catch = ValidationError
 if formencode:
     catch = formencode.Invalid
 
-@decorator.decorator
-def catch_errors(fn, self, *args, **kw):
-    try:
-        d = fn(self, *args, **kw)
-        return d
-    except catch, e:
-        if self:
-            self.error_msg = str(e)
-        raise ValidationError(str(e), widget=self)
-
+def catch_errors(fn):
+    @functools.wraps(fn)
+    def wrapper(self, *args, **kw):
+        try:
+            d = fn(self, *args, **kw)
+            return d
+        except catch, e:
+            if self:
+                self.error_msg = str(e)
+            raise ValidationError(str(e), widget=self)
+    return wrapper
 
 def unflatten_params(params):
     """This performs the first stage of validation. It takes a dictionary where
@@ -297,9 +298,6 @@ class IntValidator(RangeValidator):
             raise ValidationError('notint', self)
 
     def validate_python(self, value, state=None):
-        # avoid super().validate_python, as it sees int(0) as missing
-		# TODO -- TBD -- is this still necessary after epic merge?
-        value = self.to_python(value) # TBD: I wanted to avoid this; needed to make unit tests pass
         if self.required and value is None:
             raise ValidationError('required', self)
         if value is not None:
