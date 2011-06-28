@@ -19,7 +19,7 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
    interface, similar to Sprox and Rum
  * `tw2.yui <http://bitbucket.org/paj/tw2yui/>`_ -- tw2 wrappers around
    Yahoo User Interface widgets
- * `tw2.jquery <http://bitbucket.org/toscawidgets/tw2.jquery>`_ -- tw2
+ * `tw2.jquery <http://bitbucket.org/toscawidgets/tw2jquery>`_ -- tw2
    wrappers around jQuery core functionality.
  * `tw2.jqplugins.ui <http://github.com/ralphbean/tw2.jqplugins.ui>`_ -- tw2
    wrappers around jQuery-UI widgets.
