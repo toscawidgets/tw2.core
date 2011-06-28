@@ -709,6 +709,7 @@ class DisplayOnlyWidget(Widget):
             yield c
 
 def default_content_type():
+    "default_content_type"
     return "text/html; charset=%s" % core.request_local()['middleware'].config.encoding
 
 class Page(DisplayOnlyWidget):
