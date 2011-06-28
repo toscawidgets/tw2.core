@@ -203,13 +203,10 @@ class ControllersApp(object):
 
 global_controllers = ControllersApp()
 
-def make_middleware(app=None, config=None, repoze_tm=False, **kw):
+def make_middleware(app=None, config=None, **kw):
     config = (config or {}).copy()
     config.update(kw)
     app = TwMiddleware(app, controllers=global_controllers, **config)    
-    if repoze_tm:
-        import repoze.tm as rtm, tw2.sqla as tws
-        app = rtm.TM(app, tws.commit_veto)
     return app
 
 
