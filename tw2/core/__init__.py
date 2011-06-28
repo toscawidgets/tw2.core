@@ -12,7 +12,7 @@ from widgets import (Widget, CompoundWidget, RepeatingWidget,
     DisplayOnlyWidget, Page)
 
 from resources import (JSSymbol, Link, JSLink, CSSLink, JSSource, JSFuncCall,
-    inject_resources, DirLink)
+    inject_resources, DirLink, encoder)
 
 from validation import (Validator, LengthValidator,
     RegexValidator, IntValidator, OneOfValidator, DateValidator,

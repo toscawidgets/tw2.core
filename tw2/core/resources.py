@@ -27,6 +27,8 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, JSSymbol):
             return self.mark_for_escape(obj)
+        if hasattr(obj, '__json__'):
+            return obj.__json__()
         return super(TW2Encoder, self).default(obj)
 
     def encode(self, obj):
