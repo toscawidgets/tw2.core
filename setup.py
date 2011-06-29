@@ -43,6 +43,7 @@ setup(
         'WebTest',
         'strainer',
         'yuicompressor',
+        'tw2.forms',
     ] + _extra_kid + _extra_cheetah + _extra_genshi + _extra_mako,
     test_suite = 'nose.collector',
     extras_require = {
