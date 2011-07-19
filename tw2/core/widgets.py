@@ -128,6 +128,8 @@ class Widget(pm.Parametered):
                 cls.validator = vld and vld.clone(required=True) or vd.Validator(required=True)
             if isinstance(cls.validator, type) and issubclass(cls.validator, vd.Validator):
                 cls.validator = cls.validator()
+            if formencode and isinstance(cls.validator, type) and issubclass(cls.validator, formencode.Validator):
+                cls.validator = cls.validator()
             if not isinstance(cls.validator, vd.Validator) and not (
                     formencode and isinstance(cls.validator, formencode.Validator)):
                 raise pm.ParameterError("Validator must be either a tw2 or FormEncode validator")
