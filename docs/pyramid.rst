@@ -86,8 +86,8 @@ First, create a new file ``myapp/widgets.py`` with the contents::
 
 Second, modify ``myapp/views.py`` and add a new view callable like so::
 
-    def view_widget(context, request):
-        return {'widget':context}
+    def view_widget(request):
+        return {'widget': request.context}
 
 Thirdly, add a new template ``myapp/templates/widget.pt`` (which is a `chameleon
 <http://pypi.python.org/pypi/Chameleon>`_ template) with the following
@@ -251,14 +251,14 @@ And finally inside the ``def populate()`` method of the same file add::
     for name in ['Action', 'Comedy', 'Romance', 'Sci-fi']:
         session.add(Genre(name=name))
 
-Now done with ``myapp/models.py``, edit ``myapp/views.py`` and replace the definition of ``def view_widget(context, request):`` with::
+Now done with ``myapp/models.py``, edit ``myapp/views.py`` and replace the definition of ``def view_widget(request):`` with::
 
     import tw2.core
-    def view_widget(context, request):
-        context.fetch_data(request)
+    def view_widget(request):
+        request.context.fetch_data(request)
         mw = tw2.core.core.request_local()['middleware']
-        mw.controllers.register(context, 'movie_submit')
-        return {'widget':context}
+        mw.controllers.register(request.context, 'movie_submit')
+        return {'widget': request.context}
 
 Lastly, edit ``myapp/widgets.py`` and add::
 
@@ -380,10 +380,10 @@ Add the following to your view configuration in ``myapp/__init__.py``::
 
 Add that view to ``myapp/views.py`` itself::
 
-    def view_grid_widget(context, request):
+    def view_grid_widget(request):
         mw = tw2.core.core.request_local()['middleware']
-        mw.controllers.register(context, 'db_jqgrid')
-        return {'widget':context}
+        mw.controllers.register(request.context, 'db_jqgrid')
+        return {'widget': request.context}
 
 Finally add another hook into ``MyApp.__getitem__(...)``::
 
