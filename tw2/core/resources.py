@@ -252,7 +252,7 @@ class ResourcesApp(object):
             resp = wo.Response(status="404 Not Found")
         else:
             stream = _FileIter(stream, self.config.bufsize)
-            resp = wo.Response(request=req, app_iter=stream, content_type=ct)
+            resp = wo.Response(app_iter=stream, content_type=ct)
             if enc:
                 resp.content_type_params['charset'] = enc
         resp.cache_control = {'max-age': int(self.config.res_max_age)}
