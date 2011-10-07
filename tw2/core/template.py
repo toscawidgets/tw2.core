@@ -121,7 +121,7 @@ class EngineManager(dict):
             return lambda **kw: XML(template.render(**kw))
         elif src=='mako' and dst=='genshi':
             from genshi.core import Markup
-            return lambda **kw: Markup(template.render(**kw))
+            return lambda **kw: Markup(template.render(**kw).decode('utf-8'))
         elif src == 'mako':
             return template.render
         elif src == 'kid' and dst == 'genshi':
