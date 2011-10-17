@@ -313,8 +313,7 @@ class TestWidgetMisc(TestCase):
 
     def testGetLinkNoID(self):
         try:
-            w = wd.Widget().req()
-            w.get_link()
+            wd.Widget.get_link()
             self.assert_(False)
         except twc.WidgetError:
             self.assert_(True)
@@ -323,7 +322,15 @@ class TestWidgetMisc(TestCase):
         from tw2.core.middleware import TwMiddleware
         mw = TwMiddleware(None)
         testapi.request(1, mw)
-        self.assert_(wd.Widget(id="foo").req().get_link())
+
+        class CWidget(wd.Widget):
+            id="foo"
+
+            @classmethod
+            def request(cls, req):
+                pass
+
+        self.assert_(CWidget.get_link())
 
     def testValidationError(self):
 
@@ -394,117 +401,6 @@ class TestWidgetMisc(TestCase):
         self.assert_("myresources" not in i.__dict__)
         i.safe_modify("myresources")
         self.assert_("a" in i.myresources, i.myresources)
-
-    def testDispatch(self):
-        """
-        why this logic is in the base widget and is a classmethod and
-        takes a controller as a param doesn't make sense but we'll
-        test it anyway
-        """
-        class T(wd.Widget):
-            def default(self):
-                pass
-
-            def index(self):
-                pass
-
-            def foo(self):
-                pass
-
-        req = Request.blank("/prefix/T/foo")
-        method = wd.Widget.dispatch(req, T)
-        self.assert_(method == T.foo, str(method))
-
-        req = Request.blank("/prefix/T")
-        method = wd.Widget.dispatch(req, T)
-        self.assert_(method == T.index, str(method))
-
-        req = Request.blank("/prefix/T/foo.json")
-        method = wd.Widget.dispatch(req, T)
-        self.assert_(method == T.foo, str(method))
-
-        req = Request.blank("/prefix/T/404.json")
-        method = wd.Widget.dispatch(req, T)
-        self.assert_(method == T.default, str(method))
-
-    def testRequest(self):
-        """
-        handle a widget request...
-        """
-        def allow(req):
-            return True
-
-        def deny(req):
-            return False
-
-        def not_authd(req, method):
-            return False
-
-        class R(wd.Widget):
-            class Controller(object):
-                pass
-
-        req = Request.blank("/prefix/T")
-        res = R.request(req)
-        self.assert_(res)
-        self.assert_(res.status_int == 404, res.status_int)
-
-        class S(wd.Widget):
-            Controller = None
-
-        req = Request.blank("/prefix/T")
-        res = S.request(req)
-        self.assert_(res)
-        self.assert_(res.status_int == 404, res.status_int)
-
-        class T(wd.Widget):
-            class Controller(object):
-                def default(self, req):
-                    return Response("default")
-
-                def index(self, req):
-                    return Response("index")
-
-                def foo(self, req):
-                    return Response("foo")
-
-        T.attrs["_check_authn"] = deny
-        req = Request.blank("/")
-        res = T.request(req)
-        self.assert_(res)
-        self.assert_(res.status_int == 401, res.status_int)
-
-        T.attrs["_check_authn"] = allow
-
-        req = Request.blank("/prefix/T")
-        res = T.request(req)
-        self.assert_(res)
-        self.assert_(res.status_int == 200, res.status_int)
-        self.assert_("index" in res.body, str(res.body))
-
-        req = Request.blank("/prefix/T/foo")
-        res = T.request(req)
-        self.assert_(res)
-        self.assert_(res.status_int == 200, res.status_int)
-        self.assert_("foo" in res.body, str(res.body))
-
-        req = Request.blank("/prefix/T/foo.json")
-        res = T.request(req)
-        self.assert_(res)
-        self.assert_(res.status_int == 200, res.status_int)
-        self.assert_("foo" in res.body, str(res.body))
-
-        req = Request.blank("/prefix/T/bar")
-        res = T.request(req)
-        self.assert_(res)
-        self.assert_(res.status_int == 200, res.status_int)
-        self.assert_("default" in res.body, str(res.body))
-
-        T.attrs["_check_authz"] = not_authd
-        res = T.request(req)
-        self.assert_(res)
-        self.assert_(res.status_int == 403, res.status_int)
-
 
     def testGetChildErrorMsgs(self):
         """

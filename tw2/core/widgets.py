@@ -169,17 +169,18 @@ class Widget(pm.Parametered):
         else:
             return getattr(cls, 'id', None)
 
-    def get_link(self):
+    @classmethod
+    def get_link(cls):
         """
         Get the URL to the controller . This is called at run time, not startup
         time, so we know the middleware if configured with the controller path.
         Note: this function is a temporary measure, a cleaner API for this is
         planned.
         """
-        if not hasattr(self, 'request') or not getattr(self, 'id', None):
+        if not hasattr(cls, 'request') or not getattr(cls, 'id', None):
             raise core.WidgetError('Not a controller widget')
         mw = core.request_local()['middleware']
-        return mw.config.controller_prefix + self._gen_compound_id(for_url=True)
+        return mw.config.controller_prefix + cls._gen_compound_id(for_url=True)
 
     def prepare(self):
         """
