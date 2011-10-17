@@ -203,41 +203,17 @@ class ControllersApp(object):
 
 global_controllers = ControllersApp()
 
-def make_middleware(app=None, config=None, repoze_tm=False, **kw):
+def make_middleware(app=None, config=None, **kw):
     config = (config or {}).copy()
     config.update(kw)
     app = TwMiddleware(app, controllers=global_controllers, **config)    
-    if repoze_tm:
-        import repoze.tm as rtm, tw2.sqla as tws
-        app = rtm.TM(app, tws.commit_veto)
     return app
 
 
-def dev_server(
-    app=None, host='127.0.0.1', port=8000, logging=True, weberror=True,
-    use_threadpool=None, threadpool_workers=10, request_queue_size=5,
-    **config):
+def dev_server(*args, **kwargs):
     """
-    Run a development server, hosting the ToscaWidgets application.
-    This requires Paste and WebError, which are only sure to be available if
-    tw2.devtools is installed.
+    Deprecated; use tw2.devtools.dev_server insteads.
     """
-    config.setdefault('debug', True)
-    config.setdefault('controller_prefix', '/')
-    app = make_middleware(app, **config)
-
-    if weberror:
-        import weberror.errormiddleware as we
-        app = we.ErrorMiddleware(app, debug=True)
-
-    if logging:
-        import paste.translogger as pt
-        app = pt.TransLogger(app)
-
-    import paste.httpserver as ph
-    ph.serve(app, host=host, port=port,
-             use_threadpool=use_threadpool,
-             threadpool_workers=threadpool_workers,
-             request_queue_size=request_queue_size)
-
-# TBD: autoreload
+    import tw2.devtools, warnings
+    warnings.warn('tw2.core.dev_server is deprecated; use tw2.devtools.dev_server instead')
+    tw2.devtools.dev_server(*args, **kwargs)

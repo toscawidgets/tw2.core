@@ -336,49 +336,6 @@ class Widget(pm.Parametered):
     def children_deep(cls):
         yield cls
 
-    @classmethod
-    def dispatch(cls, req, controller):
-        path = req.path_info.strip('/').split('/')[2:]
-        if len(path) == 0:
-            method_name = 'index'
-        else:
-            method_name = path[0]
-        # later we want to better handle .ext conditions, but hey
-        # this aint TG
-        if method_name.endswith('.json'):
-            method_name = method_name[:-5]
-        method = getattr(controller, method_name, None)
-        if not method:
-            method = getattr(controller, 'default', None)
-        return method
-
-    @classmethod
-    def request(cls, req):
-        """
-        Override this method to define your own way of handling a widget request.
-
-        The default does TG-style object dispatch.
-        """
-
-        authn = cls.attrs.get('_check_authn')
-        authz = cls.attrs.get('_check_authz')
-
-        if authn and not authn(req):
-            return util.abort(req, 401)
-
-        controller = cls.attrs.get('controller', cls.Controller)
-        if controller is None:
-            return util.abort(req, 404)
-
-        method = cls.dispatch(req, controller)
-        if method:
-            if authz and not authz(req, method):
-                return util.abort(req, 403)
-
-            controller = cls.Controller()
-            return method(controller, req)
-        return util.abort(req, 404)
-
 
 class LeafWidget(Widget):
     """
@@ -757,6 +714,7 @@ class DisplayOnlyWidget(Widget):
             yield c
 
 def default_content_type():
+    "default_content_type"
     return "text/html; charset=%s" % core.request_local()['middleware'].config.encoding
 
 class Page(DisplayOnlyWidget):

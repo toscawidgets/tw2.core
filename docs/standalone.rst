@@ -3,12 +3,7 @@ Standalone Tutorial
 
 .. note::
     The files created in this tutorial can be downloaded as
-    a `.zip file
-    <https://github.com/ralphbean/tw2.core-docs-standalone/zipball/master>`_,
-    a `.tar file
-    <https://github.com/ralphbean/tw2.core-docs-standalone/tarball/master>`_,
-    or can be cloned from a `github repository
-    <http://github.com/ralphbean/tw2.core-docs-standalone>`_.
+    a :download:`.zip file <standalone.zip>`.
 
 Installing ToscaWidgets2
 ------------------------
@@ -36,11 +31,12 @@ To get started, we'll build a simple "Hello World" application.  First,
 create ``myapp.py`` with the following::
 
     import tw2.core
+    import tw2.devtools
 
     class Index(tw2.core.Page):
         template = 'genshi:./index.html'
 
-    tw2.core.dev_server()
+    tw2.devtools.dev_server()
 
 Here were are creating a Page widget, called Index, with a template specified.
 Index is a special name that matches the root URL. We need to create the
@@ -97,7 +93,7 @@ movie database. First, add to the top of ``myapp.py``::
 
     import tw2.forms
 
-Now, add another class to this file, before ``tw2.core.dev_server()``::
+Now, add another class to this file, before ``tw2.devtools.dev_server()``::
 
     class Movie(tw2.forms.FormPage):
         title = 'Movie'
@@ -230,9 +226,9 @@ And replace ``genre = tw2.forms.CheckBoxList(...)`` with::
     genre = tw2.sqla.DbCheckBoxList(entity=model.Genre)
 
 Finally, we need to enable the wrapper that automatically commits
-transactions after each request. Replace ``tw2.core.dev_server()`` with::
+transactions after each request. Replace ``tw2.devtools.dev_server()`` with::
 
-    tw2.core.dev_server(repoze_tm=True)
+    tw2.devtools.dev_server(repoze_tm=True)
 
 With this done, restart the application and try submitting a movie.
 
@@ -307,7 +303,7 @@ Go back to editing ``myapp.py`` and add to the top::
     import tw2.jqplugins.jqgrid
 
 And add another two whole classes near the bottom of the file but above
-``tw2.core.dev_server(repoze_tm=True)``::
+``tw2.devtools.dev_server(repoze_tm=True)``::
 
     class GridWidget(tw2.jqplugins.jqgrid.SQLAjqGridWidget):
         entity = model.Movie
@@ -327,7 +323,7 @@ And add another two whole classes near the bottom of the file but above
         def prepare(self):
             # This controller registration does not generally have to occur inside
             # 'prepare', but we place it here so we're sure the middleware has
-            # been initialized by tw2.core.dev_server before we make demands of it.
+            # been initialized by tw2.devtools.dev_server before we make demands of it.
             mw = tw2.core.core.request_local()['middleware']
             mw.controllers.register(self.__class__, 'db_jqgrid')
             super(GridWidget, self).prepare()

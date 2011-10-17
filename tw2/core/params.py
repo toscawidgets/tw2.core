@@ -24,7 +24,10 @@ class Deferred(object):
     callable, which will be called every time the widget is displayed, with
     the returned value giving the parameter value."""
     def __init__(self, fn):
-        self.fn = fn
+        self.fn = fn    
+    def __repr__(self):
+        return '<Deferred: %s>' % self.fn.__doc__ if self.fn.__doc__ else '<Deferred>'
+
 
 class _Default(object):
     pass
