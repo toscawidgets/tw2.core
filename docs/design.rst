@@ -60,6 +60,7 @@ Subclasses of Widget can override the following methods. It is not recommended t
 
 .. automethod:: tw2.core.widgets.Widget.post_define
 .. automethod:: tw2.core.widgets.Widget.prepare
+.. automethod:: tw2.core.widgets.Widget.generate_output
 
 **Mutable Members**
 
@@ -123,7 +124,7 @@ When a value like ``{'title': 'my title'}`` is passed to MyForm, this will propa
 Template
 ========
 
-Every widget has a template, this is core to the widget concept. ToscaWidgets aims to support any templating engine that support the ``buffet`` interface, which is an initiative by the TurboGears project to create a standard interface for template libraries. In practice, there are more differences between template engines than the buffet interface standardises. So, ToscaWidgets has some template-language hooks, and support is primarily for: Genshi, Mako, Kid and Cheetah.
+Every widget can have a template. ToscaWidgets aims to support any templating engine that support the ``buffet`` interface, which is an initiative by the TurboGears project to create a standard interface for template libraries. In practice, there are more differences between template engines than the buffet interface standardises. So, ToscaWidgets has some template-language hooks, and support is primarily for: Genshi, Mako, Kid and Cheetah.
 
 The :attr:`template` parameter takes the form ``engine_name:template_path``. The ``engine_name`` is the name that the template engine defines in the ``python.templating.engines`` entry point, e.g. ``genshi`` or ``mako``. The ``template_path`` is a string the engine can use to locate the template; usually this is dot-notation that mimics the semantics of Python's import statement, e.g. ``myapp.templates.mytemplate``. Genshi templates allow specifications like ``./template.html`` which is beneficial for simple applications.
 
@@ -133,6 +134,12 @@ For instance, you might have a form.mak and a form.html template (mako and gensh
 
 .. autoclass:: tw2.core.template.EngineManager
    :members: render, _get_adaptor_renderer
+
+
+Non-template Output
+===================
+
+Instead of using a template, a widget can also override the ``generate_output`` method. This function generates the HTML output for a widget; by default, it renders the widget's template as described in the previous section, but can be overridden by any function that returns a string of HTML.
 
 
 Resources

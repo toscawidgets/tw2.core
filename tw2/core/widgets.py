@@ -253,47 +253,64 @@ class Widget(pm.Parametered):
             parent. Set this to ``string`` to get raw string output.
         """
         if not self:
+            # Create a self (since we were called as a classmethod)
             vw = vw_class = core.request_local().get('validated_widget')
-            cls_class = None
             if vw:
                 # Pull out actual class instances to compare to see if this
                 # is really the widget that was actually validated
                 if not getattr(vw_class, '__bases__', None):
                     vw_class = vw.__class__
-                if not getattr(cls, '__bases__', None):
-                    cls_class = cls.__class__
-                else:
-                    cls_class = cls
-                if vw_class.__name__ != cls_class.__name__:
+                if vw_class is not cls:
                     vw = None
                 if vw:
-                    return vw.display()
-            return cls.req(**kw).display(displays_on)
-        else:
-            if not self.parent:
-                self.prepare()
-            if self._js_calls:
-                #avoids circular reference
-                import resources as rs
-                for item in self._js_calls:
-                    self.resources.append(rs.JSFuncCall(src=str(item[0]), location=item[1]))
-            if self.resources:
-                self.resources = WidgetBunch([r.req() for r in self.resources])
-                for r in self.resources:
-                    r.prepare()
-            mw = core.request_local().get('middleware')
-            if displays_on is None:
-                if self.parent is None:
-                    displays_on = mw and mw.config.default_engine or 'string'
-                else:
-                    displays_on = template.get_engine_name(self.parent.template, mw)
-            v = {'w':self}
-            if mw and mw.config.params_as_vars:
-                for p in self._params:
-                    if hasattr(self, p):
-                        v[p] = getattr(self, p)
-            eng = mw and mw.engines or template.global_engines
-            return eng.render(self.template, displays_on, v)
+                    self = vw
+            if self is None:
+                # We weren't the validated widget (or there wasn't one), so 
+                # create a new instance
+                self = cls.req(**kw)
+        if not self.parent:
+            self.prepare()
+        if self._js_calls:
+            #avoids circular reference
+            import resources as rs
+            for item in self._js_calls:
+                self.resources.append(rs.JSFuncCall(src=str(item[0]), location=item[1]))
+        if self.resources:
+            self.resources = WidgetBunch([r.req() for r in self.resources])
+            for r in self.resources:
+                r.prepare()
+        return self.generate_output(displays_on)
+    
+    def generate_output(self, engine_name):
+        """
+        Generate the actual output text for this widget.
+        
+        By default this renders the widget's template. Subclasses can override
+        this method for purely programmatic output.
+        
+        `engine_name`
+            The name of the template engine this widget is being displayed
+            inside.
+        
+        Use it like this::
+
+            class MyWidget(LeafWidget):
+                def generate_output(self, engine_name):
+                    return "<span {0}>{1}</span>".format(self.attrs, self.text)
+        """
+        mw = core.request_local().get('middleware')
+        if engine_name is None:
+            if self.parent is None:
+                engine_name = mw and mw.config.default_engine or 'string'
+            else:
+                engine_name = template.get_engine_name(self.parent.template, mw)
+        v = {'w':self}
+        if mw and mw.config.params_as_vars:
+            for p in self._params:
+                if hasattr(self, p):
+                    v[p] = getattr(self, p)
+        eng = mw and mw.engines or template.global_engines
+        return eng.render(self.template, engine_name, v)
 
     @classmethod
     def validate(cls, params, state=None):
