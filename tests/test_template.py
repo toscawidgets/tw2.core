@@ -1,5 +1,6 @@
 import tw2.core as twc, testapi
 import webob as wo
+import os
 from nose.tools import raises
 from tw2.core.template import reset_engine_name_cache
 
@@ -141,4 +142,6 @@ class TestTemplate(object):
                 assert(test.display().replace(kid_prefix, '') == '<p>TEST <p>TEST bob</p></p>')
 
     def test_genshi_abs(self):
-        twc.Widget(template='genshi_abs:test.html').display()
+        test_dir = os.path.sep.join(__file__.split(os.path.sep)[:-1])
+        fname = os.path.sep.join([test_dir, 'test.html'])
+        twc.Widget(template='genshi_abs:%s' % fname).display()
