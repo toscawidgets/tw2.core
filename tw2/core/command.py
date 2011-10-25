@@ -233,7 +233,7 @@ class archive_tw2_resources(Command):
                 self.execute(self._copy_resource_tree, (modname, fbase),
                              "Copying %s recursively into %s" %
                              (modname, self.writer.base))
-            except AttributeError as e:
+            except AttributeError, e:
                 pass
 
 

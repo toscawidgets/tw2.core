@@ -11,8 +11,8 @@ import shutil
 import tw2.core.core as core
 import tw2.core.middleware as middleware
 
-TMP_DIR = '/tmp/tmp_test_out1'
-OUT_DIR = '/tmp/tmp_test_out2'
+TMP_DIR = os.path.join(os.environ['TEMP'], 'tmp_test_out1')
+OUT_DIR = os.path.join(os.environ['TEMP'], 'tmp_test_out2')
 
 class StdOut(StringIO.StringIO):
      def __init__(self,stdout):
@@ -42,7 +42,7 @@ class TestErrors(TestCase):
         self.c = tw2.core.command.archive_tw2_resources(d)
         try:
             shutil.rmtree(OUT_DIR)
-        except Exception as e:
+        except Exception, e:
             pass
         os.mkdir(OUT_DIR)
 
@@ -70,7 +70,7 @@ class TestErrors(TestCase):
         try:
             self.c.finalize_options()
             assert(False)
-        except ValueError as e:
+        except ValueError, e:
             assert(
                 str(e) == "invalid literal for int() with base 10: 'not-an-int'"
             )
@@ -125,7 +125,7 @@ class TestArchive(TestCase):
 
         try:
             shutil.rmtree(OUT_DIR)
-        except Exception as e:
+        except Exception, e:
             pass
 
         self.c.initialize_options()
@@ -140,7 +140,7 @@ class TestArchive(TestCase):
         core.request_local()['middleware'] = middleware.make_middleware()
         try:
             core.request_local()['resources'] = []
-        except Exception as e:
+        except Exception, e:
             pass
 
     def tearDown(self):
@@ -149,12 +149,12 @@ class TestArchive(TestCase):
 
         try:
             shutil.rmtree(OUT_DIR)
-        except Exception as e:
+        except Exception, e:
             pass
 
         try:
             shutil.rmtree(TMP_DIR)
-        except Exception as e:
+        except Exception, e:
             pass
 
     def test_load_widgets(self):

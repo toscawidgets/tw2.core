@@ -1,7 +1,7 @@
 """Setuptools setup file"""
 
 import sys, os
-import multiprocessing, logging
+import logging
 
 from setuptools import setup
 
