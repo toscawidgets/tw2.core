@@ -7,12 +7,13 @@ import StringIO
 import sys
 import os
 import shutil
+import tempfile
 
 import tw2.core.core as core
 import tw2.core.middleware as middleware
 
-TMP_DIR = os.path.join(os.environ['TEMP'], 'tmp_test_out1')
-OUT_DIR = os.path.join(os.environ['TEMP'], 'tmp_test_out2')
+TMP_DIR = tempfile.mkdtemp(suffix='tmp_test_out1')
+OUT_DIR = tempfile.mkdtemp(suffix='tmp_test_out2')
 
 class StdOut(StringIO.StringIO):
      def __init__(self,stdout):
