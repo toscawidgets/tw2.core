@@ -207,7 +207,7 @@ class archive_tw2_resources(Command):
             # TODO -- this should be resolved and standardized in the future.
 
             for ep in pkg_resources.iter_entry_points('tw2.widgets'):
-                if ep.module_name == distribution:
+                if ep.module_name.startswith(distribution):
                     mod = ep.load()
                     self._load_widgets(mod)
                     self.announce("Loaded %s" % mod.__name__)
