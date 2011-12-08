@@ -318,8 +318,8 @@ class _ResourceInjector(util.MultipleReplacer):
 
     def __init__(self):
         return util.MultipleReplacer.__init__(self, {
-            r'<head.*?>': self._injector_for_location('head'),
-            r'</head.*?>': self._injector_for_location('headbottom', False),
+            r'<head(?!er).*?>': self._injector_for_location('head'),
+            r'</head(?!er).*?>': self._injector_for_location('headbottom', False),
             r'<body.*?>': self._injector_for_location('bodytop'),
             r'</body.*?>': self._injector_for_location('bodybottom', False)
             }, re.I|re.M)
