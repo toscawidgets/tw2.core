@@ -16,7 +16,7 @@ Getting Set Up
 First, we'll create a python ``virtualenv`` and install ``pyramid`` into it::
 
     $ mkvirtualenv --no-site-packages tw2-and-pyramid
-    $ pip install pyramid
+    $ pip install pyramid PasteScript
     $ paster create -t pyramid_alchemy myapp
     $ cd myapp
 
@@ -86,8 +86,8 @@ First, create a new file ``myapp/widgets.py`` with the contents::
 
 Second, modify ``myapp/views.py`` and add a new view callable like so::
 
-    def view_widget(request):
-        return {'widget': request.context}
+    def view_widget(context, request):
+        return {'widget': context}
 
 Thirdly, add a new template ``myapp/templates/widget.pt`` (which is a `chameleon
 <http://pypi.python.org/pypi/Chameleon>`_ template) with the following
@@ -104,7 +104,7 @@ contents::
     </head>
     <body>
       <div id="wrap">
-        <div tal:content="structure widget.display()"></div> 
+        <div tal:content="structure widget.display()"></div>
       </div>
       <div id="footer">
         <div class="footer">&copy; Copyright 2008-2011, Agendaless Consulting.</div>
@@ -115,10 +115,7 @@ contents::
 Fourthly, modify the class responsible for producing your resource tree,
 the ``MyApp`` class in ``myapp/models.py``.  At the top of the file add::
 
-
-And inside the ``MyApp`` class, just inside the definition of the
-``__getitem__(self, key)`` method but before the ``session= DBSession()`` line
-add the following block::
+Add the following hook into the ``def __getitem__(self, key):`` method of the ``MyApp`` class just above the ``session= DBSession()`` line::
 
     if key == 'movie':
         import myapp.widgets
@@ -190,12 +187,6 @@ so::
     controller_prefix = /tw2_controllers/
     serve_controllers = True
 
-Next, edit ``myapp/__init__.py`` and add another view::
-
-    config.add_view('myapp.views.view_widget',
-                    context='myapp.widgets.MovieForm',
-                    renderer="templates/widget.pt")
-
 Next, edit ``myapp/models.py`` with the following changes.  Add this set of
 imports to the top::
 
@@ -237,28 +228,19 @@ Just above the definition of ``class MyModel(Base):`` add::
         character = Column(Unicode(255))
         actor = Column(Unicode(255))
 
-Add the following hook into the ``def __getitem__(self, key):`` method of the ``MyApp`` class just above the ``session= DBSession()`` line::
-
-     if key == 'movie':
-         import myapp.widgets
-         w = myapp.widgets.MovieForm.req()
-         w.__parent__ = self
-         w.__name__ = key
-         return w
-
 And finally inside the ``def populate()`` method of the same file add::
 
     for name in ['Action', 'Comedy', 'Romance', 'Sci-fi']:
         session.add(Genre(name=name))
 
-Now done with ``myapp/models.py``, edit ``myapp/views.py`` and replace the definition of ``def view_widget(request):`` with::
+Now done with ``myapp/models.py``, edit ``myapp/views.py`` and replace the definition of ``def view_widget(context, request):`` with::
 
     import tw2.core
-    def view_widget(request):
-        request.context.fetch_data(request)
+    def view_widget(context, request):
+        context.fetch_data(request)
         mw = tw2.core.core.request_local()['middleware']
-        mw.controllers.register(request.context, 'movie_submit')
-        return {'widget': request.context}
+        mw.controllers.register(context, 'movie_submit')
+        return {'widget': context}
 
 Lastly, edit ``myapp/widgets.py`` and add::
 
@@ -280,7 +262,7 @@ And the last for the `MovieForm`, change ``genres = tw2.forms.CheckBoxList( ... 
 
 Now, in your command prompt run::
 
-    rm devdata.db
+    rm myapp.db
     paster serve development.ini
 
 This will recreate and initialize your database in a sqlite DB.
@@ -304,6 +286,11 @@ Add a whole new class to ``myapp/widgets.py``::
         class child(tw2.forms.GridLayout):
             title = tw2.forms.LabelField()
             id = tw2.forms.LinkField(link='/movie?id=$', text='Edit', label=None)
+
+In ``myapp/widgets.py`` also add the following line just inside the definition
+of ``MovieForm``::
+
+    redirect = '/list'
 
 Add another hook into the ``MyApp`` ``__getitem__(...)`` method in ``myapp/models.py``::
 
@@ -380,10 +367,10 @@ Add the following to your view configuration in ``myapp/__init__.py``::
 
 Add that view to ``myapp/views.py`` itself::
 
-    def view_grid_widget(request):
+    def view_grid_widget(context, request):
         mw = tw2.core.core.request_local()['middleware']
-        mw.controllers.register(request.context, 'db_jqgrid')
-        return {'widget': request.context}
+        mw.controllers.register(context, 'db_jqgrid')
+        return {'widget': context}
 
 Finally add another hook into ``MyApp.__getitem__(...)``::
 
