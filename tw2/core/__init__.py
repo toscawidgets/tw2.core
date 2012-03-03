@@ -14,12 +14,16 @@ from widgets import (Widget, CompoundWidget, RepeatingWidget,
 from resources import (JSSymbol, Link, JSLink, CSSLink, JSSource, JSFuncCall,
     inject_resources, DirLink, encoder)
 
-from validation import (Validator, LengthValidator,
+from validation import (
+    Validator, LengthValidator,
     RegexValidator, IntValidator, OneOfValidator, DateValidator,
     DateTimeValidator, ValidationError, Invalid, EmailValidator,
     UrlValidator, IpAddressValidator, StringLengthValidator,
     ListLengthValidator, RangeValidator, MatchValidator,
-    BoolValidator, BlankValidator, safe_validate, EmptyField)
+    BoolValidator, BlankValidator, safe_validate, EmptyField,
+    CompoundValidator,
+    Any, All,
+)
 
 from middleware import (make_middleware, dev_server)
 
