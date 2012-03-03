@@ -237,7 +237,7 @@ class Widget(pm.Parametered):
         widget is rendered.
         """
         #log.debug("Adding call <%s> for %r statically.", call, self)
-        self._js_calls.append([str(call), location])
+        self._js_calls.append([call, location])
 
     @util.class_or_instance
     def display(self, cls, displays_on=None, **kw):
@@ -274,7 +274,10 @@ class Widget(pm.Parametered):
             #avoids circular reference
             import resources as rs
             for item in self._js_calls:
-                self.resources.append(rs.JSFuncCall(src=str(item[0]), location=item[1]))
+                if 'JSFuncCall' in repr(item[0]):
+                    self.resources.append(item[0])
+                else:
+                    self.resources.append(rs.JSFuncCall(src=str(item[0]), location=item[1]))
         if self.resources:
             self.resources = WidgetBunch([r.req() for r in self.resources])
             for r in self.resources:

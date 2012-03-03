@@ -14,6 +14,8 @@ from itertools import imap
 
 import warnings
 
+from tw2.core import JSFuncCall
+
 __all__ = ["js_callback", "js_function", "js_symbol"]
 
 log = logging.getLogger(__name__)
@@ -103,8 +105,13 @@ class js_callback(object):
     def __init__(self, cb, *args):
         if isinstance(cb, basestring):
             self.cb = cb
-        elif isinstance(cb, js_function):
-            self.cb = "function(){%s}" % cb(*args)
+        elif isinstance(cb, js_function) or 'JSFuncCall' in repr(cb):
+            if args:
+                cbs = cb.req(args=args)
+            else:
+                cbs = cb.req()
+            cbs.prepare()
+            self.cb = "function(){%s}" % str(cbs)
         elif isinstance(cb, _js_call):
             self.cb = "function(){%s}" % cb
         else:
@@ -190,11 +197,12 @@ class js_function(object):
         self.__name = name
             
     def __call__(self, *args):
-        return _js_call(self.__name, args)
+        return JSFuncCall(function=self.__name, args=args)
+        #return _js_call(self.__name, args)
         
 
 class _js_call(object):
-    def __init__(self, name,args=None):
+    def __init__(self, name, args=None):
         self.__name = name
         self.__args = args
         self.__src = None
