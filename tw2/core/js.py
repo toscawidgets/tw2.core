@@ -12,7 +12,6 @@ import sys
 import logging
 from itertools import imap
 
-
 import warnings
 
 __all__ = ["js_callback", "js_function", "js_symbol"]
@@ -63,7 +62,7 @@ log = logging.getLogger(__name__)
         
 
 def js_symbol(name):
-    warnings.warn("js_symbol will soonbe deprecated, use JSSymbol instead.", DeprecationWarning)
+    warnings.warn("js_symbol will soon be deprecated, use JSSymbol instead.", DeprecationWarning)
     from resources import JSSymbol
     return JSSymbol(name)
 
@@ -191,39 +190,31 @@ class js_function(object):
         self.__name = name
             
     def __call__(self, *args):
-        return _js_call(self.__name, [], args, called=True)
+        return _js_call(self.__name, args)
         
 
 class _js_call(object):
-    __slots__ = ('__name', '__call_list', '__args', '__called')
-    
-    def __init__(self, name, call_list, args=None, called=False):
+    def __init__(self, name,args=None):
         self.__name = name
         self.__args = args
-        call_list.append(self)
-        self.__call_list = call_list
-        self.__called = called
+        self.__src = None
 
-    def __getattr__(self, name):
-        return self.__class__(name, self.__call_list)
-        
-    def __call__(self, *args):
-        self.__args = args
-        self.__called = True
-        return self
+#    def __call__(self, *args):
+#        self.__args = args
+#        self.__called = True
+#        return self
     
     def __get_js_repr(self):
         from resources import encoder
-        if self.__called:
+        if not self.__src:
             args = self.__args
-            return '%s(%s)' % (self.__name, ', '.join(imap(encoder.encode, args)))
+            self.__src = '%s(%s)' % (self.__name, ', '.join(imap(encoder.encode, args)))
+            return self.__src
         else:
             return self.__name
     
     def __str__(self):
-        if not self.__called:
-            raise TypeError('Last element in the chain has to be called')
-        return '.'.join(c.__get_js_repr() for c in self.__call_list)
+        return self.__get_js_repr()
     
     def __unicode__(self):
         return str(self).decode(sys.getdefaultencoding())
