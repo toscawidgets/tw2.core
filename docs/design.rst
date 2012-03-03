@@ -382,6 +382,13 @@ You can specify a validator on any widget, either a class or an instance. Using 
 
 Second, when the form values are submitted, call :meth:`validate` on the outermost widget. Pass this a dictionary of the request parameters. It will call the same method on all contained widgets, and either return the validated data, with all conversions applied, or raise :class:`tw2.core.ValidationError`. In the case of a validation failure, it stores the invalid value and an error message on the affected widget.
 
+**Chaining Validators**
+
+In some cases you may want validation to succeed if any one of a number of
+checks pass.  In other cases you may want validation to succeed only if the
+input passes `all` of a number of checks.  For this, :mod:`tw2.core` provides
+the :class:`Any` and :class:`All` validators which are subclasses of the
+extendable :class:`CompoundValidator`.
 
 Implementation
 ~~~~~~~~~~~~~~

@@ -494,3 +494,61 @@ class MatchValidator(Validator):
         super(MatchValidator, self).validate_python(value, state)        
         if value != state[self.other_field]:
             raise ValidationError('mismatch', self)
+
+
+class CompoundValidator(Validator):
+    """ Base class for compound validators.
+
+    Child classes :class:`Any` and :class`All` take validators as arguments
+    and use them to validate "value".  In case the validation fails, they
+    raise a ValidationError with a compound message.
+
+    >>> v = All(StringLengthValidator(max=50), EmailValidator, required=True)
+    """
+
+    def __init__(self, *args, **kw):
+        super(CompoundValidator, self).__init__(**kw)
+        self.validators = []
+        for arg in args:
+            if isinstance(arg, Validator):
+                self.validators.append(arg)
+            elif issubclass(arg, Validator):
+                self.validators.append(arg())
+            if getattr(arg, 'required', False):
+                self.required = True
+
+
+class All(CompoundValidator):
+    """
+    Confirm all validators passed as arguments are valid.
+    """
+
+    def validate_python(self, value, state=None):
+        super(All, self).validate_python(value)
+        msg = []
+        for validator in self.validators:
+            try:
+                validator.validate_python(value, state)
+            except ValidationError, e:
+                msg.append(str(e))
+
+        if msg:
+            raise ValidationError(' and '.join(set(msg)), self)
+
+
+class Any(CompoundValidator):
+    """
+    Confirm at least one of the validators passed as arguments is valid.
+    """
+
+    def validate_python(self, value, state=None):
+        super(Any, self).validate_python(value)
+        msg = []
+        for validator in self.validators:
+            try:
+                validator.validate_python(value, state)
+            except ValidationError, e:
+                msg.append(str(e))
+
+        if len(msg) == len(self.validators):
+            raise ValidationError(' or '.join(set(msg)), self)
