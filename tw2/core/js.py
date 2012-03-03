@@ -11,60 +11,61 @@ import sys
 
 import logging
 from itertools import imap
-import simplejson.encoder
 
-__all__ = ["js_callback", "js_function", "js_symbol", "encode"]
+
+import warnings
+
+__all__ = ["js_callback", "js_function", "js_symbol"]
 
 log = logging.getLogger(__name__)
 
-class TWEncoder(simplejson.encoder.JSONEncoder):
-    """A JSON encoder that can encode Widgets, js_calls, js_symbols and
-    js_callbacks.
-    
-    Example::
+#class TWEncoder(simplejson.encoder.JSONEncoder):
+#    """A JSON encoder that can encode Widgets, js_calls, js_symbols and
+#    js_callbacks.
+#    
+#    Example::
+#
+#        >> encode = TWEncoder().encode
+#        >> print encode({'onLoad': js_function("do_something")(js_symbol("this"))})
+#        {"onLoad": do_something(this)}
+#
+#        >> from tw2.core.api import Widget
+#        >> w = Widget("foo")
+#        >> args = {'onLoad': js_callback(js_function('jQuery')(w).click(js_symbol('onClick')))}
+#        >> print encode(args)
+#        {"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}
+#        >> print encode({'args':args})
+#        {"args": {"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}}
+#
+#
+#
+#    """
+#    def __init__(self, *args, **kw):
+#        self.pass_through = (_js_call, js_callback, js_symbol, js_function)
+#        super(TWEncoder, self).__init__(*args, **kw)
 
-        >> encode = TWEncoder().encode
-        >> print encode({'onLoad': js_function("do_something")(js_symbol("this"))})
-        {"onLoad": do_something(this)}
+#    def default(self, obj):
+#        if isinstance(obj, self.pass_through):
+#            return self.mark_for_escape(obj)
+#        elif hasattr(obj, '_id'):
+#            return str(obj.id)
+#        return super(TWEncoder, self).default(obj)
 
-        >> from tw2.core.api import Widget
-        >> w = Widget("foo")
-        >> args = {'onLoad': js_callback(js_function('jQuery')(w).click(js_symbol('onClick')))}
-        >> print encode(args)
-        {"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}
-        >> print encode({'args':args})
-        {"args": {"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}}
+#    def encode(self, obj):
+#        encoded = super(TWEncoder, self).encode(obj)
+#        return self.unescape_marked(encoded)
 
+#    def mark_for_escape(self, obj):
+#        return '*#*%s*#*' % obj
 
-
-    """
-    def __init__(self, *args, **kw):
-        self.pass_through = (_js_call, js_callback, js_symbol, js_function)
-        super(TWEncoder, self).__init__(*args, **kw)
-
-    def default(self, obj):
-        if isinstance(obj, self.pass_through):
-            return self.mark_for_escape(obj)
-        elif hasattr(obj, '_id'):
-            return str(obj.id)
-        return super(TWEncoder, self).default(obj)
-
-    def encode(self, obj):
-        encoded = super(TWEncoder, self).encode(obj)
-        return self.unescape_marked(encoded)
-
-    def mark_for_escape(self, obj):
-        return '*#*%s*#*' % obj
-
-    def unescape_marked(self, encoded):
-        return encoded.replace('"*#*','').replace('*#*"', '')
+#    def unescape_marked(self, encoded):
+#        return encoded.replace('"*#*','').replace('*#*"', '')
         
 
-class js_symbol(object):
-    def __init__(self, name):
-        self._name = name
-    def __str__(self):
-        return str(self._name)
+def js_symbol(name):
+    warnings.warn("js_symbol will soonbe deprecated, use JSSymbol instead.", DeprecationWarning)
+    from resources import JSSymbol
+    return JSSymbol(name)
 
 class js_callback(object):
     """A js function that can be passed as a callback to be called
@@ -212,9 +213,10 @@ class _js_call(object):
         return self
     
     def __get_js_repr(self):
+        from resources import encoder
         if self.__called:
             args = self.__args
-            return '%s(%s)' % (self.__name, ', '.join(imap(encode, args)))
+            return '%s(%s)' % (self.__name, ', '.join(imap(encoder.encode, args)))
         else:
             return self.__name
     
@@ -226,4 +228,4 @@ class _js_call(object):
     def __unicode__(self):
         return str(self).decode(sys.getdefaultencoding())
 
-encode = TWEncoder().encode
+#encode = TWEncoder().encode

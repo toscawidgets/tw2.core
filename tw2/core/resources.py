@@ -2,6 +2,8 @@ import widgets as wd, util, core, params as pm
 import re, logging, itertools
 import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
 
+from js import js_function, js_callback, _js_call
+
 log = logging.getLogger(__name__)
 
 
@@ -25,7 +27,7 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
         super(TW2Encoder, self).__init__(*args, **kw)
 
     def default(self, obj):
-        if isinstance(obj, JSSymbol):
+        if isinstance(obj, (JSSymbol, _js_call, js_callback, js_function)):
             return self.mark_for_escape(obj)
         if hasattr(obj, '__json__'):
             return obj.__json__()
