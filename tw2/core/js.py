@@ -103,6 +103,8 @@ class js_callback(object):
 
     """
     def __init__(self, cb, *args):
+        warnings.warn('js_callback is being deprecated in future releases.',
+            DeprecationWarning)
         if isinstance(cb, basestring):
             self.cb = cb
         elif isinstance(cb, js_function) or 'JSFuncCall' in repr(cb):
@@ -194,6 +196,9 @@ class js_function(object):
 
     """
     def __init__(self, name):
+        warnings.warn('js_function is being deprecated in future releases.' + \
+            'Please update your widgets to use JSFuncCall.', 
+            DeprecationWarning)
         self.__name = name
             
     def __call__(self, *args):
@@ -216,7 +221,10 @@ class _js_call(object):
         from resources import encoder
         if not self.__src:
             args = self.__args
-            self.__src = '%s(%s)' % (self.__name, ', '.join(imap(encoder.encode, args)))
+            self.__src = '%s(%s)' % (
+                self.__name, 
+                ', '.join(imap(encoder.encode, args))
+            )
             return self.__src
         else:
             return self.__name
