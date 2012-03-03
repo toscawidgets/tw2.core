@@ -206,33 +206,33 @@ class js_function(object):
         #return _js_call(self.__name, args)
         
 
-class _js_call(object):
-    def __init__(self, name, args=None):
-        self.__name = name
-        self.__args = args
-        self.__src = None
+#class _js_call(object):
+#    def __init__(self, name, args=None):
+#        self.__name = name
+#        self.__args = args
+#        self.__src = None
 
 #    def __call__(self, *args):
 #        self.__args = args
 #        self.__called = True
 #        return self
     
-    def __get_js_repr(self):
-        from resources import encoder
-        if not self.__src:
-            args = self.__args
-            self.__src = '%s(%s)' % (
-                self.__name, 
-                ', '.join(imap(encoder.encode, args))
-            )
-            return self.__src
-        else:
-            return self.__name
+#    def __get_js_repr(self):
+#        from resources import encoder
+#        if not self.__src:
+#            args = self.__args
+#            self.__src = '%s(%s)' % (
+#                self.__name, 
+#                ', '.join(imap(encoder.encode, args))
+#            )
+#            return self.__src
+#        else:
+#            return self.__name
     
-    def __str__(self):
-        return self.__get_js_repr()
+#    def __str__(self):
+#        return self.__get_js_repr()
     
-    def __unicode__(self):
-        return str(self).decode(sys.getdefaultencoding())
+#    def __unicode__(self):
+#        return str(self).decode(sys.getdefaultencoding())
 
 #encode = TWEncoder().encode
