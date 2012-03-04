@@ -1,4 +1,5 @@
 import webob as wo, webtest as wt, tw2.core as twc, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
+import tw2.core.core
 from nose.tools import eq_, raises
 from strainer.operators import eq_xhtml
 from unittest import TestCase
@@ -295,13 +296,23 @@ class TestResourcesMisc(TestCase):
         l = twr.Link(link="http://google.com")
         self.assert_(hash(l.req()))  # meh
 
+    def testAutoModnameReqPrep(self):
+        l = twr.Link(filename="somefile")
+        l = l.req()
+        l.prepare()
+        eq_(l.modname, "test_resources")
+
+    def testAutoModnameInject(self):
+        l = twr.Link(filename="somefile")
+        l.inject()
+        local = tw2.core.core.request_local()
+        eq_(local['resources'][0].modname, "test_resources")
 
     def testDirLink(self):
         dl = twr.DirLink(modname="tw2.core", filename="somefile")
         i = dl.req()
         i.prepare()
         self.assert_(i.link)
-
 
     def testJSSource(self):
         import uuid

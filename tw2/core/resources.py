@@ -1,6 +1,7 @@
 import widgets as wd, util, core, params as pm
 import re, logging, itertools
 import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
+import inspect
 
 
 log = logging.getLogger(__name__)
@@ -93,7 +94,27 @@ class Link(Resource):
     filename = pm.Param('Path to file, relative to module base.', default=None)
     no_inject = pm.Param("Don't inject this link. (Default: False)", default=False)
 
+    def guess_modname(self):
+        """ Try to guess my modname.
+
+        If I wasn't supplied any modname, take a guess by stepping back up the
+        frame stack until I find something not in tw2.core
+        """
+
+        try:
+            frame, i = inspect.stack()[0][0], 0
+            while frame.f_globals['__name__'].startswith('tw2.core'):
+                frame, i = inspect.stack()[i][0], i + 1
+
+            return frame.f_globals['__name__']
+        except Exception as e:
+            return None
+
     def prepare(self):
+
+        if not self.modname:
+            self.modname = self.guess_modname()
+
         rl = core.request_local()
         if not self.no_inject:
             if not hasattr(self, 'link'):
