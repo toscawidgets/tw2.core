@@ -81,7 +81,7 @@ class Config(object):
         (default: '')
     '''
 
-    translator = lambda s: s
+    translator = lambda self, s: s
     default_engine = 'string'
     inject_resources_location = 'head'
     inject_resources = True
