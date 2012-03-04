@@ -1,0 +1,17 @@
+*.pyc
+tw2.core.egg-info
+Thumbs.db
+docs/.output/
+.coverage
+.noseids
+html
+dist
+build
+strainer*
+virtualenv
+*.egg
+*.orig
+*.reject
+external
+htmlcov
+*.swp
