@@ -17,10 +17,19 @@ class TestWidgets(object):
     #--
     # Widget.process
     #--
-    def test_backwards_compat(self):
-        """ Ticket #4 """
+    def test_backwards_compat_new(self):
+        """ Ticket #4 `.__init__(id, ...)` """
         test = twc.Widget('test')
         eq_(test.id, 'test')
+
+    def test_backwards_compat_display(self):
+        """ Ticket #4 `.display(value, ...)` """
+        test = twc.Widget(
+            id='test',
+            template="genshi:tw2.core.test_templates.field_genshi"
+        )
+        output = test.display("foo")
+        eq_(output, u'<p>foo </p>')
 
     def xxtest_required(self):
         test = twc.Widget(id='test')

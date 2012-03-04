@@ -1,10 +1,13 @@
 import copy, weakref, re, itertools, inspect, webob
 import template, core, util, validation as vd, params as pm
+import warnings
 try:
     import formencode
 except ImportError:
     formencode = None
 
+TW1_BACKPAT_WARNING_MESSAGE = \
+        "tw1-style calling is deprecated.  Use tw2 keyword syntax."
 reserved_names = ('parent', 'demo_for', 'child', 'submit', 'datasrc', 'newlink', 'edit')
 _widget_seq = itertools.count(0)
 
@@ -77,18 +80,15 @@ class Widget(pm.Parametered):
         ins.__init__(**kw)
         return ins
 
-    def __new__(cls, *args, **kw):
+    def __new__(cls, id=None, **kw):
         """
         New is overloaded to return a subclass of the widget, rather than an instance.
         """
-        if len(args) > 0:
-            if len(args) > 1:
-                raise pm.ParameterError(
-                    "Only one positional argument accepted.")
-            if 'id' in kw:
-                raise pm.ParameterError(
-                    "You cannot specify two widget ids.")
-            kw['id'] = args[0]
+
+        # Support backwards compatibility with tw1-style calling
+        if id and 'id' not in kw:
+            kw['id'] = id
+            warnings.warn(TW1_BACKPAT_WARNING_MESSAGE)
 
         newname = calc_name(cls, kw)
         return type(cls.__name__+'_s', (cls,), kw)
@@ -249,7 +249,7 @@ class Widget(pm.Parametered):
         self._js_calls.append([call, location])
 
     @util.class_or_instance
-    def display(self, cls, displays_on=None, **kw):
+    def display(self, cls, value=None, displays_on=None, **kw):
         """Display the widget - render the template. In the template, the
         widget instance is available as the variable ``$w``.
 
@@ -261,6 +261,12 @@ class Widget(pm.Parametered):
             the parent's template engine, or the default, if there is no
             parent. Set this to ``string`` to get raw string output.
         """
+
+        # Support backwards compatibility with tw1-style calling
+        if value and 'value' not in kw:
+            kw['value'] = value
+            warnings.warn(TW1_BACKPAT_WARNING_MESSAGE)
+
         if not self:
             # Create a self (since we were called as a classmethod)
             vw = vw_class = core.request_local().get('validated_widget')
