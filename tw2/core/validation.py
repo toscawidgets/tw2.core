@@ -1,5 +1,7 @@
 import core, re, util, string, time, datetime, copy, functools, webob
 
+from i18n import _
+
 # This hack helps work with different versions of WebOb
 if not hasattr(webob, 'MultiDict'):
     webob.MultiDict = webob.multidict.MultiDict
@@ -45,7 +47,7 @@ class ValidationError(BaseValidationError):
         elif hasattr(validator, 'msgs') and msg in validator.msgs:
             msg = validator.msgs.get(msg, msg)
         msg = re.sub('\$(\w+)',
-                lambda m: str(getattr(validator, m.group(1))), msg)
+                lambda m: str(getattr(validator, m.group(1))), unicode(msg))
         super(ValidationError, self).__init__(msg)
         
     @property
@@ -154,10 +156,10 @@ class Validator(object):
     __metaclass__ = ValidatorMeta
 
     msgs = {
-        'required': 'Enter a value',
-        'decode': 'Received in the wrong character set; should be $encoding',
-        'corrupt': 'The form submission was received corrupted; please try again',
-        'childerror': '' # Children of this widget have errors
+        'required': _('Enter a value'),
+        'decode': _('Received in the wrong character set; should be $encoding'),
+        'corrupt': _('The form submission was received corrupted; please try again'),
+        'childerror': _(''),  # Children of this widget have errors
     }
     required = False
     strip = True
@@ -213,8 +215,8 @@ class LengthValidator(Validator):
         Maximum length (default: None)
     """
     msgs = {
-        'tooshort': 'Value is too short',
-        'toolong': 'Value is too long',
+        'tooshort': _('Value is too short'),
+        'toolong': _('Value is too long'),
     }
     min = None
     max = None
@@ -233,8 +235,8 @@ class StringLengthValidator(LengthValidator):
     """
 
     msgs = {
-        'tooshort': ('string_tooshort', 'Must be at least $min characters'),
-        'toolong': ('string_toolong', 'Cannot be longer than $max characters'),
+        'tooshort': ('string_tooshort', _('Must be at least $min characters')),
+        'toolong': ('string_toolong', _('Cannot be longer than $max characters')),
     }
 
 class ListLengthValidator(LengthValidator):
@@ -244,8 +246,8 @@ class ListLengthValidator(LengthValidator):
     """
 
     msgs = {
-        'tooshort': ('list_tooshort', 'Select at least $min'),
-        'toolong': ('list_toolong', 'Select no more than $max'),
+        'tooshort': ('list_tooshort', _('Select at least $min')),
+        'toolong': ('list_toolong', _('Select no more than $max')),
     }
 
 
@@ -261,8 +263,8 @@ class RangeValidator(Validator):
         Maximum value (default: None)
     """
     msgs = {
-        'toosmall': 'Must be at least $min',
-        'toobig': 'Cannot be more than $max',
+        'toosmall': _('Must be at least $min'),
+        'toobig': _('Cannot be more than $max'),
     }
     min = None
     max = None
@@ -281,7 +283,7 @@ class IntValidator(RangeValidator):
     so `min` and `max` can be specified.
     """
     msgs = {
-        'notint': 'Must be an integer',
+        'notint': _('Must be an integer'),
     }
 
     def to_python(self, value):
@@ -316,7 +318,7 @@ class BoolValidator(RangeValidator):
     check boxes.
     """
     msgs = {
-        'required': ('bool_required', 'You must select this')
+        'required': ('bool_required', _('You must select this'))
     }
     def to_python(self, value):
         value = super(BoolValidator, self).to_python(value)
@@ -332,7 +334,7 @@ class OneOfValidator(Validator):
         Acceptable values
     """
     msgs = {
-        'notinlist': 'Invalid value',
+        'notinlist': _('Invalid value'),
     }
     values = []
 
@@ -352,9 +354,9 @@ class DateValidator(RangeValidator):
         syntax as the Python strftime function.
     """
     msgs = {
-        'baddate': 'Must follow date format $format_str',
-        'toosmall': ('date_toosmall', 'Cannot be earlier than $min_str'),
-        'toobig': ('date_toobig', 'Cannot be later than $max_str'),
+        'baddate': _('Must follow date format $format_str'),
+        'toosmall': ('date_toosmall', _('Cannot be earlier than $min_str')),
+        'toobig': ('date_toobig', _('Cannot be later than $max_str')),
     }
     format = '%d/%m/%Y'
 
@@ -389,7 +391,7 @@ class DateTimeValidator(DateValidator):
     Confirm the value is a valid date and time; otherwise just like :class:`DateValidator`.
     """
     msgs = {
-        'baddate': ('baddatetime', 'Must follow date/time format $format_str'),
+        'baddate': ('baddatetime', _('Must follow date/time format $format_str')),
     }
     format = '%d/%m/%Y %H:%M'
 
@@ -410,7 +412,7 @@ class RegexValidator(Validator):
         A Python regular expression object, generated like ``re.compile('^\w+$')``
     """
     msgs = {
-        'badregex': 'Invalid value',
+        'badregex': _('Invalid value'),
     }
     regex = None
 
@@ -425,7 +427,7 @@ class EmailValidator(RegexValidator):
     Confirm the value is a valid email address.
     """
     msgs = {
-        'badregex': ('bademail', 'Must be a valid email address'),
+        'badregex': ('bademail', _('Must be a valid email address')),
     }
     regex = re.compile('^[\w\-.]+@[\w\-.]+$')
 
@@ -435,7 +437,7 @@ class UrlValidator(RegexValidator):
     Confirm the value is a valid URL.
     """
     msgs = {
-        'regex': ('badurl', 'Must be a valid URL'),
+        'regex': ('badurl', _('Must be a valid URL')),
     }
     regex = re.compile('^https?://', re.IGNORECASE)
 
@@ -454,8 +456,8 @@ class IpAddressValidator(Validator):
     require_netblock = False
     
     msgs = {
-        'badipaddress': 'Must be a valid IP address',
-        'badnetblock': 'Must be a valid IP network block',
+        'badipaddress': _('Must be a valid IP address'),
+        'badnetblock': _('Must be a valid IP network block'),
     }
     regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)(/(\d+))?$')
     def validate_python(self, value, state=None):
@@ -479,7 +481,7 @@ class MatchValidator(Validator):
         Name of the sibling field this must match
     """
     msgs = {
-        'mismatch': "Must match $other_field_str"
+        'mismatch': _("Must match $other_field_str"),
     }
 
     def __init__(self, other_field, **kw):

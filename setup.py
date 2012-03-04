@@ -40,6 +40,7 @@ setup(
         'simplejson >= 2.0',
         'PasteDeploy',
         'weberror',
+        'speaklater',
         ],
     tests_require = [
         'nose',

@@ -29,5 +29,7 @@ from middleware import (make_middleware, dev_server)
 
 from js import js_symbol, js_callback, js_function
 
+from i18n import _, tw2_translation_string
+
 # Shortcut from Deprecated TWEncoder that was in js.py
 encode = encoder.encode
