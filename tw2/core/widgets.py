@@ -77,10 +77,19 @@ class Widget(pm.Parametered):
         ins.__init__(**kw)
         return ins
 
-    def __new__(cls, **kw):
+    def __new__(cls, *args, **kw):
         """
         New is overloaded to return a subclass of the widget, rather than an instance.
         """
+        if len(args) > 0:
+            if len(args) > 1:
+                raise pm.ParameterError(
+                    "Only one positional argument accepted.")
+            if 'id' in kw:
+                raise pm.ParameterError(
+                    "You cannot specify two widget ids.")
+            kw['id'] = args[0]
+
         newname = calc_name(cls, kw)
         return type(cls.__name__+'_s', (cls,), kw)
 
