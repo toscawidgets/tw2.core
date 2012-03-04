@@ -9,7 +9,7 @@ from setuptools import setup
 # in order to get tests to pass smoothly on python 2.7.
 import multiprocessing, logging
 
-def get_description(fname='README.txt'):
+def get_description(fname='README.rst'):
     # Adapted from PEAK-Rules' setup.py
     # Get our long description from the documentation
     f = file(fname)
