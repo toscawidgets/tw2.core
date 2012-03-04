@@ -1,6 +1,8 @@
 import widgets as wd, util, core, params as pm
 import re, logging, itertools
 import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
+import inspect
+
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +27,8 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
         super(TW2Encoder, self).__init__(*args, **kw)
 
     def default(self, obj):
-        if isinstance(obj, JSSymbol):
+        from js import js_function, js_callback
+        if isinstance(obj, (JSSymbol, js_callback, js_function)):
             return self.mark_for_escape(obj)
         if hasattr(obj, '__json__'):
             return obj.__json__()
@@ -62,12 +65,19 @@ class Resource(wd.Widget):
                         'useful, e.g. static images.', default=None)
     id = None
 
+    @classmethod
+    def inject(cls):
+        cls.req().prepare()
+
     def prepare(self):
         super(Resource, self).prepare()
 
         rl_resources = core.request_local().setdefault('resources', [])
+        rl_location = core.request_local()['middleware'].config.inject_resources_location
 
         if self not in rl_resources:
+            if self.location is '__use_middleware':
+                self.location = rl_location
             for r in self.resources:
                 r.req().prepare()
 
@@ -82,16 +92,38 @@ class Link(Resource):
     link = pm.Param('Direct web link to file. If this is not specified, it is automatically generated, based on :attr:`modname` and :attr:`filename`.')
     modname = pm.Param('Name of Python module that contains the file.', default=None)
     filename = pm.Param('Path to file, relative to module base.', default=None)
+    no_inject = pm.Param("Don't inject this link. (Default: False)", default=False)
+
+    def guess_modname(self):
+        """ Try to guess my modname.
+
+        If I wasn't supplied any modname, take a guess by stepping back up the
+        frame stack until I find something not in tw2.core
+        """
+
+        try:
+            frame, i = inspect.stack()[0][0], 0
+            while frame.f_globals['__name__'].startswith('tw2.core'):
+                frame, i = inspect.stack()[i][0], i + 1
+
+            return frame.f_globals['__name__']
+        except Exception as e:
+            return None
 
     def prepare(self):
+
+        if not self.modname:
+            self.modname = self.guess_modname()
+
         rl = core.request_local()
-        if not hasattr(self, 'link'):
-            # TBD shouldn't we test for this in __new__ ?
-            if not self.filename:
-                raise pm.ParameterError("Either 'link' or 'filename' must be specified")
-            resources = rl['middleware'].resources
-            self.link = resources.register(self.modname or '__anon__', self.filename)
-        super(Link, self).prepare()
+        if not self.no_inject:
+            if not hasattr(self, 'link'):
+                # TBD shouldn't we test for this in __new__ ?
+                if not self.filename:
+                    raise pm.ParameterError("Either 'link' or 'filename' must be specified")
+                resources = rl['middleware'].resources
+                self.link = resources.register(self.modname or '__anon__', self.filename)
+            super(Link, self).prepare()
 
     def __hash__(self):
         return hash(hasattr(self, 'link') and self.link or ((self.modname or '') + self.filename))
@@ -117,7 +149,7 @@ class JSLink(Link):
     '''
     A JavaScript source file.
     '''
-    location = 'head'
+    location = '__use_middleware'
     template = 'tw2.core.templates.jslink'
 
 class CSSLink(Link):
@@ -143,17 +175,24 @@ class JSFuncCall(JSSource):
     """
     Inline JavaScript function call.
     """
-    src = None # TBD
+    src = None
     function = pm.Param('Function name')
     args = pm.Param('Function arguments', default=None)
     location = 'bodybottom' # TBD: afterwidget?
 
+    def __str__(self):
+        if not self.src:
+            self.prepare()
+        return self.src
+
     def prepare(self):
         if not self.src:
+            args = ''
             if isinstance(self.args, dict):
                 args = encoder.encode(self.args)
             elif self.args:
                 args = ', '.join(encoder.encode(a) for a in self.args)
+
             self.src = '%s(%s)' % (self.function, args)
         super(JSFuncCall, self).prepare()
 
@@ -298,7 +337,6 @@ class _ResourceInjector(util.MultipleReplacer):
 
     ToscaWidgets' middleware can take care of injecting them automatically (default)
     but they can also be injected explicitly, example::
-
 
        >>> from tw2.core.resources import JSLink, inject_resources
        >>> JSLink(link="http://example.com").inject()

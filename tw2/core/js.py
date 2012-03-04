@@ -4,67 +4,29 @@ Python-JS interface to dynamically create JS function calls from your widgets.
 This moudle doesn't aim to serve as a Python-JS "translator". You should code
 your client-side code in JavaScript and make it available in static files which
 you include as JSLinks or inline using JSSources. This module is only intended
-as a "bridge" or interface between Python and JavaScript so JS function 
+as a "bridge" or interface between Python and JavaScript so JS function
 **calls** can be generated programatically.
 """
-import sys 
+import sys
 
 import logging
 from itertools import imap
-import simplejson.encoder
 
-__all__ = ["js_callback", "js_function", "js_symbol", "encode"]
+import warnings
+
+from tw2.core import JSFuncCall
+
+__all__ = ["js_callback", "js_function", "js_symbol"]
 
 log = logging.getLogger(__name__)
 
-class TWEncoder(simplejson.encoder.JSONEncoder):
-    """A JSON encoder that can encode Widgets, js_calls, js_symbols and
-    js_callbacks.
-    
-    Example::
 
-        >> encode = TWEncoder().encode
-        >> print encode({'onLoad': js_function("do_something")(js_symbol("this"))})
-        {"onLoad": do_something(this)}
+def js_symbol(name):
+    warnings.warn("js_symbol will soon be deprecated, use JSSymbol instead.",
+    DeprecationWarning)
+    from resources import JSSymbol
+    return JSSymbol(name)
 
-        >> from tw2.core.api import Widget
-        >> w = Widget("foo")
-        >> args = {'onLoad': js_callback(js_function('jQuery')(w).click(js_symbol('onClick')))}
-        >> print encode(args)
-        {"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}
-        >> print encode({'args':args})
-        {"args": {"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}}
-
-
-
-    """
-    def __init__(self, *args, **kw):
-        self.pass_through = (_js_call, js_callback, js_symbol, js_function)
-        super(TWEncoder, self).__init__(*args, **kw)
-
-    def default(self, obj):
-        if isinstance(obj, self.pass_through):
-            return self.mark_for_escape(obj)
-        elif hasattr(obj, '_id'):
-            return str(obj.id)
-        return super(TWEncoder, self).default(obj)
-
-    def encode(self, obj):
-        encoded = super(TWEncoder, self).encode(obj)
-        return self.unescape_marked(encoded)
-
-    def mark_for_escape(self, obj):
-        return '*#*%s*#*' % obj
-
-    def unescape_marked(self, encoded):
-        return encoded.replace('"*#*','').replace('*#*"', '')
-        
-
-class js_symbol(object):
-    def __init__(self, name):
-        self._name = name
-    def __str__(self):
-        return str(self._name)
 
 class js_callback(object):
     """A js function that can be passed as a callback to be called
@@ -91,20 +53,28 @@ class js_callback(object):
         'function(){foo(1, 2, 3)}'
 
         # A more realistic example
-         
+
         >> jQuery = js_function('jQuery')
         >> my_cb = js_callback('function() { alert(this.text)}')
         >> on_doc_load = jQuery('#foo').bind('click', my_cb)
         >> call = jQuery(js_callback(on_doc_load))
         >> print call
-        jQuery(function(){jQuery(\\"#foo\\").bind(\\"click\\", function() { alert(this.text)})})
+        jQuery(function(){jQuery(\\"#foo\\").bind(\\"click\\", \
+            function() { alert(this.text)})})
 
     """
     def __init__(self, cb, *args):
+        warnings.warn('js_callback is being deprecated in future releases.',
+            DeprecationWarning)
         if isinstance(cb, basestring):
             self.cb = cb
-        elif isinstance(cb, js_function):
-            self.cb = "function(){%s}" % cb(*args)
+        elif isinstance(cb, js_function) or 'JSFuncCall' in repr(cb):
+            if args:
+                cbs = cb.req(args=args)
+            else:
+                cbs = cb.req()
+            cbs.prepare()
+            self.cb = "function(){%s}" % str(cbs)
         elif isinstance(cb, _js_call):
             self.cb = "function(){%s}" % cb
         else:
@@ -112,9 +82,10 @@ class js_callback(object):
 
     def __call__(self, *args):
         raise TypeError("A js_callback cannot be called from Python")
-    
+
     def __str__(self):
         return self.cb
+
 
 class js_function(object):
     """A JS function that can be "called" from python and and added to
@@ -137,7 +108,7 @@ class js_function(object):
 
     If made at Widget initialization those calls will be placed in
     the template for every request that renders the widget.
-        
+
     .. sourcecode:: python
 
         >> from tw.api import Widget
@@ -151,7 +122,7 @@ class js_function(object):
         ...         )
 
     If we want to dynamically make calls on every request, we ca also add_calls
-    inside the ``prepare`` method. 
+    inside the ``prepare`` method.
 
     .. sourcecode:: python
 
@@ -163,12 +134,12 @@ class js_function(object):
         ...         self.add_call(
         ...             jQuery('#%s' % d.id).datePicker(d.pickerOptions)
         ...         )
-    
+
     This would allow to pass different options to the datePicker on every
     display.
 
-    JS calls are rendered by the same mechanisms that render required css and 
-    js for a widget and places those calls at bodybottom so DOM elements which 
+    JS calls are rendered by the same mechanisms that render required css and
+    js for a widget and places those calls at bodybottom so DOM elements which
     we might target are available.
 
     Examples:
@@ -187,43 +158,10 @@ class js_function(object):
 
     """
     def __init__(self, name):
+        warnings.warn('js_function is being deprecated in future releases.' + \
+            'Please update your widgets to use JSFuncCall.',
+            DeprecationWarning)
         self.__name = name
-            
+
     def __call__(self, *args):
-        return _js_call(self.__name, [], args, called=True)
-        
-
-class _js_call(object):
-    __slots__ = ('__name', '__call_list', '__args', '__called')
-    
-    def __init__(self, name, call_list, args=None, called=False):
-        self.__name = name
-        self.__args = args
-        call_list.append(self)
-        self.__call_list = call_list
-        self.__called = called
-
-    def __getattr__(self, name):
-        return self.__class__(name, self.__call_list)
-        
-    def __call__(self, *args):
-        self.__args = args
-        self.__called = True
-        return self
-    
-    def __get_js_repr(self):
-        if self.__called:
-            args = self.__args
-            return '%s(%s)' % (self.__name, ', '.join(imap(encode, args)))
-        else:
-            return self.__name
-    
-    def __str__(self):
-        if not self.__called:
-            raise TypeError('Last element in the chain has to be called')
-        return '.'.join(c.__get_js_repr() for c in self.__call_list)
-    
-    def __unicode__(self):
-        return str(self).decode(sys.getdefaultencoding())
-
-encode = TWEncoder().encode
+        return JSFuncCall(function=self.__name, args=args)

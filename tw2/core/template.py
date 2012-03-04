@@ -172,4 +172,4 @@ class EngineManager(dict):
             self.load_engine(name)
             return dict.__getitem__(self, name)
 
-global_engines = EngineManager()
+engine_manager = EngineManager()

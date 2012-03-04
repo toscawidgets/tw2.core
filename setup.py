@@ -9,7 +9,7 @@ from setuptools import setup
 # in order to get tests to pass smoothly on python 2.7.
 import multiprocessing, logging
 
-def get_description(fname='README.txt'):
+def get_description(fname='README.rst'):
     # Adapted from PEAK-Rules' setup.py
     # Get our long description from the documentation
     f = file(fname)
@@ -32,7 +32,7 @@ _extra_mako = ["Mako >= 0.1.1"]
 
 setup(
     name='tw2.core',
-    version='2.0b11',
+    version='2.0rc1',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=[
@@ -40,6 +40,8 @@ setup(
         'simplejson >= 2.0',
         'PasteDeploy',
         'weberror',
+        'speaklater',
+        'decorator',
         ],
     tests_require = [
         'nose',

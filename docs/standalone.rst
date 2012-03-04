@@ -320,13 +320,7 @@ And add another two whole classes near the bottom of the file but above
             'height': 'auto',
         }
 
-        def prepare(self):
-            # This controller registration does not generally have to occur inside
-            # 'prepare', but we place it here so we're sure the middleware has
-            # been initialized by tw2.devtools.dev_server before we make demands of it.
-            mw = tw2.core.core.request_local()['middleware']
-            mw.controllers.register(self.__class__, 'db_jqgrid')
-            super(GridWidget, self).prepare()
+    tw2.core.register_controller(GridWidget, 'db_jqgrid')
 
     class Grid(tw2.core.Page):
         title = 'jQuery jqGrid'

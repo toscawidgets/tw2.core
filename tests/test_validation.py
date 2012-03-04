@@ -474,3 +474,91 @@ class TestValidatorMisc(TestCase):
             self.assert_(False)
         except ValidationError, ve:
             self.assert_("Enter a value" in ve.message, ve.message)
+
+    def testAnyValidator(self):
+        v = Any(
+            twc.StringLengthValidator(min=5, max=6),
+            twc.IpAddressValidator,
+            required=True
+        )
+
+        self.assert_(v.required)
+        try:
+            v.validate_python("20")
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(
+                ("valid IP" in ve.message and "at least 5" in ve.message),
+                ve.message
+            )
+
+        try:
+            v.validate_python("xxxxxxxxxx")
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(
+                ("valid IP" in ve.message and "longer than 6" in ve.message),
+                ve.message
+            )
+
+        try:
+            v.validate_python("xxxxx")
+            self.assert_(True)
+        except ValidationError, ve:
+            self.assert_(False)
+
+        try:
+            v.validate_python("127.0.0.1")
+            self.assert_(True)
+        except ValidationError, ve:
+            self.assert_(False)
+
+    def testAllValidator(self):
+        v = All(
+            twc.StringLengthValidator(min=9, max=9),
+            twc.IpAddressValidator,
+            required=True
+        )
+
+        self.assert_(v.required)
+        try:
+            v.validate_python("127.0.0.10")
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(
+                ("longer than 9" in ve.message),
+                ve.message
+            )
+
+        try:
+            v.validate_python("0.0.0.0")
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(
+                ("valid IP" not in ve.message and "9" in ve.message),
+                ve.message
+            )
+
+        try:
+            v.validate_python("12345678")
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(
+                ("valid IP" in ve.message and "9" in ve.message),
+                ve.message
+            )
+
+        try:
+            v.validate_python("123456789")
+            self.assert_(False)
+        except ValidationError, ve:
+            self.assert_(
+                ("valid IP" in ve.message and "9" not in ve.message),
+                ve.message
+            )
+
+        try:
+            v.validate_python("127.0.0.1")
+            self.assert_(True)
+        except ValidationError, ve:
+            self.assert_(False, ve.message)

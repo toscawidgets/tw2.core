@@ -2,7 +2,7 @@ import tw2.core as twc, testapi, tw2.core.testbase as tb
 import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
 from nose.tools import eq_
 from webob import Request, Response
-from nose.tools import raises
+from nose.tools import raises, eq_
 import formencode as fe
 from strainer.operators import eq_xhtml
 from unittest import TestCase
@@ -17,6 +17,30 @@ class TestWidgets(object):
     #--
     # Widget.process
     #--
+    def test_backwards_compat_new(self):
+        """ Ticket #4 `.__init__(id, ...)` """
+        test = twc.Widget('test')
+        eq_(test.id, 'test')
+
+    def test_backwards_compat_display(self):
+        """ Ticket #4 `.display(value, ...)` """
+        test = twc.Widget(
+            id='test',
+            template="genshi:tw2.core.test_templates.field_genshi"
+        )
+        output = test.display("foo")
+        eq_(output, u'<p>foo </p>')
+
+    def test_inline_template(self):
+        """ Ticket #69 """
+        test = twc.Widget(
+            id='test',
+            template="<p>${w.value} </p>",
+            inline_engine_name="mako",
+        )
+        output = test.display("foo")
+        eq_(output, u'<p>foo </p>')
+
     def xxtest_required(self):
         test = twc.Widget(id='test')
         try:
@@ -75,8 +99,8 @@ class TestWidgets(object):
         class MyTest(twc.CompoundWidget):
             a = twc.Widget(id='fred')
             b = twc.Widget()
-        assert(MyTest.children[0].id == 'fred')
-        assert(MyTest.children[1].id == 'b')
+        eq_(MyTest.children[0].id, 'fred')
+        eq_(MyTest.children[1].id, 'b')
 
 class TestRepeatingWidgetBunchCls():
 

@@ -1,4 +1,5 @@
 import webob as wo, webtest as wt, tw2.core as twc, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
+import tw2.core.core
 from nose.tools import eq_, raises
 from strainer.operators import eq_xhtml
 from unittest import TestCase
@@ -72,8 +73,11 @@ class TestResources(object):
         wa.display()
         rl = twc.core.request_local()
 
-        print rl['resources']
-        assert(rl['resources'] == [foo1, foo3, foo2, foo4])
+        lnk = lambda r: r.link
+        eq_(
+            map(lnk, rl['resources']),
+            map(lnk, [foo1, foo3, foo2, foo4])
+        )
 
 
     #--
@@ -142,19 +146,29 @@ class TestResources(object):
     #--
     # Resource injector
     #--
+    def test_no_inject_head(self):
+        rl = testapi.request(1, mw)
+        js.req(no_inject=True).prepare()
+        out = twc.inject_resources(html)
+        assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello</body></html>')
+
     def test_inject_head(self):
         rl = testapi.request(1, mw)
-        out = twc.inject_resources(html, [js.req()])
+        js.inject()
+        out = twc.inject_resources(html)
         assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
 
     def test_inject_body(self):
         rl = testapi.request(1, mw)
-        out = twc.inject_resources(html, [jssrc.req()])
+        jssrc.inject()
+        out = twc.inject_resources(html)
         assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
     def test_inject_both(self):
         rl = testapi.request(1, mw)
-        out = twc.inject_resources(html, [js.req(), jssrc.req()])
+        js.inject()
+        jssrc.inject()
+        out = twc.inject_resources(html)
         assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
     def test_detect_clear(self):
@@ -285,13 +299,23 @@ class TestResourcesMisc(TestCase):
         l = twr.Link(link="http://google.com")
         self.assert_(hash(l.req()))  # meh
 
+    def testAutoModnameReqPrep(self):
+        l = twr.Link(filename="somefile")
+        l = l.req()
+        l.prepare()
+        eq_(l.modname, "test_resources")
+
+    def testAutoModnameInject(self):
+        l = twr.Link(filename="somefile")
+        l.inject()
+        local = tw2.core.core.request_local()
+        eq_(local['resources'][0].modname, "test_resources")
 
     def testDirLink(self):
         dl = twr.DirLink(modname="tw2.core", filename="somefile")
         i = dl.req()
         i.prepare()
         self.assert_(i.link)
-
 
     def testJSSource(self):
         import uuid
