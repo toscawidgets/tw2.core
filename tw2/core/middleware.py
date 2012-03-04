@@ -103,7 +103,6 @@ class Config(object):
 
     def __init__(self, **kw):
         for k, v in kw.items():
-            print "Setting: %s , %s" % (k,v)
             setattr(self, k, v)
 
         # Set boolean properties
