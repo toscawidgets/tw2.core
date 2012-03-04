@@ -73,8 +73,11 @@ class TestResources(object):
         wa.display()
         rl = twc.core.request_local()
 
-        print rl['resources']
-        assert(rl['resources'] == [foo1, foo3, foo2, foo4])
+        lnk = lambda r: r.link
+        eq_(
+            map(lnk, rl['resources']),
+            map(lnk, [foo1, foo3, foo2, foo4])
+        )
 
 
     #--
