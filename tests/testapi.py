@@ -14,6 +14,8 @@ def setup():
 def request(requestid, mw=None):
     base._request_id = requestid
     rl = twc.core.request_local()
+    if not mw:
+        mw = twc.make_middleware(lambda *args, **kw: "I'm an app. lol!")
     rl.clear()
     rl['middleware'] = mw
     return base.request_local_tst()
