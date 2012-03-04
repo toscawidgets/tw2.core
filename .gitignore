@@ -1,5 +1,5 @@
 *.pyc
-tw2.core.egg-info
+*.egg*
 Thumbs.db
 docs/.output/
 .coverage
