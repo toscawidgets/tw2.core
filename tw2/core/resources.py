@@ -87,16 +87,19 @@ class Link(Resource):
     link = pm.Param('Direct web link to file. If this is not specified, it is automatically generated, based on :attr:`modname` and :attr:`filename`.')
     modname = pm.Param('Name of Python module that contains the file.', default=None)
     filename = pm.Param('Path to file, relative to module base.', default=None)
+    no_inject = pm.Param("Don't inject this link. (Default: False)", default=False)
+
 
     def prepare(self):
         rl = core.request_local()
-        if not hasattr(self, 'link'):
-            # TBD shouldn't we test for this in __new__ ?
-            if not self.filename:
-                raise pm.ParameterError("Either 'link' or 'filename' must be specified")
-            resources = rl['middleware'].resources
-            self.link = resources.register(self.modname or '__anon__', self.filename)
-        super(Link, self).prepare()
+        if not self.no_inject:
+            if not hasattr(self, 'link'):
+                # TBD shouldn't we test for this in __new__ ?
+                if not self.filename:
+                    raise pm.ParameterError("Either 'link' or 'filename' must be specified")
+                resources = rl['middleware'].resources
+                self.link = resources.register(self.modname or '__anon__', self.filename)
+            super(Link, self).prepare()
 
     def __hash__(self):
         return hash(hasattr(self, 'link') and self.link or ((self.modname or '') + self.filename))
