@@ -329,10 +329,10 @@ class TestInPage(object):
     inject_widget = TestWidget(id='a', resources=[js,css])
 
     def setup(self):
-        self.mw = twc.make_middleware(self)
-        self.app = wt.TestApp(self.mw)
         global _request_local
         _request_local = {}
+        self.mw = twc.make_middleware(self)
+        self.app = wt.TestApp(self.mw)
 
     def __call__(self, environ, start_response):
         req = wo.Request(environ)

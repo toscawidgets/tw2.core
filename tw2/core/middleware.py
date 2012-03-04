@@ -2,6 +2,9 @@ import webob as wo, core, resources, template
 from pkg_resources import iter_entry_points, DistributionNotFound
 from paste.deploy.converters import asbool, asint
 
+import logging
+log = logging.getLogger(__name__)
+
 class Config(object):
     '''
     ToscaWidgets Configuration Set
@@ -147,7 +150,14 @@ class TwMiddleware(object):
         self.config = Config(**config)
         self.engines = template.EngineManager()
         self.resources = resources.ResourcesApp(self.config)
-        self.controllers = controllers
+        self.controllers = controllers or ControllersApp()
+
+        rl = core.request_local()
+        for widget, path in rl.get('queued_controllers', []):
+            self.controllers.register(widget, path)
+
+        rl['queued_controllers'] = []
+
 
     def __call__(self, environ, start_response):
         rl = core.request_local()
@@ -185,6 +195,7 @@ class ControllersApp(object):
         self._widgets = {}
 
     def register(self, widget, path=None):
+        log.info("Registered controller %r->%r" % (path, widget))
         if path is None:
             path = widget.id
         self._widgets[path] = widget
@@ -205,12 +216,33 @@ class ControllersApp(object):
             resp = widget.request(req)
         return resp
 
-global_controllers = ControllersApp()
+
+def register_controller(widget, path):
+    """ API function for registering widget controllers.
+
+    If the middleware is available, the widget is directly registered with the
+    ControllersApp.
+
+    If the middleware is not available, the widget is stored in the
+    request_local dict.  When the middleware is later initialized, those
+    waiting registrations are processed.
+    """
+
+    rl = core.request_local()
+    mw = rl.get('middleware')
+    if mw:
+        mw.controllers.register(widget, path)
+    else:
+        rl['queued_controllers'] = \
+                rl.get('queued_controllers', []) + [(widget, path)]
+        log.info("No middleware in place.  Queued %r->%r registration." %
+                 (path, widget))
+
 
 def make_middleware(app=None, config=None, **kw):
     config = (config or {}).copy()
     config.update(kw)
-    app = TwMiddleware(app, controllers=global_controllers, **config)    
+    app = TwMiddleware(app, **config)
     return app
 
 

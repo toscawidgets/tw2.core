@@ -25,7 +25,11 @@ from validation import (
     Any, All,
 )
 
-from middleware import (make_middleware, dev_server)
+from middleware import (
+    make_middleware,
+    dev_server,
+    register_controller,
+)
 
 from js import js_symbol, js_callback, js_function
 

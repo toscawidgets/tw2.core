@@ -238,8 +238,7 @@ Now done with ``myapp/models.py``, edit ``myapp/views.py`` and replace the defin
     import tw2.core
     def view_widget(context, request):
         context.fetch_data(request)
-        mw = tw2.core.core.request_local()['middleware']
-        mw.controllers.register(context, 'movie_submit')
+        tw2.core.register_controller(context, 'movie_submit')
         return {'widget': context}
 
 Lastly, edit ``myapp/widgets.py`` and add::
@@ -368,8 +367,7 @@ Add the following to your view configuration in ``myapp/__init__.py``::
 Add that view to ``myapp/views.py`` itself::
 
     def view_grid_widget(context, request):
-        mw = tw2.core.core.request_local()['middleware']
-        mw.controllers.register(context, 'db_jqgrid')
+        tw2.core.register_controller(context, 'db_jqgrid')
         return {'widget': context}
 
 Finally add another hook into ``MyApp.__getitem__(...)``::

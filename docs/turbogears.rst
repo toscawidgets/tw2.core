@@ -256,8 +256,7 @@ And the last for the `MovieForm`, change ``genres = tw2.forms.CheckBoxList( ... 
 And (still in ``myapp/controllers/movie.py``) inside the MovieController's movie method, just below the line ``w = MovieForm(...`` add the three lines::
 
     w.fetch_data(request)
-    mw = tw2.core.core.request_local()['middleware']
-    mw.controllers.register(w, 'movie_submit')
+    tw2.core.register_controller(w, 'movie_submit')
 
 Now, in your command prompt run::
 
@@ -351,8 +350,7 @@ And add the following method to the ``MovieController`` class::
 
     @expose('myapp.templates.widget')
     def grid(self, *args, **kw):
-        mw = tw2.core.core.request_local()['middleware']
-        mw.controllers.register(GridWidget, 'db_jqgrid')
+        tw2.core.register_controller(GridWidget, 'db_jqgrid')
         return dict(widget=GridWidget, page='movie')
 
 Redirect your browser to http://localhost:8080/movie/grid and you should
