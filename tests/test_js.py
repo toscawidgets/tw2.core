@@ -8,7 +8,8 @@ class TestJS(object):
         testapi.setup()
         self.twe = encoder # Use TW2 encoder
         self.encode = self.twe.encode
-        testapi.request(1)
+        mw = twc.make_middleware(lambda *args, **kw: "I'm an app, lol!")
+        testapi.request(1, mw=mw)
 
     # Deprecated Test
     #def test_js_function(self):
