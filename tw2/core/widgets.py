@@ -142,9 +142,8 @@ class Widget(pm.Parametered):
 
         if hasattr(cls, 'request') and getattr(cls, 'id', None):
             import middleware
-            capp = getattr(cls.__module__, 'tw2_controllers', middleware.global_controllers)
-            if capp:
-                capp.register(cls, cls._gen_compound_id(for_url=True))
+            path = cls._gen_compound_id(for_url=True)
+            middleware.register_controller(cls, path)
 
         if cls.validator:
             if cls.validator is pm.Required:

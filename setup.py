@@ -41,6 +41,7 @@ setup(
         'PasteDeploy',
         'weberror',
         'speaklater',
+        'decorator',
         ],
     tests_require = [
         'nose',
