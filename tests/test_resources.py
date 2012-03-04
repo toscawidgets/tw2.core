@@ -142,6 +142,12 @@ class TestResources(object):
     #--
     # Resource injector
     #--
+    def test_no_inject_head(self):
+        rl = testapi.request(1, mw)
+        js.req(no_inject=True).prepare()
+        out = twc.inject_resources(html)
+        assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello</body></html>')
+
     def test_inject_head(self):
         rl = testapi.request(1, mw)
         js.req().prepare()
