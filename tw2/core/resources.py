@@ -64,6 +64,10 @@ class Resource(wd.Widget):
                         'useful, e.g. static images.', default=None)
     id = None
 
+    @classmethod
+    def inject(cls):
+        cls.req().prepare()
+
     def prepare(self):
         super(Resource, self).prepare()
 
@@ -88,7 +92,6 @@ class Link(Resource):
     modname = pm.Param('Name of Python module that contains the file.', default=None)
     filename = pm.Param('Path to file, relative to module base.', default=None)
     no_inject = pm.Param("Don't inject this link. (Default: False)", default=False)
-
 
     def prepare(self):
         rl = core.request_local()
@@ -315,7 +318,7 @@ class _ResourceInjector(util.MultipleReplacer):
     but they can also be injected explicitly, example::
 
        >>> from tw2.core.resources import JSLink, inject_resources
-       >>> JSLink(link="http://example.com").req().prepare()
+       >>> JSLink(link="http://example.com").inject()
        >>> html = "<html><head></head><body></body></html>"
        >>> inject_resources(html)
        '<html><head><script type="text/javascript" src="http://example.com"></script></head><body></body></html>'

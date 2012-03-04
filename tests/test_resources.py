@@ -150,20 +150,20 @@ class TestResources(object):
 
     def test_inject_head(self):
         rl = testapi.request(1, mw)
-        js.req().prepare()
+        js.inject()
         out = twc.inject_resources(html)
         assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
 
     def test_inject_body(self):
         rl = testapi.request(1, mw)
-        jssrc.req().prepare()
+        jssrc.inject()
         out = twc.inject_resources(html)
         assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
     def test_inject_both(self):
         rl = testapi.request(1, mw)
-        js.req().prepare()
-        jssrc.req().prepare()
+        js.inject()
+        jssrc.inject()
         out = twc.inject_resources(html)
         assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
