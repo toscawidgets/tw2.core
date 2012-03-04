@@ -311,9 +311,8 @@ class _ResourceInjector(util.MultipleReplacer):
     ToscaWidgets' middleware can take care of injecting them automatically (default)
     but they can also be injected explicitly, example::
 
-
        >>> from tw2.core.resources import JSLink, inject_resources
-       >>> JSLink(link="http://example.com").inject()
+       >>> JSLink(link="http://example.com").req().prepare()
        >>> html = "<html><head></head><body></body></html>"
        >>> inject_resources(html)
        '<html><head><script type="text/javascript" src="http://example.com"></script></head><body></body></html>'
