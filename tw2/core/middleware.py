@@ -18,6 +18,9 @@ class Config(object):
     `inject_resoures`
         Whether to inject resource links in output pages. (default: True)
 
+    `inject_resources_location`
+        A location where the resources should be injected. (default: head)
+
     `serve_resources`
         Whether to serve static resources. (default: True)
 
@@ -80,6 +83,7 @@ class Config(object):
 
     translator = lambda s: s
     default_engine = 'string'
+    inject_resources_location = 'head'
     inject_resources = True
     serve_resources = True
     res_prefix = '/resources/'
@@ -102,7 +106,7 @@ class Config(object):
             setattr(self, k, v)
 
         # Set boolean properties
-        for prop in ('inject_resources', 'serve_resources', 'serve_controllers',
+        for prop in ('inject_resources','serve_resources', 'serve_controllers',
                      'params_as_vars', 
                      'strict_engine_selection', 'debug'):
             setattr(self, prop, asbool(getattr(self, prop)))

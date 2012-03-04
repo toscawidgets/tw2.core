@@ -68,8 +68,11 @@ class Resource(wd.Widget):
         super(Resource, self).prepare()
 
         rl_resources = core.request_local().setdefault('resources', [])
+        rl_location = core.request_local()['middleware'].config.inject_resources_location
 
         if self not in rl_resources:
+            if self.location is '__use_middleware':
+                self.location = rl_location
             for r in self.resources:
                 r.req().prepare()
 
@@ -119,7 +122,7 @@ class JSLink(Link):
     '''
     A JavaScript source file.
     '''
-    location = 'head'
+    location = '__use_middleware'
     template = 'tw2.core.templates.jslink'
 
 class CSSLink(Link):
