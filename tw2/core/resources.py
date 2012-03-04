@@ -2,6 +2,7 @@ import widgets as wd, util, core, params as pm
 import re, logging, itertools
 import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
 
+
 log = logging.getLogger(__name__)
 
 
@@ -25,7 +26,8 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
         super(TW2Encoder, self).__init__(*args, **kw)
 
     def default(self, obj):
-        if isinstance(obj, JSSymbol):
+        from js import js_function, js_callback
+        if isinstance(obj, (JSSymbol, js_callback, js_function)):
             return self.mark_for_escape(obj)
         if hasattr(obj, '__json__'):
             return obj.__json__()
@@ -143,17 +145,24 @@ class JSFuncCall(JSSource):
     """
     Inline JavaScript function call.
     """
-    src = None # TBD
+    src = None
     function = pm.Param('Function name')
     args = pm.Param('Function arguments', default=None)
     location = 'bodybottom' # TBD: afterwidget?
 
+    def __str__(self):
+        if not self.src:
+            self.prepare()
+        return self.src
+
     def prepare(self):
         if not self.src:
+            args = ''
             if isinstance(self.args, dict):
                 args = encoder.encode(self.args)
             elif self.args:
                 args = ', '.join(encoder.encode(a) for a in self.args)
+
             self.src = '%s(%s)' % (self.function, args)
         super(JSFuncCall, self).prepare()
 

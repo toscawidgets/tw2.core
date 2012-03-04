@@ -27,4 +27,7 @@ from validation import (
 
 from middleware import (make_middleware, dev_server)
 
-from js import TWEncoder, encode, js_symbol, js_callback, js_function
+from js import js_symbol, js_callback, js_function
+
+# Shortcut from Deprecated TWEncoder that was in js.py
+encode = encoder.encode
