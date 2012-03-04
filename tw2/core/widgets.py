@@ -1,6 +1,12 @@
 import copy, weakref, re, itertools, inspect, webob
 import template, core, util, validation as vd, params as pm
 import warnings
+
+try:
+    import mako.template
+except ImportError:
+    pass
+
 try:
     import formencode
 except ImportError:
@@ -58,7 +64,16 @@ class Widget(pm.Parametered):
 
     id = pm.Param('Widget identifier', request_local=False)
     key = pm.Param('Widget data key; None just uses id', default=None, request_local=False)
-    template = pm.Param('Template file for the widget, in the format engine_name:template_path.')
+    template = pm.Param(
+        'Template file for the widget, in the format ' +
+        'engine_name:template_path.  If `engine_name` is specified, this ' +
+        'is interepreted not as a path, but as an *inline template*',
+    )
+    inline_engine_name = pm.Param(
+        'Name of an engine.  If specified, `template` is interpreted as ' +
+        'an *inline template* and not a path.  Only "mako" is supported.',
+        default=None,
+    )
     validator = pm.Param('Validator for the widget.', default=None, request_local=False)
     attrs = pm.Param("Extra attributes to include in the widget's outer-most HTML tag.", default={})
     css_class = pm.Param('CSS class name', default=None, attribute=True, view_name='class')
@@ -316,6 +331,16 @@ class Widget(pm.Parametered):
                 def generate_output(self, engine_name):
                     return "<span {0}>{1}</span>".format(self.attrs, self.text)
         """
+
+        if self.inline_engine_name != None:
+            if self.inline_engine_name != 'mako':
+                raise ValueError("Only mako is supported for inline templates")
+            t = mako.template.Template(self.template)
+            output = t.render(w=self)
+            if isinstance(output, str):
+                output = output.decode('utf-8')
+            return output
+
         mw = core.request_local().get('middleware')
         if engine_name is None:
             if self.parent is None:
@@ -327,7 +352,7 @@ class Widget(pm.Parametered):
             for p in self._params:
                 if hasattr(self, p):
                     v[p] = getattr(self, p)
-        eng = mw and mw.engines or template.global_engines
+        eng = mw and mw.engines or template.engine_manager
         return eng.render(self.template, engine_name, v)
 
     @classmethod
