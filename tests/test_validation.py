@@ -121,7 +121,7 @@ class TestValidation(object):
             twc.validation.unflatten_params({'a': chr(128)})
             assert(False)
         except twc.ValidationError, e:
-            assert(str(e) == "Received in the wrong character set; should be utf-8")
+            eq_(str(e), "Received in wrong character set; should be utf-8")
 
     def test_meta_msgs(self):
         class A(object):

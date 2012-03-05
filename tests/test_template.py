@@ -1,7 +1,7 @@
 import tw2.core as twc, testapi
 import webob as wo
 import os
-from nose.tools import raises
+from nose.tools import raises, eq_
 from tw2.core.template import reset_engine_name_cache
 
 # TBD: only test engines that are installed
@@ -96,7 +96,7 @@ class TestTemplate(object):
             t = twc.template.EngineManager()['fred']
             assert(False)
         except twc.EngineError, e:
-            assert(str(e) == "No template engine available for 'fred'")
+            eq_(str(e), "No template engine for 'fred'")
 
     def test_extra_vars(self):
         eng = twc.template.EngineManager()

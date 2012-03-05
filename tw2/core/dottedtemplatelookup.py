@@ -30,7 +30,7 @@ class DottedTemplateLookup(object):
     This is necessary because Mako asserts that your project will always
     be installed in a zip-unsafe manner with all files somewhere on the
     hard drive.
-    
+
     This is not the case when you want your application to be deployed
     in a single zip file (zip-safe). If you want to deploy in a zip
     file _and_ use the dotted template name notation then this class
@@ -98,9 +98,10 @@ class DottedTemplateLookup(object):
         try:
             if not template_name.endswith('.mak'):
                 split = template_name.rsplit('.', 1)
-                filename = rm.resource_filename(split[0], split[1]+'.mak')
+                filename = rm.resource_filename(split[0], split[1] + '.mak')
 
-            self.template_cache[template_name] = Template(open(filename).read(),
+            self.template_cache[template_name] = Template(
+                open(filename).read(),
                 filename=filename,
                 input_encoding=self.input_encoding,
                 output_encoding=self.output_encoding,
@@ -123,7 +124,7 @@ class DottedTemplateLookup(object):
         instance based on a given template name
         """
 
-        if not self.template_cache.has_key(template_name):
+        if template_name not in self.template_cache:
             # the template string is not yet loaded into the cache.
             # Do so now
             self.__load(template_name)
@@ -133,12 +134,12 @@ class DottedTemplateLookup(object):
             # explicitly asked for it in the configuration
             # return the template, but first make sure it's not outdated
             # and if outdated, refresh the cache.
-            if getattr(core.request_local()['middleware'].config, 'auto_reload_templates', False):
+            mw = core.request_local()['middleware']
+            if getattr(mw.config, 'auto_reload_templates', False):
                 return self.__check(self.template_cache[template_name])
         except (AttributeError, KeyError):
             pass
 
         return self.template_cache[template_name]
-    
+
     load_template = get_template
-    

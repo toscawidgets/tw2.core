@@ -1,4 +1,7 @@
-import pkg_resources as pk, sys, core,  os
+import pkg_resources as pk
+import sys
+import core
+import os
 import string
 
 try:
@@ -11,26 +14,43 @@ try:
 except ImportError:
     pass
 
+
 class EngineError(core.WidgetError):
     "Errors inside ToscaWidgets, related to template engines."
 
 rm = pk.ResourceManager()
 
+
 def template_available(template_name, engine_name, mw=None):
     try:
         rendering_extension_lookup = mw.config.rendering_extension_lookup
     except (KeyError, AttributeError):
-        rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
+        rendering_extension_lookup = {
+            'mako': 'mak',
+            'genshi': 'html',
+            'cheetah': 'tmpl',
+            'kid': 'kid',
+        }
 
     ext = rendering_extension_lookup[engine_name]
     split = template_name.rsplit('.', 1)
-    return os.path.isfile(rm.resource_filename(split[0], '.'.join((split[1], ext))))
+    fname = '.'.join((split[1], ext))
+    return os.path.isfile(rm.resource_filename(split[0], fname))
 
 engine_name_cache = {}
+
 
 def reset_engine_name_cache():
     global engine_name_cache
     engine_name_cache = {}
+
+engine_error_template = """Could not find template for: %s. You may need to
+specify a template engine name in the widget like mako:%s, or change the
+middleware setup to include the template's templating language in your
+preferred_template_engines configuration. As a last resort, you may set
+strict_template_selection to false which will grab whatever template it
+finds if there one of your preferred template engines is not found."""
+
 
 def get_engine_name(template_name, mw=None):
     global engine_name_cache
@@ -50,7 +70,7 @@ def get_engine_name(template_name, mw=None):
         pref_rend_eng = mw.config.preferred_rendering_engines
     except (KeyError, AttributeError):
         pref_rend_eng = ['mako', 'genshi', 'cheetah', 'kid']
-    #find the first file in the preffered engines that is available for templating
+    # find the first file in the preffered engines available for templating
     for engine_name in pref_rend_eng:
         if template_available(template_name, engine_name, mw):
             engine_name_cache[template_name] = engine_name
@@ -61,12 +81,7 @@ def get_engine_name(template_name, mw=None):
             if template_available(template_name, engine_name):
                 engine_name_cache[template_name] = engine_name
                 return engine_name
-    raise EngineError("Could not find template for: %s. You may need to specify \
-a template engine name in the widget like mako:%s, or change the middleware setup \
-to include the template's templating language in your preferred_template_engines \
-configuration. As a last resort, you may set strict_template_selection to false \
-which will grab whatever template it finds if there one of your preferred template \
-engines is not found."""%(template_name, template_name))
+    raise EngineError(engine_error_template % (template_name, template_name))
 
 
 class EngineManager(dict):
@@ -85,7 +100,6 @@ class EngineManager(dict):
             #if the engine name is not specified, find the best possible engine
             engine_name = get_engine_name(template)
             template_path = template
-            
 
         if engine_name == 'genshi' and '/' in template_path:
             engine_name = 'genshi_abs'
@@ -95,10 +109,12 @@ class EngineManager(dict):
 
         if engine_name == 'string':
             template = template_path
-            
+
         #xxx: add support for "toscawidgets" template engine
-    
-        adaptor_renderer = self._get_adaptor_renderer(engine_name, displays_on, template)
+
+        adaptor_renderer = self._get_adaptor_renderer(
+            engine_name, displays_on, template
+        )
 
         if engine_name == 'mako':
             output = adaptor_renderer(**dct)
@@ -112,14 +128,16 @@ class EngineManager(dict):
         """Return a function that will that processes a template appropriately,
         given the source and destination engine names.
         """
-        if src =='string' or src=='toscawidgets':
-            return lambda **kw: string.Template(template).substitute(**dict(kw['info']['w'].iteritems()))
+        if src == 'string' or src == 'toscawidgets':
+            return lambda **kw: string.Template(template).substitute(
+                **dict(kw['info']['w'].iteritems())
+            )
         if src == dst and src in ('kid', 'genshi'):
             return self[src].transform
         elif src == 'mako' and dst == 'kid':
             from kid import XML
             return lambda **kw: XML(template.render(**kw))
-        elif src=='mako' and dst=='genshi':
+        elif src == 'mako' and dst == 'genshi':
             from genshi.core import Markup
             return lambda **kw: Markup(template.render(**kw).decode('utf-8'))
         elif src == 'mako':
@@ -139,7 +157,7 @@ class EngineManager(dict):
     def load_engine(self, name, options={}, extra_vars_func=None):
         if name in self:
             raise EngineError("Template engine '%s' is already loaded" % name)
-        # TODO -- produce a nicer error message here when dotted_template_lookup == None
+        # TODO -- produce a nicer message when dotted_template_lookup == None
         if name == 'mako':
             self[name] = dotted_template_lookup
             return self[name]
@@ -151,14 +169,16 @@ class EngineManager(dict):
             options.update({'genshi.search_path': '.'})
 
         try:
-            factory = core.request_local()['middleware'].config.available_rendering_engines[name]
+            mw = core.request_local()['middleware']
+            factory = mw.config.available_rendering_engines[name]
         except (KeyError, AttributeError):
-            for entrypoint in pk.iter_entry_points("python.templating.engines"):
+            mount_point = "python.templating.engines"
+            for entrypoint in pk.iter_entry_points(mount_point):
                 if entrypoint.name == name:
                     factory = entrypoint.load()
                     break
             else:
-                raise EngineError("No template engine available for '%s'" % name)
+                raise EngineError("No template engine for '%s'" % name)
 
         self[orig_name] = factory(extra_vars_func, options)
 

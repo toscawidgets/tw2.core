@@ -27,6 +27,7 @@ from tw2.core import core
 from tw2.core import widgets
 from tw2.core import middleware
 
+
 def request_local_fake():
     global _request_local, _request_id
     if _request_local == None:
@@ -41,6 +42,7 @@ def request_local_fake():
 core.request_local = request_local_fake
 _request_local = {}
 _request_id = 'whatever'
+
 
 class archive_tw2_resources(Command):
     """
@@ -81,8 +83,8 @@ class archive_tw2_resources(Command):
 
     To install a new version of your app and copy/compress resources.
     """
-    description = "Copies ToscaWidgets static resources into a directory where"\
-                  " a fast web-server can serve them."
+    description = "Copies ToscaWidgets static resources into a directory "\
+                  "where a fast web-server can serve them."
     user_options = [
         ("output=", "o",
          "Output directory. If it doesn't exist it will be created."),
@@ -104,8 +106,7 @@ class archive_tw2_resources(Command):
          "resources are located."),
         ]
 
-
-    IGNORED_NAMES = [".svn",".git",".hg"]
+    IGNORED_NAMES = [".svn", ".git", ".hg"]
     """
     A list of names to ignore, used to prevent collecting
     subversion control data.
@@ -118,7 +119,6 @@ class archive_tw2_resources(Command):
         self.compresslevel = 0
         self.distributions = []
         self.yuicompressor = 'yuicompressor.jar'
-
 
     def finalize_options(self):
         self.ensure_string("output")
@@ -135,8 +135,9 @@ class archive_tw2_resources(Command):
             print >> sys.stderr, "Need to specify at least one distribution"
             return
         if os.path.exists(self.output) and not self.force:
-            print >> sys.stderr, ("Destination dir %s exists. " % self.output)+\
-                                  "Use -f to overwrite."
+            print >> sys.stderr, (
+                "Destination dir %s exists. " % self.output) + \
+               "Use -f to overwrite."
             return
         if self.compresslevel > 0 and not os.path.exists(self.yuicompressor):
             print >> sys.stderr, "Could not find YUICompressor at " + \
@@ -183,28 +184,29 @@ class archive_tw2_resources(Command):
                     except Exception:
                         self.announce("Failed to register %s" % key)
 
-
     def _load_widget_entry_points(self, distribution):
         try:
-            requires = [r.project_name for r in
-                        pkg_resources.get_distribution(distribution).requires()]
+            requires = [
+                r.project_name for r in
+                pkg_resources.get_distribution(distribution).requires()
+            ]
 
             map(self._load_widget_entry_points, requires)
 
-            # Here we only look for a [tw2.widgets] entry point listing and we
-            # don't care what data is listed in it.  We do this, because many of
-            # the existing tw2 libraries do not conform to a standard, e.g.:
+            #Here we only look for a [tw2.widgets] entry point listing and we
+            #don't care what data is listed in it.  We do this, because many of
+            #the existing tw2 libraries do not conform to a standard, e.g.:
             #
-            #     ## Doing it wrong:
-            #     [tw2.widgets]
-            #     tw2.core = tw2.core
+            #    ## Doing it wrong:
+            #    [tw2.widgets]
+            #    tw2.core = tw2.core
             #
-            #     ## Doing it right:
-            #     [tw2.widgets]
-            #     widgets = tw2.jquery
+            #    ## Doing it right:
+            #    [tw2.widgets]
+            #    widgets = tw2.jquery
             #
-            # For now, anything with a [tw2.widgets] listing at all is loaded.
-            # TODO -- this should be resolved and standardized in the future.
+            #For now, anything with a [tw2.widgets] listing at all is loaded.
+            #TODO -- this should be resolved and standardized in the future.
 
             for ep in pkg_resources.iter_entry_points('tw2.widgets'):
                 if ep.module_name.startswith(distribution):
@@ -217,7 +219,8 @@ class archive_tw2_resources(Command):
 
     def _copy_resources(self):
 
-        # Set up fake middleware with which widgets can register their resources
+        # Set up fake middleware with which widgets can register their
+        # resources
         core.request_local = request_local_fake
         core.request_local()['middleware'] = middleware.make_middleware()
 
@@ -236,7 +239,6 @@ class archive_tw2_resources(Command):
             except AttributeError, e:
                 pass
 
-
     def _copy_resource_tree(self, modname, fname):
         try:
             for name in pkg_resources.resource_listdir(modname, fname):
@@ -249,7 +251,7 @@ class archive_tw2_resources(Command):
                                  "Recursing into " + rel_name)
                 else:
                     full_name = pkg_resources.resource_filename(modname, name)
-                    ct, _  = mimetypes.guess_type(full_name)
+                    ct, _ = mimetypes.guess_type(full_name)
                     stream = pkg_resources.resource_stream(modname, name)
                     filename = '/'.join((modname, name))
                     self.execute(self.writer.write_file, (stream, filename),
@@ -277,13 +279,13 @@ class FileWriter(object):
         shutil.copyfileobj(stream, dest)
         dest.close()
 
-
     # Delegate methods to Command
     for name in "warn announce error execute".split():
         exec """\
 def %(name)s(self, *args, **kw):
     return self.cmd.%(name)s(*args, **kw)
 """ % locals()
+
 
 class CompressingWriter(FileWriter):
 
@@ -293,7 +295,7 @@ class CompressingWriter(FileWriter):
 
     def finalize(self):
         try:
-            avg =  reduce(operator.truediv, self.counters) * 100
+            avg = reduce(operator.truediv, self.counters) * 100
             msg = "Total JS&CSS compressed size is %.2f%% of original" % avg
             self.announce(msg)
         except ZeroDivisionError:
@@ -328,7 +330,7 @@ class CompressingWriter(FileWriter):
             count = len(stdout), len(data)
             ratio = reduce(operator.truediv, count)
             self.counters = map(sum, zip(self.counters, count))
-            msg = "Compressed %s (New size: %.2f%%)" % (path, ratio*100)
+            msg = "Compressed %s (New size: %.2f%%)" % (path, ratio * 100)
             self.announce(msg)
             stream = StringIO(stdout)
         return stream
@@ -336,6 +338,7 @@ class CompressingWriter(FileWriter):
     def write_file(self, stream, path):
         stream = self.compress(stream, path)
         return super(CompressingWriter, self).write_file(stream, path)
+
 
 class OnePassCompressingWriter(CompressingWriter):
     def __init__(self, *args, **kw):
@@ -367,7 +370,7 @@ class OnePassCompressingWriter(CompressingWriter):
             cache.seek(0)
             # self.compress only wants to know the file extension to see
             # what kind of file it is, we pass a dummy one
-            compressed = self.compress(cache, '__defered__.'+typ)
+            compressed = self.compress(cache, '__defered__.' + typ)
             self._demultiplex(compressed)
         super(OnePassCompressingWriter, self).finalize()
 

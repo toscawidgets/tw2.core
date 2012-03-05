@@ -1,4 +1,12 @@
-import core, re, util, string, time, datetime, copy, functools, webob
+import core
+import re
+import util
+import string
+import time
+import datetime
+import copy
+import functools
+import webob
 
 from i18n import _
 
@@ -11,8 +19,10 @@ try:
 except ImportError:
     formencode = None
 
+
 class Invalid(object):
     pass
+
 
 class EmptyField(object):
     pass
@@ -21,7 +31,7 @@ class EmptyField(object):
 if formencode:
     class BaseValidationError(core.WidgetError, formencode.Invalid):
         def __init__(self, msg):
-            formencode.Invalid.__init__(self, msg, None, None)        
+            formencode.Invalid.__init__(self, msg, None, None)
 else:
     class BaseValidationError(core.WidgetError):
         pass
@@ -49,7 +59,7 @@ class ValidationError(BaseValidationError):
         msg = re.sub('\$(\w+)',
                 lambda m: str(getattr(validator, m.group(1))), unicode(msg))
         super(ValidationError, self).__init__(msg)
-        
+
     @property
     def message(self):
         """ Added for backwards compatibility.  Synonymous with `msg` """
@@ -69,6 +79,7 @@ catch = ValidationError
 if formencode:
     catch = formencode.Invalid
 
+
 def catch_errors(fn):
     @functools.wraps(fn)
     def wrapper(self, *args, **kw):
@@ -80,6 +91,7 @@ def catch_errors(fn):
                 self.error_msg = str(e)
             raise ValidationError(str(e), widget=self)
     return wrapper
+
 
 def unflatten_params(params):
     """This performs the first stage of validation. It takes a dictionary where
@@ -109,8 +121,10 @@ def unflatten_params(params):
     return out
 
 number_re = re.compile('^\d+$')
+
+
 def numdict_to_list(dct):
-    for k,v in dct.items():
+    for k, v in dct.items():
         if isinstance(v, dict):
             numdict_to_list(v)
             if all(number_re.match(k) for k in v):
@@ -130,7 +144,7 @@ class ValidatorMeta(type):
                 if hasattr(b, 'msgs'):
                     msgs.update(b.msgs)
             msgs.update(dct['msgs'])
-            for m,d in msgs.items():
+            for m, d in msgs.items():
                 if isinstance(d, tuple):
                     msgs[d[0]] = d[1]
                     rewrites[m] = d[0]
@@ -157,8 +171,8 @@ class Validator(object):
 
     msgs = {
         'required': _('Enter a value'),
-        'decode': _('Received in the wrong character set; should be $encoding'),
-        'corrupt': _('The form submission was received corrupted; please try again'),
+        'decode': _('Received in wrong character set; should be $encoding'),
+        'corrupt': _('Form submission received corrupted; please try again'),
         'childerror': _(''),  # Children of this widget have errors
     }
     required = False
@@ -228,6 +242,7 @@ class LengthValidator(Validator):
         if self.max and len(value) > self.max:
             raise ValidationError('toolong', self)
 
+
 class StringLengthValidator(LengthValidator):
     """
     Check a string is a suitable length. The only difference to LengthValidator
@@ -235,9 +250,12 @@ class StringLengthValidator(LengthValidator):
     """
 
     msgs = {
-        'tooshort': ('string_tooshort', _('Must be at least $min characters')),
-        'toolong': ('string_toolong', _('Cannot be longer than $max characters')),
+        'tooshort': (
+            'string_tooshort', _('Must be at least $min characters')),
+        'toolong': (
+            'string_toolong', _('Cannot be longer than $max characters')),
     }
+
 
 class ListLengthValidator(LengthValidator):
     """
@@ -279,8 +297,8 @@ class RangeValidator(Validator):
 
 class IntValidator(RangeValidator):
     """
-    Confirm the value is an integer. This is derived from :class:`RangeValidator`
-    so `min` and `max` can be specified.
+    Confirm the value is an integer. This is derived from
+    :class:`RangeValidator` so `min` and `max` can be specified.
     """
     msgs = {
         'notint': _('Must be an integer'),
@@ -320,6 +338,7 @@ class BoolValidator(RangeValidator):
     msgs = {
         'required': ('bool_required', _('You must select this'))
     }
+
     def to_python(self, value):
         value = super(BoolValidator, self).to_python(value)
         return str(value).lower() in ('on', 'yes', 'true', '1')
@@ -346,8 +365,8 @@ class OneOfValidator(Validator):
 
 class DateValidator(RangeValidator):
     """
-    Confirm the value is a valid date. This is derived from :class:`RangeValidator`
-    so `min` and `max` can be specified.
+    Confirm the value is a valid date. This is derived from
+    :class:`RangeValidator` so `min` and `max` can be specified.
 
     `format`
         The expected date format. The format must be specified using the same
@@ -360,11 +379,21 @@ class DateValidator(RangeValidator):
     }
     format = '%d/%m/%Y'
 
-    format_tbl = {'d':'day', 'H':'hour', 'I':'hour', 'm':'month', 'M':'minute',
-                  'S':'second', 'y':'year', 'Y':'year'}
+    format_tbl = {
+        'd': 'day',
+        'H': 'hour',
+        'I': 'hour',
+        'm': 'month',
+        'M': 'minute',
+        'S': 'second',
+        'y': 'year',
+        'Y': 'year',
+    }
+
     @property
     def format_str(self):
-        return re.sub('%(.)', lambda m: self.format_tbl.get(m.group(1), ''), self.format)
+        f = lambda m: self.format_tbl.get(m.group(1), '')
+        return re.sub('%(.)', f, self.format)
 
     @property
     def min_str(self):
@@ -388,10 +417,12 @@ class DateValidator(RangeValidator):
 
 class DateTimeValidator(DateValidator):
     """
-    Confirm the value is a valid date and time; otherwise just like :class:`DateValidator`.
+    Confirm the value is a valid date and time; otherwise just like
+    :class:`DateValidator`.
     """
     msgs = {
-        'baddate': ('baddatetime', _('Must follow date/time format $format_str')),
+        'baddate': (
+            'baddatetime', _('Must follow date/time format $format_str')),
     }
     format = '%d/%m/%Y %H:%M'
 
@@ -409,7 +440,8 @@ class RegexValidator(Validator):
     Confirm the value matches a regular expression.
 
     `regex`
-        A Python regular expression object, generated like ``re.compile('^\w+$')``
+        A Python regular expression object, generated like
+        ``re.compile('^\w+$')``
     """
     msgs = {
         'badregex': _('Invalid value'),
@@ -454,12 +486,13 @@ class IpAddressValidator(Validator):
     """
     allow_netblock = False
     require_netblock = False
-    
+
     msgs = {
         'badipaddress': _('Must be a valid IP address'),
         'badnetblock': _('Must be a valid IP network block'),
     }
     regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)(/(\d+))?$')
+
     def validate_python(self, value, state=None):
         if value:
             m = self.regex.search(value)
@@ -476,7 +509,7 @@ class IpAddressValidator(Validator):
 
 class MatchValidator(Validator):
     """Confirm a field matches another field
-    
+
     `other_field`
         Name of the sibling field this must match
     """
@@ -493,7 +526,7 @@ class MatchValidator(Validator):
         return string.capitalize(util.name2label(self.other_field).lower())
 
     def validate_python(self, value, state):
-        super(MatchValidator, self).validate_python(value, state)        
+        super(MatchValidator, self).validate_python(value, state)
         if value != state[self.other_field]:
             raise ValidationError('mismatch', self)
 

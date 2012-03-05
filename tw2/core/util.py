@@ -1,9 +1,15 @@
-"""Utility functions, used internally.
-"""
-import copy, re, itertools, thread
+""" Utility functions, used internally. """
+
+import copy
+import re
+import itertools
+import functools
+import thread
 import webob
 
 _thread_local = {}
+
+
 def thread_local():
     threadid = thread.get_ident()
     try:
@@ -13,7 +19,6 @@ def thread_local():
         _thread_local[threadid] = rl_data
         return rl_data
 
-import functools
 
 class class_or_instance(object):
     def __init__(self, fn):
@@ -22,6 +27,7 @@ class class_or_instance(object):
 
     def __get__(self, ins, cls):
         return self._wrapper(functools.partial(self._function, ins, cls))
+
 
 def name2label(name):
     """
@@ -75,7 +81,8 @@ class MultipleReplacer(object):
 
     def _subsitutor(self, *args, **kw):
         def substitutor(match):
-            for substitutor, group in itertools.izip(self._substitutors, match.groups()):
+            tuples = itertools.izip(self._substitutors, match.groups())
+            for substitutor, group in tuples:
                 if group is not None:
                     return substitutor(group, *args, **kw)
         return substitutor
@@ -83,6 +90,6 @@ class MultipleReplacer(object):
     def __call__(self, string, *args, **kw):
         return self._regexp.sub(self._subsitutor(*args, **kw), string)
 
+
 def abort(req, status):
     return webob.Response(request=req, status=status, content_type="text/html")
-

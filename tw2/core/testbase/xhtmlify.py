@@ -7,36 +7,39 @@ http://www.fish.cx/pytest/wsgi/xhtmlify.py
 
 MIT Licensed
 """
-import re, htmlentitydefs
+import re
+import htmlentitydefs
 
 NAME_RE = r'[_a-zA-Z\-][:_a-zA-Z0-9\-]*'
 BAD_ATTR_RE = r'''[^<>\s"'][^<>\s]*'''
 ATTR_RE = r'''%s\s*(?:=\s*(?:".*?"|'.*?'|%s))?''' % (NAME_RE, BAD_ATTR_RE)
 CDATA_RE = r'<!\[CDATA\[.*?\]\]>'
-COMMENT_RE = r'<!--.*?-->|<!\s*%s.*?>' % NAME_RE # comment or doctype-alike
+COMMENT_RE = r'<!--.*?-->|<!\s*%s.*?>' % NAME_RE  # comment or doctype-alike
 TAG_RE = r'%s|%s|<([^<>]*?)>|<' % (COMMENT_RE, CDATA_RE)
 INNARDS_RE = r'(%s\s*(?:%s\s*)*(/?)\Z)|(/%s\s*\Z)|(\?.*)|(.*)' % (
                  NAME_RE, ATTR_RE, NAME_RE)
 
-SELF_CLOSING_TAGS = ['br' , 'hr', 'input', 'img', 'meta',
-                     'spacer', 'link', 'frame', 'base'] # from BeautifulSoup
+SELF_CLOSING_TAGS = ['br', 'hr', 'input', 'img', 'meta',
+                     'spacer', 'link', 'frame', 'base']  # from BeautifulSoup
 CDATA_TAGS = ['script']
 STRUCTURAL_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'div', 'td',
-                   'ul', 'ol', 'li', 'body'] # deliberately excluding <p>
+                   'ul', 'ol', 'li', 'body']  # deliberately excluding <p>
+
 
 class ValidationError(Exception):
     def __init__(self, message, line, offset):
         message = message + ' at line %d, column %d' % (line, offset)
         self.line = line
         self.offset = offset
-        super(ValidationError, self).__init__(message) 
+        super(ValidationError, self).__init__(message)
+
 
 def ampfix(value):
     """Replaces ampersands in value that aren't part of an HTML entity.
     Adapted from <http://effbot.org/zone/re-sub.htm#unescape-html>."""
     def fixup(m):
         text = m.group(0)
-        if text=='&':
+        if text == '&':
             pass
         elif text[:2] == "&#":
             # character reference
@@ -58,6 +61,7 @@ def ampfix(value):
         return '&#38;' + text[1:]
     return re.sub("&#?\w+;|&", fixup, value)
 
+
 def fix_attrs(attrs):
     if not attrs:
         return ''  # most tags have no attrs, quick exit in that case
@@ -73,7 +77,7 @@ def fix_attrs(attrs):
             output(re.sub('(%s)' % NAME_RE, r'\1="\1"', attr))
         else:
             name, value = attr.split('=', 1)
-            if len(value)>1 and value[0]+value[-1] in ("''", '""'):
+            if len(value) > 1 and value[0] + value[-1] in ("''", '""'):
                 if value[0] not in value[1:-1]:  # preserve their quoting
                     output('%s=%s' % (name, ampfix(value)))
                     continue
@@ -81,6 +85,7 @@ def fix_attrs(attrs):
             output('%s="%s"' % (name, ampfix(value.replace('"', '&quot;'))))
     output(attrs[lastpos:])
     return ''.join(result)
+
 
 def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
                    cdata_tags=CDATA_TAGS):
@@ -102,13 +107,14 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
     cdata_re = re.compile('(%s)' % CDATA_RE, re.DOTALL)
     for tag_match in tag_re.finditer(html):
         pos = tag_match.start()
-        line, offset = html.count('\n', 0, pos)+1, pos-html.rfind('\n', 0, pos)
+        line = html.count('\n', 0, pos) + 1
+        offset = pos - html.rfind('\n', 0, pos)
         prevtag = tags and tags[-1][0].lower() or None
         innards = tag_match.group(1)
         if innards is None:
             if tag_match.group().startswith('<!'):
                 continue  # CDATA, treat it as text
-            assert tag_match.group()=='<'
+            assert tag_match.group() == '<'
             if prevtag in cdata_tags:
                 continue  # ignore until we have all the text
             else:
@@ -119,7 +125,7 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
         text = html[lastpos:pos]
         if prevtag in cdata_tags:
             for i, match in enumerate(cdata_re.split(text)):
-                if i%2==1 or not re.search('[<>&]', match):
+                if i % 2 == 1 or not re.search('[<>&]', match):
                     output(match)  # already <![CDATA[...]]> or safe
                 else:
                     output('<![CDATA[%s]]>' % match)
@@ -127,10 +133,10 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
             output(ampfix(text))
         m = re.compile(INNARDS_RE, re.DOTALL).match(innards)
         if prevtag in cdata_tags and (not m.group(3) or
-            re.match(r'/(\w+)', innards).group(1).lower()!=prevtag):
+            re.match(r'/(\w+)', innards).group(1).lower() != prevtag):
             # not the closing tag, output it as CDATA
             output('<![CDATA[%s]]>' % tag_match.group())
-        elif m.group(1): # opening tag
+        elif m.group(1):  # opening tag
             endslash = m.group(2)
             m = re.match(r'\w+', innards)
             TagName, attrs = m.group(), innards[m.end():]
@@ -139,8 +145,12 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
             if prevtag in self_closing_tags:
                 tags.pop()
                 prevtag = tags and tags[-1][0].lower() or None
-            if (prevtag=='p' and (tagname=='p' or tagname in STRUCTURAL_TAGS)
-               ) or (prevtag=='li' and tagname=='li'):
+            if ((
+                prevtag == 'p' and (
+                    tagname == 'p' or tagname in STRUCTURAL_TAGS
+                )) or
+                (prevtag == 'li' and tagname == 'li')
+            ):
                 tags.pop()
                 output('</%s>' % prevtag)
                 #prevtag = tags and tags[-1][0].lower() or None
@@ -152,12 +162,12 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
             else:
                 output('<%s%s>' % (tagname, attrs))
                 tags.append((TagName, attrs, line, offset))
-        elif m.group(3): # closing tag
+        elif m.group(3):  # closing tag
             TagName = re.match(r'/(\w+)', innards).group(1)
             tagname = TagName.lower()
             if prevtag in self_closing_tags:
                 # The tag has already been output in self-closed form.
-                if prevtag==tagname: # explicit close
+                if prevtag == tagname:  # explicit close
                     # Minor hack: discard any whitespace we just output
                     if result[-1].strip():
                         raise ValidationError(
@@ -169,19 +179,19 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
                     tags.pop()
                     prevtag = tags and tags[-1][0].lower() or None
                     assert prevtag not in self_closing_tags
-            if (prevtag=='p' and tagname in STRUCTURAL_TAGS) or (
-                prevtag=='li' and tagname in ('ol', 'ul')):
+            if (prevtag == 'p' and tagname in STRUCTURAL_TAGS) or (
+                prevtag == 'li' and tagname in ('ol', 'ul')):
                 output('</%s>' % prevtag)
                 tags.pop()
                 prevtag = tags and tags[-1][0].lower() or None
-            if prevtag==tagname:
+            if prevtag == tagname:
                 if tagname not in self_closing_tags:
                     output(tag_match.group().lower())
                     tags.pop()
             else:
                 raise ValidationError(
                     "Unexpected closing tag </%s>" % TagName, line, offset)
-        elif m.group(5): # mismatch
+        elif m.group(5):  # mismatch
             raise ValidationError("Malformed tag", line, offset)
         else:
             # We don't do any validation on pre-processing tags (<? ... >).
@@ -196,25 +206,26 @@ def xhtmlify(html, self_closing_tags=SELF_CLOSING_TAGS,
     output(ampfix(html[lastpos:]))
     return ''.join(result)
 
+
 def test(html=None):
     from xml.etree import ElementTree as ET
     if html is None:
         import sys
-        if len(sys.argv)==2:
+        if len(sys.argv) == 2:
             html = open(sys.argv[1]).read()
         else:
             sys.exit('usage: %s HTMLFILE' % sys.argv[0])
     xhtml = xhtmlify(html)
     try:
-        assert xhtml==xhtmlify(xhtml)
+        assert xhtml == xhtmlify(xhtml)
     except ValidationError:
         print xhtml
         raise
     # parse it as XML with ElementTree/expat
     xml = ET.fromstring(re.sub(r'(?si)<!--.*?-->|<!doctype\b.*?>', '', xhtml))
-    if len(sys.argv)==2:
+    if len(sys.argv) == 2:
         print xhtml
     return xhtml
 
-if __name__=='__main__':
+if __name__ == '__main__':
     test()

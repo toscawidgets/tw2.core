@@ -1,7 +1,17 @@
-import widgets as wd, util, core, params as pm
-import re, logging, itertools
-import os, webob as wo, pkg_resources as pr, mimetypes, simplejson
+import re
+import logging
+import itertools
+import os
+import webob as wo
+import pkg_resources as pr
+import mimetypes
+import simplejson
 import inspect
+
+import widgets as wd
+import util
+import core
+import params as pm
 
 
 log = logging.getLogger(__name__)
@@ -11,9 +21,11 @@ log = logging.getLogger(__name__)
 mimetypes.init()
 mimetypes.types_map['.ico'] = 'image/x-icon'
 
+
 class JSSymbol(object):
     def __init__(self, src):
         self.src = src
+
 
 class TW2Encoder(simplejson.encoder.JSONEncoder):
     """
@@ -58,11 +70,13 @@ class TW2Encoder(simplejson.encoder.JSONEncoder):
 
 encoder = TW2Encoder()
 
+
 class Resource(wd.Widget):
-    location = pm.Param('Location on the page where the resource should be placed.' \
-                        'This can be one of: head, headbottom, bodytop or bodybottom. '\
-                        'None means the resource will not be injected, which is still '\
-                        'useful, e.g. static images.', default=None)
+    location = pm.Param(
+        'Location on the page where the resource should be placed.' \
+        'This can be one of: head, headbottom, bodytop or bodybottom. '\
+        'None means the resource will not be injected, which is still '\
+        'useful, e.g. static images.', default=None)
     id = None
 
     @classmethod
@@ -72,8 +86,9 @@ class Resource(wd.Widget):
     def prepare(self):
         super(Resource, self).prepare()
 
-        rl_resources = core.request_local().setdefault('resources', [])
-        rl_location = core.request_local()['middleware'].config.inject_resources_location
+        rl = core.request_local()
+        rl_resources = rl.setdefault('resources', [])
+        rl_location = rl['middleware'].config.inject_resources_location
 
         if self not in rl_resources:
             if self.location is '__use_middleware':
@@ -89,10 +104,23 @@ class Link(Resource):
     A link to a file.
     '''
     id = None
-    link = pm.Param('Direct web link to file. If this is not specified, it is automatically generated, based on :attr:`modname` and :attr:`filename`.')
-    modname = pm.Param('Name of Python module that contains the file.', default=None)
-    filename = pm.Param('Path to file, relative to module base.', default=None)
-    no_inject = pm.Param("Don't inject this link. (Default: False)", default=False)
+    link = pm.Param(
+        'Direct web link to file. If this is not specified, it is ' +
+        'automatically generated, based on :attr:`modname` and ' +
+        ':attr:`filename`.',
+    )
+    modname = pm.Param(
+        'Name of Python module that contains the file.',
+        default=None,
+    )
+    filename = pm.Param(
+        'Path to file, relative to module base.',
+        default=None,
+    )
+    no_inject = pm.Param(
+        "Don't inject this link. (Default: False)",
+        default=False,
+    )
 
     def guess_modname(self):
         """ Try to guess my modname.
@@ -120,21 +148,35 @@ class Link(Resource):
             if not hasattr(self, 'link'):
                 # TBD shouldn't we test for this in __new__ ?
                 if not self.filename:
-                    raise pm.ParameterError("Either 'link' or 'filename' must be specified")
+                    raise pm.ParameterError(
+                        "Either 'link' or 'filename' must be specified"
+                    )
                 resources = rl['middleware'].resources
-                self.link = resources.register(self.modname or '__anon__', self.filename)
+                self.link = resources.register(
+                    self.modname or '__anon__', self.filename
+                )
             super(Link, self).prepare()
 
     def __hash__(self):
-        return hash(hasattr(self, 'link') and self.link or ((self.modname or '') + self.filename))
+        return hash(
+            hasattr(self, 'link') and \
+            self.link or \
+            ((self.modname or '') + self.filename)
+        )
 
     def __eq__(self, other):
-        return (getattr(self, 'link', None) == getattr(other, 'link', None)
-                and getattr(self, 'modname', None) == getattr(other, 'modname', None)
-                and getattr(self, 'filename', None) == getattr(other, 'filename', None))
+        attrs = ['link', 'modname', 'filename']
+        return all([
+            getattr(self, attr, None) == getattr(other, attr, None)
+            for attr in attrs
+        ])
 
     def __repr__(self):
-        return "%s('%s')" % (self.__class__.__name__, getattr(self, 'link', '%s/%s'%(self.modname,self.filename)))
+        return "%s('%s')" % (
+            self.__class__.__name__,
+            getattr(self, 'link', '%s/%s' % (self.modname, self.filename))
+        )
+
 
 class DirLink(Link):
     link = pm.Variable()
@@ -142,7 +184,11 @@ class DirLink(Link):
 
     def prepare(self):
         resources = core.request_local()['middleware'].resources
-        self.link = resources.register(self.modname, self.filename, whole_dir=True)
+        self.link = resources.register(
+            self.modname,
+            self.filename,
+            whole_dir=True,
+        )
 
 
 class JSLink(Link):
@@ -152,6 +198,7 @@ class JSLink(Link):
     location = '__use_middleware'
     template = 'tw2.core.templates.jslink'
 
+
 class CSSLink(Link):
     '''
     A CSS style sheet.
@@ -159,6 +206,7 @@ class CSSLink(Link):
     media = pm.Param('Media tag', default='all')
     location = 'head'
     template = 'tw2.core.templates.csslink'
+
 
 class JSSource(Resource):
     """
@@ -171,6 +219,7 @@ class JSSource(Resource):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
 
+
 class JSFuncCall(JSSource):
     """
     Inline JavaScript function call.
@@ -178,7 +227,7 @@ class JSFuncCall(JSSource):
     src = None
     function = pm.Param('Function name')
     args = pm.Param('Function arguments', default=None)
-    location = 'bodybottom' # TBD: afterwidget?
+    location = 'bodybottom'  # TBD: afterwidget?
 
     def __str__(self):
         if not self.src:
@@ -211,6 +260,7 @@ class JSFuncCall(JSSource):
         return (getattr(self, 'src', None) == getattr(other, 'src', None)
                 and getattr(self, 'args', None) == getattr(other, 'args', None)
                 )
+
 
 class ResourcesApp(object):
     """WSGI Middleware to serve static resources
@@ -267,7 +317,7 @@ class ResourcesApp(object):
             if path not in self._paths:
                 self._paths[path] = (modname, filename)
 
-        return self.config.script_name+self.config.res_prefix + path
+        return self.config.script_name + self.config.res_prefix + path
 
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
@@ -276,7 +326,7 @@ class ResourcesApp(object):
             path = path[len(self.config.res_prefix):]
 
             if path not in self._paths:
-                if '..' in path: # protect against directory traversal
+                if '..' in path:  # protect against directory traversal
                     raise IOError()
                 for d in self._dirs:
                     if path.startswith(d):
@@ -299,6 +349,7 @@ class ResourcesApp(object):
         resp.cache_control = {'max-age': int(self.config.res_max_age)}
         return resp(environ, start_response)
 
+
 # Could use wsgiref, but this is python 2.4 compatible
 class _FileIter(object):
     def __init__(self, fileobj, bufsize):
@@ -319,24 +370,26 @@ class _FileIter(object):
 
 
 class _ResourceInjector(util.MultipleReplacer):
-    """ToscaWidgets can inject resources that have been registered for injection in
-    the current request.
+    """
+    ToscaWidgets can inject resources that have been registered for injection
+    in the current request.
 
-    Usually widgets register them when they're displayed and they have instances of
-    :class:`tw2.core.resources.Resource` declared at their :attr:`tw2.core.Widget.javascript` or
-    :attr:`tw2.core.Widget.css` attributes.
+    Usually widgets register them when they're displayed and they have
+    instances of :class:`tw2.core.resources.Resource` declared at their
+    :attr:`tw2.core.Widget.javascript` or :attr:`tw2.core.Widget.css`
+    attributes.
 
     Resources can also be registered manually from a controller or template by
     calling their :meth:`tw2.core.resources.Resource.inject` method.
 
-    When a page including widgets is rendered, Resources that are registered for
-    injection are collected in a request-local
-    storage area (this means any thing stored here is only visible to one single
-    thread of execution and that its contents are freed when the request is
-    finished) where they can be rendered and injected in the resulting html.
+    When a page including widgets is rendered, Resources that are registered
+    for injection are collected in a request-local storage area (this means
+    any thing stored here is only visible to one single thread of execution
+    and that its contents are freed when the request is finished) where they
+    can be rendered and injected in the resulting html.
 
-    ToscaWidgets' middleware can take care of injecting them automatically (default)
-    but they can also be injected explicitly, example::
+    ToscaWidgets' middleware can take care of injecting them automatically
+    (default) but they can also be injected explicitly, example::
 
        >>> from tw2.core.resources import JSLink, inject_resources
        >>> JSLink(link="http://example.com").inject()
@@ -348,23 +401,29 @@ class _ResourceInjector(util.MultipleReplacer):
     cannot be injected again (in the same request). This is useful in case
     :class:`injector_middleware` is stacked so it doesn't inject them again.
 
-    Injecting them explicitly is neccesary if the response's body is being cached
-    before the middleware has a chance to inject them because when the cached
-    version is served no widgets are being rendered so they will not have a chance
-    to register their resources.
+    Injecting them explicitly is neccesary if the response's body is being
+    cached before the middleware has a chance to inject them because when the
+    cached version is served no widgets are being rendered so they will not
+    have a chance to register their resources.
     """
 
     def __init__(self):
         return util.MultipleReplacer.__init__(self, {
             r'<head(?!er).*?>': self._injector_for_location('head'),
-            r'</head(?!er).*?>': self._injector_for_location('headbottom', False),
+            r'</head(?!er).*?>': self._injector_for_location(
+                'headbottom', False
+            ),
             r'<body.*?>': self._injector_for_location('bodytop'),
             r'</body.*?>': self._injector_for_location('bodybottom', False)
-            }, re.I|re.M)
+        }, re.I | re.M)
 
     def _injector_for_location(self, key, after=True):
         def inject(group, resources, encoding):
-            inj = u'\n'.join([r.display(displays_on='string') for r in resources if r.location == key])
+            inj = u'\n'.join([
+                r.display(displays_on='string')
+                for r in resources
+                if r.location == key
+            ])
             inj = inj.encode(encoding)
             if after:
                 return group + inj
@@ -387,7 +446,9 @@ class _ResourceInjector(util.MultipleReplacer):
             resources = core.request_local().get('resources', None)
         if resources:
             encoding = encoding or find_charset(html) or 'utf-8'
-            html = util.MultipleReplacer.__call__(self, html, resources, encoding)
+            html = util.MultipleReplacer.__call__(
+                self, html, resources, encoding
+            )
             core.request_local().pop('resources', None)
         return html
 
@@ -396,8 +457,10 @@ class _ResourceInjector(util.MultipleReplacer):
 inject_resources = _ResourceInjector().__call__
 
 
-_charset_re = re.compile(r"charset\s*=\s*(?P<charset>[\w-]+)([^\>])*",
-                         re.I|re.M)
+_charset_re = re.compile(
+    r"charset\s*=\s*(?P<charset>[\w-]+)([^\>])*", re.I | re.M)
+
+
 def find_charset(string):
     m = _charset_re.search(string)
     if m:

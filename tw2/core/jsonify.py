@@ -64,15 +64,16 @@ import warnings
 import logging
 log = logging.getLogger(__name__)
 
+
 def jsonify(func, self, req):
     """Action decorator that formats output for JSON
 
     Given a function that will return content, this decorator will turn
     the result into JSON, with a content-type of 'application/json' and
     output it.
-    
+
     taken from pylons and modified
-    
+
     """
     data = func(self, req)
     if isinstance(data, (list, tuple)):
