@@ -10,16 +10,16 @@ You can see the available widgets in the `Widget Browser
 
 ToscaWidgets 2 library packages follow the same naming convention, for example:
 
- * `tw2.core <http://bitbucket.org/paj/tw2core/>`_ -- Core functionality -- no
+ * `tw2.core <http://github.com/toscawidgets/tw2core/>`_ -- Core functionality -- no
    end-usable widgets here.
- * `tw2.forms <http://bitbucket.org/paj/tw2forms/>`_ -- Basic forms library
- * `tw2.dynforms <http://bitbucket.org/paj/tw2dynforms/>`_ -- Dynamic forms
+ * `tw2.forms <http://github.com/toscawidgets/tw2.forms/>`_ -- Basic forms library
+ * `tw2.dynforms <http://github.com/toscawidgets/tw2.dynforms/>`_ -- Dynamic forms
    -- client-side and Ajax
- * `tw2.sqla <http://bitbucket.org/paj/tw2.sqla/>`_ -- SQLAlchemy database
+ * `tw2.sqla <http://github.com/toscawidgets/tw2.sqla/>`_ -- SQLAlchemy database
    interface, similar to Sprox and Rum
- * `tw2.yui <http://bitbucket.org/paj/tw2yui/>`_ -- tw2 wrappers around
+ * `tw2.yui <http://github.com/toscawidgets/tw2.yui/>`_ -- tw2 wrappers around
    Yahoo User Interface widgets
- * `tw2.jquery <http://bitbucket.org/toscawidgets/tw2jquery>`_ -- tw2
+ * `tw2.jquery <http://github.com/toscawidgets/tw2.jquery>`_ -- tw2
    wrappers around jQuery core functionality.
  * `tw2.jqplugins.ui <http://github.com/ralphbean/tw2.jqplugins.ui>`_ -- tw2
    wrappers around jQuery-UI widgets.
