@@ -227,6 +227,17 @@ class ControllersApp(object):
             path = widget.id
         self._widgets[path] = widget
 
+    def mounted_path(self, target_widget):
+        """ Return the path against which a given widget is mounted or None if
+        it is not registered.
+        """
+
+        for path, widget in self._widgets.iteritems():
+            if target_widget == widget:
+                return path
+
+        return None
+
     def __call__(self, req):
         config = rl = core.request_local()['middleware'].config
         path = req.path_info.split('/')[1:]

@@ -109,6 +109,26 @@ class TestMiddleware(TestCase):
         res = ca(Request.blank("%s/404" % mw.config.controller_prefix))
         self.assert_(res.status_int == 404, res.status_int)
 
+    def testControllerApp(self):
+        """
+        controllerapp should dispatch to an object having id, and a
+        request method taking a webob request based on path_info of
+        request.
+        """
+        import tw2.core
+        from tw2.core.middleware import register_controller, TwMiddleware
+        controller_response = Response("CONTROLLER")
+
+        class WidgetMock(tw2.core.Widget):
+            def request(self, request):
+                return controller_response
+
+        mw = TwMiddleware(None)
+        testapi.request(1, mw)
+        register_controller(WidgetMock, 'foobar')
+        print WidgetMock.mounted_path()
+        self.assert_(WidgetMock.mounted_path() == 'foobar')
+
     def testMakeMiddelware(self):
         from tw2.core.middleware import make_middleware
         make_middleware(None)
