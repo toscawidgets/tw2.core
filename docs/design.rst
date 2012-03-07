@@ -293,6 +293,11 @@ You can also manually register widgets::
 
     twc.core.register_controller(MyWidget, 'mywidget')
 
+Sometimes it is useful to dynamically acquire what URL path a Widget's
+controller is mounted on.  For this you can use::
+
+    MyWidget.mounted_path()
+
 **Methods to override**
 
     `view_request`
