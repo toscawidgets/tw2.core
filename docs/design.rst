@@ -296,7 +296,7 @@ You can also manually register widgets::
 Sometimes it is useful to dynamically acquire what URL path a Widget's
 controller is mounted on.  For this you can use::
 
-    MyWidget.mounted_path()
+    MyWidget.controller_path()
 
 **Methods to override**
 

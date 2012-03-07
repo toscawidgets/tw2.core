@@ -227,7 +227,7 @@ class ControllersApp(object):
             path = widget.id
         self._widgets[path] = widget
 
-    def mounted_path(self, target_widget):
+    def controller_path(self, target_widget):
         """ Return the path against which a given widget is mounted or None if
         it is not registered.
         """

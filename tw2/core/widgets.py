@@ -323,13 +323,13 @@ class Widget(pm.Parametered):
             yield param, value
 
     @util.class_or_instance
-    def mounted_path(self, cls):
+    def controller_path(self, cls):
         """ Return the URL path against which this widget's controller is
         mounted or None if it is not registered with the ControllerApp.
         """
 
         mw = core.request_local().get('middleware')
-        return mw.controllers.mounted_path(cls)
+        return mw.controllers.controller_path(cls)
 
     @util.class_or_instance
     def add_call(self, extra_arg, call, location="bodybottom"):

@@ -126,8 +126,7 @@ class TestMiddleware(TestCase):
         mw = TwMiddleware(None)
         testapi.request(1, mw)
         register_controller(WidgetMock, 'foobar')
-        print WidgetMock.mounted_path()
-        self.assert_(WidgetMock.mounted_path() == 'foobar')
+        self.assert_(WidgetMock.controller_path() == 'foobar')
 
     def testMakeMiddelware(self):
         from tw2.core.middleware import make_middleware
