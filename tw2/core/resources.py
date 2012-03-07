@@ -219,6 +219,16 @@ class JSSource(Resource):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
 
+class CSSSource(Resource):
+    """
+    Inline Cascading Style-Sheet code.
+    """
+    src = pm.Param('CSS code')
+    location = 'head'
+    template = 'tw2.core.templates.csssource'
+
+    def __repr__(self):
+        return "%s('%s')" % (self.__class__.__name__, self.src)
 
 class JSFuncCall(JSSource):
     """
