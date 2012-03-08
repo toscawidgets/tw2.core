@@ -11,8 +11,8 @@ from params import (Param, ChildParam, Variable, ChildVariable, Required,
 from widgets import (Widget, CompoundWidget, RepeatingWidget,
     DisplayOnlyWidget, Page)
 
-from resources import (JSSymbol, Link, JSLink, CSSLink, JSSource, JSFuncCall,
-    inject_resources, DirLink, encoder)
+from resources import (JSSymbol, Link, JSLink, CSSLink, CSSSource, JSSource,
+    JSFuncCall, inject_resources, DirLink, encoder)
 
 from validation import (
     Validator, LengthValidator,

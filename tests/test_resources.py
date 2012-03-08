@@ -6,6 +6,7 @@ from unittest import TestCase
 
 js = twc.JSLink(link='paj')
 css = twc.CSSLink(link='joe')
+csssrc = twc.CSSSource(src='.bob { font-weight: bold; }')
 jssrc = twc.JSSource(src='bob')
 
 TestWidget = twc.Widget(template='genshi:tw2.core.test_templates.inner_genshi', test='test')
@@ -155,8 +156,12 @@ class TestResources(object):
     def test_inject_head(self):
         rl = testapi.request(1, mw)
         js.inject()
+        csssrc.inject()
         out = twc.inject_resources(html)
-        assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
+        print out
+        assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script>\
+            <style type="text/css">.bob { font-weight: bold; }</style>\
+            <title>a</title></head><body>hello</body></html>')
 
     def test_inject_body(self):
         rl = testapi.request(1, mw)
@@ -164,12 +169,23 @@ class TestResources(object):
         out = twc.inject_resources(html)
         assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
+    def test_inject_css(self):
+        rl = testapi.request(1, mw)
+        csssrc.inject()
+        out = twc.inject_resources(html)
+        assert eq_xhtml(out, '<html><head><style type="text/css">.bob { font-weight: bold; }</style>\
+            <title>a</title></head><body>hello</body></html>')
+
     def test_inject_both(self):
         rl = testapi.request(1, mw)
         js.inject()
         jssrc.inject()
+        csssrc.inject()
         out = twc.inject_resources(html)
-        assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
+        assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script>\
+            <style type="text/css">.bob { font-weight: bold; }</style>\
+            <title>a</title></head><body>hello<script type="text/javascript">bob</script>\
+            </body></html>')
 
     def test_detect_clear(self):
         widget = twc.Widget(id='a', template='genshi:tw2.core.test_templates.inner_genshi', test='test', resources=[js])
