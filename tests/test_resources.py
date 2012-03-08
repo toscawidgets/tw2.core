@@ -169,6 +169,13 @@ class TestResources(object):
         out = twc.inject_resources(html)
         assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
+    def test_inject_css(self):
+        rl = testapi.request(1, mw)
+        csssrc.inject()
+        out = twc.inject_resources(html)
+        assert eq_xhtml(out, '<html><head><style type="text/css">.bob { font-weight: bold; }</style>\
+            <title>a</title></head><body>hello</body></html>')
+
     def test_inject_both(self):
         rl = testapi.request(1, mw)
         js.inject()
