@@ -161,6 +161,7 @@ Widgets often need to access resources, such as JavaScript or CSS files. A key f
 To define a resource, just add a :class:`tw2.core.Resource` subclass to the widget's :attr:`resources` parameter. It is also possible to append to :attr:`resources` from within the :meth:`prepare` method. The following resource types are available:
 
 .. autoclass:: tw2.core.CSSLink
+.. autoclass:: tw2.core.CSSSource
 .. autoclass:: tw2.core.JSLink
 .. autoclass:: tw2.core.JSSource
 .. autoclass:: tw2.core.JSFuncCall
