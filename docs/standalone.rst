@@ -11,7 +11,7 @@ Installing ToscaWidgets2
 Your operating system may provide another way of installing ToscaWidgets2
 (`yum`, `apt-get`, etc...).  Failing that, you can use `pip`::
 
-    $ pip install tw2.core tw2.forms tw2.dynforms tw2.devtools tw2.sqla
+    $ pip install tw2.core tw2.forms tw2.dynforms tw2.devtools tw2.sqla tw2.jqplugins.jqgrid
 
 TW2 supports many different `templating engines`.  For this tutorial we'll be
 writing ``genshi`` templates, so install support for that as well::
