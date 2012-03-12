@@ -148,7 +148,8 @@ Resources
 Widgets often need to access resources, such as JavaScript or CSS files. A key feature of widgets is the ability to automatically serve such resources, and insert links into appropriate sections of the page, e.g. ``<HEAD>``. There are several parts to this:
 
  * Widgets can define resources they use, using the :attr:`resources` parameter.
- * When a Widget is displayed, it registers resources in request-local storage, and with the resource server.
+ * When a resource is defined, it is registered with the resource server.
+ * When a Widget is displayed, it registers resources in request-local storage.
  * The resource injection middleware detects resources in request-local storage, and rewrites the generated page to include appropriate links.
  * The resource server middleware serves static files used by widgets
  * Widgets can also access resources at display time, e.g. to get links

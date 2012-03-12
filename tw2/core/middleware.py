@@ -173,10 +173,18 @@ class TwMiddleware(object):
         self.controllers = controllers or ControllersApp()
 
         rl = core.request_local()
+        # Load up controllers that wanted to be registered before we were ready
         for widget, path in rl.get('queued_controllers', []):
             self.controllers.register(widget, path)
 
         rl['queued_controllers'] = []
+
+        # Load up resources that wanted to be registered before we were ready
+        for modname, filename in rl.get('queued_resources', []):
+            self.resources.register(modname, filename)
+
+        rl['queued_resources'] = []
+
 
     def __call__(self, environ, start_response):
         rl = core.request_local()
@@ -254,6 +262,32 @@ class ControllersApp(object):
             resp = widget.request(req)
         return resp
 
+
+def register_resource(modname, filename, whole_dir):
+    """ API function for registering resources *for serving*.
+
+    This should not be confused with resource registration for *injection*.
+    A resource must be registered for serving for it to be also registered for
+    injection.
+
+    If the middleware is available, the resource is directly registered with the
+    ResourcesApp.
+
+    If the middleware is not available, the resource is stored in the
+    request_local dict.  When the middleware is later initialized, those waiting
+    registrations are processed.
+    """
+
+    rl = core.request_local()
+    mw = rl.get('middleware')
+    if mw:
+        mw.resources.register(modname, filename, whole_dir)
+    else:
+        rl['queued_resources'] = rl.get('queued_resources', []) + [
+            (modname, filename, whole_dir)
+        ]
+        log.info("No middleware in place.  Queued %r->%r(%r) registration." %
+                 (modname, filename, whole_dir))
 
 def register_controller(widget, path):
     """ API function for registering widget controllers.
