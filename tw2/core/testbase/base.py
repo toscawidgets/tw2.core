@@ -1,40 +1,66 @@
-import os, re, copy, tw2.core.middleware as tmw, tw2.core.template as template
-import formencode as fe, itertools as it, pkg_resources as pk
+import os
+import re
+import copy
+
+import formencode as fe
+import itertools as it
+import pkg_resources as pk
+
 from difflib import unified_diff
 from cStringIO import StringIO
 from BeautifulSoup import BeautifulSoup as bs
 from nose.tools import eq_
 
-from xhtmlify import xhtmlify, ValidationError
+from xhtmlify import (
+    xhtmlify,
+    ValidationError,
+)
 
-from strainer.operators import remove_whitespace_nodes, remove_namespace, eq_xhtml, in_xhtml, assert_in_xhtml, assert_eq_xhtml, normalize_to_xhtml, replace_escape_chars
+from strainer.operators import (
+    remove_whitespace_nodes,
+    remove_namespace,
+    eq_xhtml,
+    in_xhtml,
+    assert_in_xhtml,
+    assert_eq_xhtml,
+    normalize_to_xhtml,
+    replace_escape_chars,
+)
 
-#try:
 import xml.etree.ElementTree as etree
 from xml.parsers.expat import ExpatError
-#except ImportError:
-#    import cElementTree as etree
 
-rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
+import tw2.core as twc
+import tw2.core.middleware as tmw
+import tw2.core.template as template
+
+rendering_extension_lookup = {
+    'mako': 'mak',
+    'genshi': 'html',
+    'cheetah': 'tmpl',
+    'kid': 'kid',
+}
 rm = pk.ResourceManager()
 
 _BOOLEAN_ATTRS = frozenset(['selected', 'checked', 'compact', 'declare',
                             'defer', 'disabled', 'ismap', 'multiple',
                             'nohref', 'noresize', 'noshade', 'nowrap'])
 
+
 def replace_boolean_attrs(needle):
     """
     makes boolean attributes xml safe.
     """
     for attr in _BOOLEAN_ATTRS:
-        eyelet = ' %s '%attr
+        eyelet = ' %s ' % attr
         if eyelet in needle:
-            needle = needle.replace(eyelet, '%s="%s" '%(attr, attr))
+            needle = needle.replace(eyelet, '%s="%s" ' % (attr, attr))
     return needle
+
 
 def fix_xml(needle):
     needle = replace_escape_chars(needle)
-    #first, we need to make sure the needle is valid html
+    # first, we need to make sure the needle is valid html
     """
     try:
         validate_html(needle)
@@ -42,13 +68,16 @@ def fix_xml(needle):
         print "error with: %s"%needle
         raise
     """
-    #then we close all the open-ended tags to make sure it will compare properly
+    # then we close all the open-ended tags to make sure it will compare
+    # properly
     #needle = bs(needle).prettify()
     needle = xhtmlify(needle)
     try:
         needle_node = etree.fromstring(needle)
     except ExpatError, e:
-        raise ExpatError('Could not parse %s into xml. %s'%(needle, e.args[0]))
+        raise ExpatError('Could not parse %s into xml. %s' % (
+            needle, e.args[0]
+        ))
     needle_node = remove_whitespace_nodes(needle_node)
     remove_namespace(needle_node)
     needle_s = etree.tostring(needle_node)
@@ -59,11 +88,15 @@ eq_xml = eq_xhtml
 assert_in_xml = assert_in_xhtml
 assert_eq_xml = assert_eq_xhtml
 
-import tw2.core as twc
 
 def request_local_tst():
 #    if _request_id is None:
 #        raise KeyError('must be in a request')
+
+    global _request_local
+    if _request_local is None:
+        _request_local = {}
+
     try:
         return _request_local[_request_id]
     except KeyError:
@@ -75,27 +108,30 @@ import tw2.core.core
 tw2.core.core.request_local = request_local_tst
 from tw2.core.core import request_local
 
-_request_local=None
-_request_id=None
+_request_local = None
+_request_id = None
 
 
 def TW2WidgetBuilder(widget, **attrs):
-    class MyTestWidget(widget): pass
+    class MyTestWidget(widget):
+        pass
+
     for key, value in attrs.iteritems():
         setattr(MyTestWidget, key, value)
     return MyTestWidget
 
+
 class WidgetTest(object):
     """
-    This class provides a basis for testing all widget classes.  It's setup will 
-    automatically create a request, and a widget of the type specified.  It will 
-    also test the display function by comparing it against an expected output.
-    
-    
+    This class provides a basis for testing all widget classes.  It's setup
+    will automatically create a request, and a widget of the type specified.
+    It will also test the display function by comparing it against an
+    expected output.
+
     `template_engine`
         Default template engine for the displays_on property of the TestCase's
         middleware
-    
+
     `params_as_vars`
         Also passed into the middleware
 
@@ -104,20 +140,20 @@ class WidgetTest(object):
 
     `attrs`
         attributes to pass into the widget at creation
-        
+
     `params`
         params to send into the widget on the "display" call
-        
+
     `expected`
         xhtml stream representing the expected output
-        
+
     `declarative`
         whether or not the widget shoudl be created in a declarative manner.
-    
+
     `validate_params`
-        A list of conditions to test against the widget.  The list contains a set of sub-lists,
-        which have the following format:
-        
+        A list of conditions to test against the widget.  The list contains a
+        set of sub-lists, which have the following format:
+
         [0] - Params to send into the widget's init
 
         [1] - Params sent into the widget's validate method
@@ -130,7 +166,7 @@ class WidgetTest(object):
         Wrap expected and the result in an element.  Useful if the template
         generates an xml snippet with more than one top level element.
     """
-    
+
     template_engine = 'string'
     params_as_vars = True
     widget = None
@@ -157,7 +193,10 @@ class WidgetTest(object):
         _request_id = None
         if hasattr(super(WidgetTest, self), 'setup'):
             super(WidgetTest, self).setup()
-        self.mw = tmw.make_middleware(None, default_engine=self.template_engine)
+        self.mw = tmw.make_middleware(
+            None,
+            default_engine=self.template_engine
+        )
         if self.declarative:
             self.widget = TW2WidgetBuilder(self.widget, **self.attrs)
         return self.request(1)
@@ -172,7 +211,8 @@ class WidgetTest(object):
         except:
             for engine, ext in rendering_extension_lookup.iteritems():
                 split = template.rsplit('.', 1)
-                if(os.path.isfile(rm.resource_filename(split[0], '.'.join((split[1], ext))))):
+                fname = '.'.join((split[1], ext))
+                if(os.path.isfile(rm.resource_filename(split[0], fname))):
                     yield engine
 
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
@@ -186,7 +226,8 @@ class WidgetTest(object):
 
     def test_display(self):
         for engine in self._get_all_possible_engines():
-            yield self._check_rendering_vs_expected, engine, self.attrs, self.params, self.expected
+            yield self._check_rendering_vs_expected, engine, \
+                    self.attrs, self.params, self.expected
 
     def _check_validation(self, attrs, params, expected, raises=None):
         if raises is not None:
@@ -203,20 +244,24 @@ class WidgetTest(object):
             for params in self.validate_params:
                 if params[0] is None:
                     params[0] = self.attrs
-                if len(params)<4:
+                if len(params) < 4:
                     params.append(None)
-                yield self._check_validation, params[0], params[1], params[2], params[3]
+                yield self._check_validation, params[0], \
+                        params[1], params[2], params[3]
+
 
 class ValidatorTest(object):
     """
-    This test provides a basis for testing all validator classes. On initialization,
-    this class will make a request and a middleware instance for use in testing.
-    
-    It will then test the validator's validate, to_python, and from_python methods.
-    
+    This test provides a basis for testing all validator classes. On
+    initialization, this class will make a request and a middleware
+    instance for use in testing.
+
+    It will then test the validator's validate, to_python, and from_python
+    methods.
+
     `validator`
         class to create the validator from
-        
+
     `attrs`
         attributes sent into the validator on instantiation
 
@@ -227,20 +272,22 @@ class ValidatorTest(object):
         list of expected outputs for the validator's validate method
 
     `from_python_attrs`
-        attributes sent into the validator on instantiation for from python tests
+        attributes sent into the validator on instantiation for from python
+        tests
 
     `from_python_params`
         list of parameters sent into test the validator's from_python method
 
     `from_python_expected`
         list of expected outputs for the validator's from_python method
-    
+
     `to_python_attrs`
-        attributes sent into the validator on instantiation for from python tests
-    
+        attributes sent into the validator on instantiation for from python
+        tests
+
     `to_python_params`
         list of parameters sent into test the validator's to_python method
-    
+
     `to_python_expected`
         list of expected outputs for the validator's to_python method
     """
@@ -257,12 +304,21 @@ class ValidatorTest(object):
 
     def __init__(self, *args, **kw):
         super(ValidatorTest, self).__init__(*args, **kw)
-        for attr in ['attrs', 'params', 'expected',
-                     'from_python_attrs', 'from_python_params', 'from_python_expected',
-                     'to_python_attrs', 'to_python_params', 'to_python_expected']:
+        attrs = [
+            'attrs',
+            'params',
+            'expected',
+            'from_python_attrs',
+            'from_python_params',
+            'from_python_expected',
+            'to_python_attrs',
+            'to_python_params',
+            'to_python_expected'
+        ]
+        for attr in attrs:
             value = getattr(self, attr)
             if value is not None and not isinstance(value, list):
-                setattr(self, attr, [value,])
+                setattr(self, attr, [value, ])
 
     def request(self, requestid, mw=None):
         if mw is None:
@@ -283,15 +339,17 @@ class ValidatorTest(object):
         self.mw = tmw.make_middleware(None)
         return self.request(1)
 
-    def _check_validation(self, attrs, params, expected, method='validate_python'):
+    def _check_validation(self, attrs, params, expected,
+                          method='validate_python'):
         vld = self.validator(**attrs)
-        if isinstance(expected, type) and issubclass(expected, (twc.ValidationError, fe.Invalid)):
+        if isinstance(expected, type) and \
+           issubclass(expected, (twc.ValidationError, fe.Invalid)):
             try:
                 if method == 'validate_python':
                     params = vld.to_python(params)
                 r = getattr(vld, method)(params)
             except expected:
-                #XXX:figure out a way to test that the validation message matches
+                # XXX: figure out test way to test validation message match
                 pass
             return
         if method == 'validate_python':
@@ -301,24 +359,36 @@ class ValidatorTest(object):
 
     def test_validate(self):
         if self.expected:
-            for attrs, params, expected in it.izip(self.attrs, self.params, self.expected):
+            triples = it.izip(self.attrs, self.params, self.expected)
+            for attrs, params, expected in triples:
                 yield self._check_validation, attrs, params, expected
 
     def test_from_python(self):
         if self.from_python_expected:
-            for attrs, params, expected in it.izip(self.from_python_attrs, self.from_python_params, self.from_python_expected):
-                yield self._check_validation, attrs, params, expected, 'from_python'
+            triples = it.izip(
+                self.from_python_attrs,
+                self.from_python_params,
+                self.from_python_expected,
+            )
+            for attrs, params, expected in triples:
+                yield self._check_validation, attrs, params, \
+                        expected, 'from_python'
 
     def test_to_python(self):
         if self.to_python_expected:
-            for attrs, params, expected in it.izip(self.to_python_attrs, self.to_python_params, self.to_python_expected):
-                yield self._check_validation, attrs, params, expected, 'to_python'
+            triples = it.izip(
+                self.to_python_attrs,
+                self.to_python_params,
+                self.to_python_expected,
+            )
+            for attrs, params, expected in triples:
+                yield self._check_validation, attrs, params, \
+                        expected, 'to_python'
 
-import webob as wo, webtest as wt, tw2.core as twc, os
-
-js = twc.JSLink(link='paj')
-css = twc.CSSLink(link='joe')
-TestWidget = twc.Widget(template='genshi:tw2.core.test_templates.inner_genshi', test='test')
+import webob as wo
+import webtest as wt
+import tw2.core as twc
+import os
 
 class TestInPage(object):
     content_type = 'text/html'
@@ -326,17 +396,28 @@ class TestInPage(object):
 
     html = "<html><head><title>TITLE</title></head><body>%s</body></html>"
 
-    inject_widget = TestWidget(id='a', resources=[js,css])
-
     def setup(self):
         global _request_local
         _request_local = {}
         self.mw = twc.make_middleware(self)
         self.app = wt.TestApp(self.mw)
 
+        js = twc.JSLink(link='paj')
+        css = twc.CSSLink(link='joe')
+        TestWidget = twc.Widget(
+            template='genshi:tw2.core.test_templates.inner_genshi',
+            test='test',
+        )
+        self.inject_widget = TestWidget(id='a', resources=[js, css])
+
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
-        resp = wo.Response(request=req, content_type="%s; charset=%s" % (self.content_type, self.charset))
+        resp = wo.Response(
+            request=req,
+            content_type="%s; charset=%s" % (
+                self.content_type, self.charset
+            )
+        )
         if hasattr(self, 'custom_display'):
             widg = self.custom_display()
         else:
@@ -344,9 +425,19 @@ class TestInPage(object):
         resp.unicode_body = self.html % widg
         return resp(environ, start_response)
 
+
 class TestInPageTest(TestInPage):
     def test_base(self):
         res = self.app.get('/')
-        assert_in_xhtml('<script type="text/javascript" src="paj"></script>', res.body)
-        assert_in_xhtml('<link type="text/css" rel="stylesheet" media="all" href="joe" />', res.body)
-        assert_in_xhtml('<p>TEST test</p>', res.body)
+        assert_in_xhtml(
+            '<script type="text/javascript" src="paj"></script>',
+            res.body
+        )
+        assert_in_xhtml(
+            '<link type="text/css" rel="stylesheet" media="all" href="joe" />',
+            res.body
+        )
+        assert_in_xhtml(
+            '<p>TEST test</p>',
+            res.body
+        )

@@ -1,8 +1,11 @@
-import core, itertools, copy
+import core
+import itertools
+import copy
 
 
 class ParameterError(core.WidgetError):
     "Errors related to parameters."
+
 
 class _Required(object):
     """This class is used to mark a widget parameter as being required, by
@@ -10,6 +13,7 @@ class _Required(object):
     def __repr__(self):
         return 'Required'
 Required = _Required()
+
 
 class _Auto(object):
     """
@@ -19,23 +23,27 @@ class _Auto(object):
         return 'Auto'
 Auto = _Auto()
 
+
 class Deferred(object):
     """This class is used as a wrapper around a parameter value. It takes a
     callable, which will be called every time the widget is displayed, with
     the returned value giving the parameter value."""
+
     def __init__(self, fn):
-        self.fn = fn    
+        self.fn = fn
+
     def __repr__(self):
-        return '<Deferred: %s>' % self.fn.__doc__ if self.fn.__doc__ else '<Deferred>'
+        doc = self.fn.__doc__ if self.fn.__doc__ else '<Deferred>'
+        return '<Deferred: %s>' % doc
 
 
 class _Default(object):
-    pass
     def __repr__(self):
         return 'Default'
 Default = _Default()
 
 _param_seq = itertools.count(0)
+
 
 class Param(object):
     """A parameter for a widget.
@@ -75,7 +83,9 @@ class Param(object):
     defined_on = None
     view_name = None
 
-    def __init__(self, description=Default, default=Default, request_local=Default, attribute=Default, view_name=Default):
+    def __init__(self, description=Default, default=Default,
+                 request_local=Default, attribute=Default,
+                 view_name=Default):
         self._seq = _param_seq.next()
 
         self.description = None
@@ -95,12 +105,20 @@ class Param(object):
             self.view_name = view_name
 
         self.specified = []
-        for arg in ['description', 'default', 'request_local', 'attribute', 'view_name']:
+        args = [
+            'description',
+            'default',
+            'request_local',
+            'attribute',
+            'view_name',
+        ]
+        for arg in args:
             if locals()[arg] is not Default:
                 self.specified.append(arg)
 
     def __repr__(self):
-        return '%s: %s (default: %s, defined on: %s)' % (self.name, self.description, self.default, self.defined_on)
+        return '%s: %s (default: %s, defined on: %s)' % (
+            self.name, self.description, self.default, self.defined_on)
 
 
 class Variable(Param):
@@ -109,6 +127,7 @@ class Variable(Param):
     documentation for the widget.
     """
     internal = True
+
     def __init__(self, description=Default, **kw):
         kw.setdefault('default', None)
         super(Variable, self).__init__(description, **kw)

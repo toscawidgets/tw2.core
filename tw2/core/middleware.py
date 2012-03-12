@@ -1,9 +1,15 @@
-import webob as wo, core, resources, template
+import warnings
+import webob as wo
 from pkg_resources import iter_entry_points, DistributionNotFound
 from paste.deploy.converters import asbool, asint
 
+import core
+import resources
+import template
+
 import logging
 log = logging.getLogger(__name__)
+
 
 class Config(object):
     '''
@@ -59,7 +65,7 @@ class Config(object):
 
     `encoding`
         The encoding to decode when performing validation (default: utf-8)
-    
+
     `auto_reload_templates`
         Whether to automatically reload changed templates. Set this to False in
         production for efficiency. If this is None, it takes the same value as
@@ -75,12 +81,13 @@ class Config(object):
         it does not find a template within your preferred list. (default: True)
 
     `rendering_engine_lookup`
-        A dictionary of file extensions you expect to use for each type of template engine.
-        (default: {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'})
+        A dictionary of file extensions you expect to use for each type of
+        template engine.
+        (default: {'mako':'mak','genshi':'html','cheetah':'tmpl','kid':'kid'})
 
     `script_name`
-        A name to prepend to the url for all resource links (different from res_prefix, as it may
-        Be shared across and entire wsgi app.
+        A name to prepend to the url for all resource links (different from
+        res_prefix, as it may be shared across and entire wsgi app.
         (default: '')
     '''
 
@@ -93,7 +100,7 @@ class Config(object):
     res_max_age = 3600
     serve_controllers = True
     controller_prefix = '/controllers/'
-    bufsize = 4*1024
+    bufsize = 4 * 1024
     params_as_vars = False
     debug = True
     validator_msgs = {}
@@ -101,7 +108,12 @@ class Config(object):
     auto_reload_templates = None
     preferred_rendering_engines = ['mako', 'genshi', 'cheetah', 'kid']
     strict_engine_selection = True
-    rendering_extension_lookup = {'mako':'mak', 'genshi':'html', 'cheetah':'tmpl', 'kid':'kid'}
+    rendering_extension_lookup = {
+        'mako': 'mak',
+        'genshi': 'html',
+        'cheetah': 'tmpl',
+        'kid': 'kid',
+    }
     script_name = ''
 
     def __init__(self, **kw):
@@ -109,9 +121,15 @@ class Config(object):
             setattr(self, k, v)
 
         # Set boolean properties
-        for prop in ('inject_resources','serve_resources', 'serve_controllers',
-                     'params_as_vars', 
-                     'strict_engine_selection', 'debug'):
+        boolean_props = (
+            'inject_resources',
+            'serve_resources',
+            'serve_controllers',
+            'params_as_vars',
+            'strict_engine_selection',
+            'debug',
+        )
+        for prop in boolean_props:
             setattr(self, prop, asbool(getattr(self, prop)))
 
         # Set integer properties
@@ -123,13 +141,15 @@ class Config(object):
 
         self.available_rendering_engines = {}
         for e in iter_entry_points("python.templating.engines"):
-            if not self.strict_engine_selection or e.name in self.preferred_rendering_engines:
+            if not self.strict_engine_selection or \
+               e.name in self.preferred_rendering_engines:
                 try:
                     self.available_rendering_engines[e.name] = e.load()
                 except DistributionNotFound:
                     pass
 
-        #test to see if the rendering engines are available for the preferred engines selected
+        # test to see if the rendering engines are available for the preferred
+        # engines selected
         for engine_name in self.preferred_rendering_engines:
             if engine_name not in self.available_rendering_engines:
                 self.preferred_rendering_engines.remove(engine_name)
@@ -153,10 +173,17 @@ class TwMiddleware(object):
         self.controllers = controllers or ControllersApp()
 
         rl = core.request_local()
+        # Load up controllers that wanted to be registered before we were ready
         for widget, path in rl.get('queued_controllers', []):
             self.controllers.register(widget, path)
 
         rl['queued_controllers'] = []
+
+        # Load up resources that wanted to be registered before we were ready
+        for modname, filename in rl.get('queued_resources', []):
+            self.resources.register(modname, filename)
+
+        rl['queued_resources'] = []
 
 
     def __call__(self, environ, start_response):
@@ -166,19 +193,27 @@ class TwMiddleware(object):
         req = wo.Request(environ)
 
         path = req.path_info
-        if self.config.serve_resources and path.startswith(self.config.res_prefix):
+        if self.config.serve_resources and \
+           path.startswith(self.config.res_prefix):
             return self.resources(environ, start_response)
         else:
-            if self.config.serve_controllers and path.startswith(self.config.controller_prefix):
+            if self.config.serve_controllers and \
+               path.startswith(self.config.controller_prefix):
                 resp = self.controllers(req)
             else:
                 if self.app:
                     resp = req.get_response(self.app, catch_exc_info=True)
                 else:
                     resp = wo.Response(status="404 Not Found")
-            content_type = resp.headers.get('Content-Type','text/plain').lower()
+
+            ct = resp.headers.get('Content-Type', 'text/plain')
+            content_type = ct.lower()
+
             if self.config.inject_resources and 'html' in content_type:
-                body = resources.inject_resources(resp.body, encoding=resp.charset)
+                body = resources.inject_resources(
+                    resp.body,
+                    encoding=resp.charset,
+                )
                 if isinstance(body, unicode):
                     resp.unicode_body = body
                 else:
@@ -200,6 +235,17 @@ class ControllersApp(object):
             path = widget.id
         self._widgets[path] = widget
 
+    def controller_path(self, target_widget):
+        """ Return the path against which a given widget is mounted or None if
+        it is not registered.
+        """
+
+        for path, widget in self._widgets.iteritems():
+            if target_widget == widget:
+                return path
+
+        return None
+
     def __call__(self, req):
         config = rl = core.request_local()['middleware'].config
         path = req.path_info.split('/')[1:]
@@ -216,6 +262,32 @@ class ControllersApp(object):
             resp = widget.request(req)
         return resp
 
+
+def register_resource(modname, filename, whole_dir):
+    """ API function for registering resources *for serving*.
+
+    This should not be confused with resource registration for *injection*.
+    A resource must be registered for serving for it to be also registered for
+    injection.
+
+    If the middleware is available, the resource is directly registered with the
+    ResourcesApp.
+
+    If the middleware is not available, the resource is stored in the
+    request_local dict.  When the middleware is later initialized, those waiting
+    registrations are processed.
+    """
+
+    rl = core.request_local()
+    mw = rl.get('middleware')
+    if mw:
+        mw.resources.register(modname, filename, whole_dir)
+    else:
+        rl['queued_resources'] = rl.get('queued_resources', []) + [
+            (modname, filename, whole_dir)
+        ]
+        log.info("No middleware in place.  Queued %r->%r(%r) registration." %
+                 (modname, filename, whole_dir))
 
 def register_controller(widget, path):
     """ API function for registering widget controllers.
@@ -250,6 +322,9 @@ def dev_server(*args, **kwargs):
     """
     Deprecated; use tw2.devtools.dev_server insteads.
     """
-    import tw2.devtools, warnings
-    warnings.warn('tw2.core.dev_server is deprecated; use tw2.devtools.dev_server instead')
+    import tw2.devtools
+    warnings.warn(
+        'tw2.core.dev_server is deprecated; ' +
+        'Use tw2.devtools.dev_server instead.'
+    )
     tw2.devtools.dev_server(*args, **kwargs)

@@ -1,5 +1,6 @@
 import util
 
+
 class WidgetError(Exception):
     "Base class for all widget errors."
     pass

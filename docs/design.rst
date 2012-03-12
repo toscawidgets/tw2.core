@@ -148,7 +148,8 @@ Resources
 Widgets often need to access resources, such as JavaScript or CSS files. A key feature of widgets is the ability to automatically serve such resources, and insert links into appropriate sections of the page, e.g. ``<HEAD>``. There are several parts to this:
 
  * Widgets can define resources they use, using the :attr:`resources` parameter.
- * When a Widget is displayed, it registers resources in request-local storage, and with the resource server.
+ * When a resource is defined, it is registered with the resource server.
+ * When a Widget is displayed, it registers resources in request-local storage.
  * The resource injection middleware detects resources in request-local storage, and rewrites the generated page to include appropriate links.
  * The resource server middleware serves static files used by widgets
  * Widgets can also access resources at display time, e.g. to get links
@@ -161,6 +162,7 @@ Widgets often need to access resources, such as JavaScript or CSS files. A key f
 To define a resource, just add a :class:`tw2.core.Resource` subclass to the widget's :attr:`resources` parameter. It is also possible to append to :attr:`resources` from within the :meth:`prepare` method. The following resource types are available:
 
 .. autoclass:: tw2.core.CSSLink
+.. autoclass:: tw2.core.CSSSource
 .. autoclass:: tw2.core.JSLink
 .. autoclass:: tw2.core.JSSource
 .. autoclass:: tw2.core.JSFuncCall
@@ -292,6 +294,11 @@ For convenience, widgets that have a :meth:`request` method, and an :attr:`id` w
 You can also manually register widgets::
 
     twc.core.register_controller(MyWidget, 'mywidget')
+
+Sometimes it is useful to dynamically acquire what URL path a Widget's
+controller is mounted on.  For this you can use::
+
+    MyWidget.controller_path()
 
 **Methods to override**
 
