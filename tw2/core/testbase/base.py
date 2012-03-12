@@ -92,6 +92,11 @@ assert_eq_xml = assert_eq_xhtml
 def request_local_tst():
 #    if _request_id is None:
 #        raise KeyError('must be in a request')
+
+    global _request_local
+    if _request_local is None:
+        _request_local = {}
+
     try:
         return _request_local[_request_id]
     except KeyError:
@@ -385,27 +390,25 @@ import webtest as wt
 import tw2.core as twc
 import os
 
-js = twc.JSLink(link='paj')
-css = twc.CSSLink(link='joe')
-TestWidget = twc.Widget(
-    template='genshi:tw2.core.test_templates.inner_genshi',
-    test='test',
-)
-
-
 class TestInPage(object):
     content_type = 'text/html'
     charset = 'UTF8'
 
     html = "<html><head><title>TITLE</title></head><body>%s</body></html>"
 
-    inject_widget = TestWidget(id='a', resources=[js, css])
-
     def setup(self):
         global _request_local
         _request_local = {}
         self.mw = twc.make_middleware(self)
         self.app = wt.TestApp(self.mw)
+
+        js = twc.JSLink(link='paj')
+        css = twc.CSSLink(link='joe')
+        TestWidget = twc.Widget(
+            template='genshi:tw2.core.test_templates.inner_genshi',
+            test='test',
+        )
+        self.inject_widget = TestWidget(id='a', resources=[js, css])
 
     def __call__(self, environ, start_response):
         req = wo.Request(environ)

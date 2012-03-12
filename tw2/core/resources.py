@@ -12,6 +12,7 @@ import widgets as wd
 import util
 import core
 import params as pm
+import middleware as md
 
 
 log = logging.getLogger(__name__)
@@ -93,6 +94,7 @@ class Resource(wd.Widget):
         if self not in rl_resources:
             if self.location is '__use_middleware':
                 self.location = rl_location
+
             for r in self.resources:
                 r.req().prepare()
 
@@ -121,6 +123,10 @@ class Link(Resource):
         "Don't inject this link. (Default: False)",
         default=False,
     )
+    whole_dir = pm.Param(
+        "Make the whole directory available.  (Default: False)",
+        default=False,
+    )
 
     def guess_modname(self):
         """ Try to guess my modname.
@@ -138,8 +144,16 @@ class Link(Resource):
         except Exception as e:
             return None
 
-    def prepare(self):
+    @classmethod
+    def post_define(cls):
+        if not cls.no_inject:
+            if getattr(cls, 'filename', None):
+                print "Rocking", cls.modname, cls.filename
+                md.register_resource(
+                    cls.modname or '__anon__', cls.filename, cls.whole_dir
+                )
 
+    def prepare(self):
         if not self.modname:
             self.modname = self.guess_modname()
 
@@ -152,7 +166,7 @@ class Link(Resource):
                         "Either 'link' or 'filename' must be specified"
                     )
                 resources = rl['middleware'].resources
-                self.link = resources.register(
+                self.link = resources.resource_path(
                     self.modname or '__anon__', self.filename
                 )
             super(Link, self).prepare()
@@ -181,13 +195,13 @@ class Link(Resource):
 class DirLink(Link):
     link = pm.Variable()
     filename = pm.Required
+    whole_dir = True
 
     def prepare(self):
         resources = core.request_local()['middleware'].resources
-        self.link = resources.register(
+        self.link = resources.resource_path(
             self.modname,
             self.filename,
-            whole_dir=True,
         )
 
 
@@ -285,7 +299,7 @@ class ResourcesApp(object):
         self.config = config
 
     def register(self, modname, filename, whole_dir=False):
-        """Register a file for static serving, and return the web path.
+        """ Register a file for static serving.
 
         After this method has been called, for say ('tw2.forms',
         'static/forms.css'), the URL /resources/tw2.forms/static/forms.css will
@@ -308,15 +322,23 @@ class ResourcesApp(object):
         """
         if isinstance(modname, pr.Requirement):
             modname = os.path.basename(pr.working_set.find(modname).location)
+
+        path = modname + '/' + filename.lstrip('/')
+
         if whole_dir:
-            path = modname + '/' + filename.lstrip('/')
             if path not in self._dirs:
                 self._dirs.append(path)
         else:
-            path = modname + '/' + filename.strip('/')
             if path not in self._paths:
                 self._paths[path] = (modname, filename)
 
+    def resource_path(self, modname, filename):
+        """ Return a resource's web path. """
+
+        if isinstance(modname, pr.Requirement):
+            modname = os.path.basename(pr.working_set.find(modname).location)
+
+        path = modname + '/' + filename.lstrip('/')
         return self.config.script_name + self.config.res_prefix + path
 
     def __call__(self, environ, start_response):

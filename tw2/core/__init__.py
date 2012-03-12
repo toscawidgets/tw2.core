@@ -29,6 +29,7 @@ from middleware import (
     make_middleware,
     dev_server,
     register_controller,
+    register_resource,
 )
 
 from js import js_symbol, js_callback, js_function
