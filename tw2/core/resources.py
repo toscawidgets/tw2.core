@@ -148,7 +148,6 @@ class Link(Resource):
     def post_define(cls):
         if not cls.no_inject:
             if getattr(cls, 'filename', None):
-                print "Rocking", cls.modname, cls.filename
                 md.register_resource(
                     cls.modname or '__anon__', cls.filename, cls.whole_dir
                 )
