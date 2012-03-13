@@ -360,7 +360,7 @@ class ResourcesApp(object):
                 if '..' in path:  # protect against directory traversal
                     raise IOError()
                 for d in self._dirs:
-                    if path.startswith(d):
+                    if path.startswith(d.replace('\\', '/')):
                         break
                 else:
                     raise IOError()
