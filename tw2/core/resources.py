@@ -225,7 +225,7 @@ class JSSource(Resource):
     """
     Inline JavaScript source code.
     """
-    src = pm.Param('Source code')
+    src = pm.Param('Source code', default=None)
     location = 'bodybottom'
     template = 'tw2.core.templates.jssource'
 
@@ -236,7 +236,7 @@ class CSSSource(Resource):
     """
     Inline Cascading Style-Sheet code.
     """
-    src = pm.Param('CSS code')
+    src = pm.Param('CSS code', default=None)
     location = 'head'
     template = 'tw2.core.templates.csssource'
 
