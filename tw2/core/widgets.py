@@ -177,12 +177,16 @@ class Widget(pm.Parametered):
         abstract class. There is no need to call super(), the metaclass will do
         this automatically.
         """
+
         if getattr(cls, 'id', None):
             if not cls._valid_id_re.match(cls.id):
+                # http://www.w3schools.com/tags/att_standard_id.asp
                 raise pm.ParameterError(
-                    "Not a valid identifier: '%s'" % cls.id)
+                    "Not a valid W3C id: '%s'" % cls.id)
+
         if hasattr(cls, 'id') and not getattr(cls, 'key', None):
             cls.key = cls.id
+
         cls.compound_id = cls._gen_compound_id(for_url=False)
         if cls.compound_id:
             cls.attrs = cls.attrs.copy()
