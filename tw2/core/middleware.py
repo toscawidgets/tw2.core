@@ -180,8 +180,8 @@ class TwMiddleware(object):
         rl['queued_controllers'] = []
 
         # Load up resources that wanted to be registered before we were ready
-        for modname, filename in rl.get('queued_resources', []):
-            self.resources.register(modname, filename)
+        for modname, filename, whole_dir in rl.get('queued_resources', []):
+            self.resources.register(modname, filename, whole_dir)
 
         rl['queued_resources'] = []
 
