@@ -378,8 +378,10 @@ class Widget(pm.Parametered):
                 # We weren't the validated widget (or there wasn't one), so
                 # create a new instance
                 self = cls.req(**kw)
+
         if not self.parent:
             self.prepare()
+
         if self._js_calls:
             #avoids circular reference
             import resources as rs
@@ -387,14 +389,16 @@ class Widget(pm.Parametered):
                 if 'JSFuncCall' in repr(item[0]):
                     self.resources.append(item[0])
                 else:
-                    self.resources.append(rs.JSFuncCall(
+                    self.resources.append(rs._JSFuncCall(
                         src=str(item[0]),
                         location=item[1],
                     ))
+
         if self.resources:
             self.resources = WidgetBunch([r.req() for r in self.resources])
             for r in self.resources:
                 r.prepare()
+
         return self.generate_output(displays_on)
 
     def generate_output(self, engine_name):

@@ -7,13 +7,14 @@ import pkg_resources as pr
 import mimetypes
 import simplejson
 import inspect
+import warnings
 
 import widgets as wd
 import util
 import core
 import params as pm
 import middleware as md
-
+from js import encoder, js_symbol
 
 log = logging.getLogger(__name__)
 
@@ -23,53 +24,26 @@ mimetypes.init()
 mimetypes.types_map['.ico'] = 'image/x-icon'
 
 
-class JSSymbol(object):
-    def __init__(self, src):
-        self.src = src
-
-
-class TW2Encoder(simplejson.encoder.JSONEncoder):
-    """
-    Technical note: This is basically a copy & paste of TW1's TWEncoder,
-    but dumbed down, since I don't need JSCall, etc., but just a wrapper
-    kind of like HTML.literal but for JS.
-    """
+class JSSymbol(js_symbol):
+    """ Deprecated compatibility shim with old TW2 stuff.  Use js_symbol. """
 
     def __init__(self, *args, **kw):
-        self.unescape_pattern = re.compile('"TW2Encoder_unescape_([0-9]*)"')
-        super(TW2Encoder, self).__init__(*args, **kw)
+        warnings.warn("JSSymbol is deprecated.  Please use js_symbol")
 
-    def default(self, obj):
-        from js import js_function, js_callback
-        if isinstance(obj, (JSSymbol, js_callback, js_function)):
-            return self.mark_for_escape(obj)
-        if hasattr(obj, '__json__'):
-            return obj.__json__()
-        return super(TW2Encoder, self).default(obj)
+        if len(args) > 1:
+            raise ValueError("JSSymbol must receive up to only one arg.")
 
-    def encode(self, obj):
-        self.unescape_symbols = {}
-        encoded = super(TW2Encoder, self).encode(obj)
-        unescaped = self.unescape_marked(encoded)
-        self.unescape_symbols = {}
-        return unescaped
+        if len(args) == 1 and 'src' in kw:
+            raise ValueError("JSSymbol must receive only one src arg.")
 
-    def mark_for_escape(self, obj):
-        self.unescape_symbols[id(obj)] = obj
-        return 'TW2Encoder_unescape_' + str(id(obj))
+        if len(args) == 1:
+            kw['src'] = args[0]
 
-    def unescape_marked(self, encoded):
-        def unescape(match):
-            try:
-                obj_id = int(match.group(1))
-                obj = self.unescape_symbols[obj_id]
-                return obj.src
-            except:
-                # Simply return the match if there is a problem
-                return match.group(0)
-        return self.unescape_pattern.sub(unescape, encoded)
+        super(JSSymbol, self).__init__(**kw)
 
-encoder = TW2Encoder()
+        # Backwards compatibility for accessing the source.
+        self.src = self._name
+
 
 
 class Resource(wd.Widget):
@@ -147,7 +121,9 @@ class Link(Resource):
     @classmethod
     def post_define(cls):
         if not cls.no_inject:
-            if getattr(cls, 'filename', None):
+            if getattr(cls, 'filename', None) and \
+               type(cls.filename) != property:
+
                 md.register_resource(
                     cls.modname or '__anon__', cls.filename, cls.whole_dir
                 )
@@ -243,9 +219,11 @@ class CSSSource(Resource):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
 
-class JSFuncCall(JSSource):
+class _JSFuncCall(JSSource):
     """
-    Inline JavaScript function call.
+    Internal use inline JavaScript function call.
+
+    Please use tw2.core.js_function(...) externally.
     """
     src = None
     function = pm.Param('Function name')
@@ -266,7 +244,7 @@ class JSFuncCall(JSSource):
                 args = ', '.join(encoder.encode(a) for a in self.args)
 
             self.src = '%s(%s)' % (self.function, args)
-        super(JSFuncCall, self).prepare()
+        super(_JSFuncCall, self).prepare()
 
     def __hash__(self):
         if self.args:
