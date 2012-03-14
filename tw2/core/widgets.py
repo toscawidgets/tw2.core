@@ -22,8 +22,6 @@ try:
 except ImportError:
     formencode = None
 
-TW1_BACKPAT_WARNING_MESSAGE = \
-        "tw1-style calling is deprecated.  Use tw2 keyword syntax."
 reserved_names = (
     'parent',
     'demo_for',
@@ -150,7 +148,6 @@ class Widget(pm.Parametered):
         # Support backwards compatibility with tw1-style calling
         if id and 'id' not in kw:
             kw['id'] = id
-            warnings.warn(TW1_BACKPAT_WARNING_MESSAGE)
 
         newname = calc_name(cls, kw)
         return type(cls.__name__ + '_s', (cls, ), kw)
@@ -364,7 +361,6 @@ class Widget(pm.Parametered):
         # Support backwards compatibility with tw1-style calling
         if value and 'value' not in kw:
             kw['value'] = value
-            warnings.warn(TW1_BACKPAT_WARNING_MESSAGE)
 
         if not self:
             # Create a self (since we were called as a classmethod)
