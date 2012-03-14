@@ -81,7 +81,7 @@ setup(
     """,
     zip_safe=False,
     classifiers = [
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Environment :: Web Environment :: ToscaWidgets',
         'Topic :: Software Development :: Libraries :: Python Modules',
