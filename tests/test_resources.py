@@ -257,7 +257,7 @@ class TestJsSource(tb.WidgetTest):
 
 
 class TestJsFuncall(tb.WidgetTest):
-    widget = twr.JSFuncCall
+    widget = twr._JSFuncCall
     attrs = {'function':'foo', 'args':['a', 'b']}
     expected = None
 
@@ -292,10 +292,10 @@ class TestResourcesMisc(TestCase):
         self.assert_(s.src=="source")
 
     def testEncoderDefault(self):
-        enc = twr.TW2Encoder()
+        enc = twc.encoder
         enc.encode("")
         res = enc.default(twr.JSSymbol("X"))
-        self.assert_(res.startswith(enc.__class__.__name__))
+        self.assert_(res.startswith("*#*"))
 
         try:
             res = enc.default(None)
@@ -304,7 +304,7 @@ class TestResourcesMisc(TestCase):
             self.assert_(te.message.endswith("is not JSON serializable"))
 
     def testUnEscapeMarked(self):
-        enc = twr.TW2Encoder()
+        enc = twc.encoder
         data = dict(foo=twr.JSSymbol("foo"),
                     bar=twr.JSSymbol("bar"))
         res = enc.unescape_marked(enc.encode(data))
@@ -340,10 +340,33 @@ class TestResourcesMisc(TestCase):
         res = str(s.req())
         self.assert_(token in res, res)
 
+    def testJSFuncCallChained(self):
+        rl = testapi.request(1, mw)
+        options = {'foo': 20}
+        jQuery = twc.js_function('jQuery')
+
+        when_ready = lambda func: twc.js_callback(
+            '$(document).ready(function(){' + str(func) + '});'
+        )
+
+        class Dummy(twc.Widget):
+            id = 'dummy'
+            template = "tw2.core.test_templates.display_only_test_widget"
+
+            def prepare(self):
+                super(Dummy, self).prepare()
+                self.add_call(when_ready(
+                    jQuery('.%s' % self.id).buildMenu(options)
+                ))
+
+        output = Dummy.display()
+        eq_(len(rl['resources']), 1)
+        eq_(str(rl['resources'][0]), '$(document).ready(function(){jQuery(".dummy").buildMenu({"foo": 20})});')
+
     def testJSFuncCallDictArgs(self):
         args = dict(foo="foo", bar="bar")
         function = "jquery"
-        s = twr.JSFuncCall(function=function, args=args).req()
+        s = twr._JSFuncCall(function=function, args=args).req()
         s.prepare()
         self.assert_(function in str(s))
         for k in args:

@@ -9,6 +9,8 @@ import os
 import shutil
 import tempfile
 
+from nose.tools import eq_
+
 import tw2.core.core as core
 import tw2.core.middleware as middleware
 
@@ -177,7 +179,14 @@ class TestArchive(TestCase):
     def test_load_entry_points(self):
         self.c._load_widget_entry_points('tw2.forms')
         rl_resources = core.request_local().setdefault('resources', [])
-        assert(len(rl_resources) == 3)
+        eq_(len(rl_resources), 4)
+
+    def test_render_entry_points(self):
+        self.c._load_widget_entry_points('tw2.forms')
+        rl_resources = core.request_local().setdefault('resources', [])
+
+        import pprint
+        print pprint.pformat(rl_resources)
 
     def test_copy_tree(self):
         import tw2.core.command

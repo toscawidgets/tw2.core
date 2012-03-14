@@ -1,3 +1,4 @@
+from nose.tools import eq_
 import tw2.core as twc, testapi
 
 class TestHierarchy(object):
@@ -19,7 +20,7 @@ class TestHierarchy(object):
             a = twc.Widget(id=':')
             assert(False)
         except twc.ParameterError, e:
-            assert(str(e) == "Not a valid identifier: ':'")
+            eq_(str(e), "Not a valid W3C id: ':'")
 
     def test_id_none(self):
         test = twc.Widget(id=None)

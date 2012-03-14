@@ -10,7 +10,7 @@ You can see the available widgets in the `Widget Browser
 
 ToscaWidgets 2 library packages follow the same naming convention, for example:
 
- * `tw2.core <http://github.com/toscawidgets/tw2core/>`_ -- Core functionality -- no
+ * `tw2.core <http://github.com/toscawidgets/tw2.core/>`_ -- Core functionality -- no
    end-usable widgets here.
  * `tw2.forms <http://github.com/toscawidgets/tw2.forms/>`_ -- Basic forms library
  * `tw2.dynforms <http://github.com/toscawidgets/tw2.dynforms/>`_ -- Dynamic forms

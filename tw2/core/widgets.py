@@ -22,8 +22,6 @@ try:
 except ImportError:
     formencode = None
 
-TW1_BACKPAT_WARNING_MESSAGE = \
-        "tw1-style calling is deprecated.  Use tw2 keyword syntax."
 reserved_names = (
     'parent',
     'demo_for',
@@ -150,7 +148,6 @@ class Widget(pm.Parametered):
         # Support backwards compatibility with tw1-style calling
         if id and 'id' not in kw:
             kw['id'] = id
-            warnings.warn(TW1_BACKPAT_WARNING_MESSAGE)
 
         newname = calc_name(cls, kw)
         return type(cls.__name__ + '_s', (cls, ), kw)
@@ -177,12 +174,16 @@ class Widget(pm.Parametered):
         abstract class. There is no need to call super(), the metaclass will do
         this automatically.
         """
+
         if getattr(cls, 'id', None):
             if not cls._valid_id_re.match(cls.id):
+                # http://www.w3schools.com/tags/att_standard_id.asp
                 raise pm.ParameterError(
-                    "Not a valid identifier: '%s'" % cls.id)
+                    "Not a valid W3C id: '%s'" % cls.id)
+
         if hasattr(cls, 'id') and not getattr(cls, 'key', None):
             cls.key = cls.id
+
         cls.compound_id = cls._gen_compound_id(for_url=False)
         if cls.compound_id:
             cls.attrs = cls.attrs.copy()
@@ -360,7 +361,6 @@ class Widget(pm.Parametered):
         # Support backwards compatibility with tw1-style calling
         if value and 'value' not in kw:
             kw['value'] = value
-            warnings.warn(TW1_BACKPAT_WARNING_MESSAGE)
 
         if not self:
             # Create a self (since we were called as a classmethod)
@@ -378,8 +378,10 @@ class Widget(pm.Parametered):
                 # We weren't the validated widget (or there wasn't one), so
                 # create a new instance
                 self = cls.req(**kw)
+
         if not self.parent:
             self.prepare()
+
         if self._js_calls:
             #avoids circular reference
             import resources as rs
@@ -387,14 +389,16 @@ class Widget(pm.Parametered):
                 if 'JSFuncCall' in repr(item[0]):
                     self.resources.append(item[0])
                 else:
-                    self.resources.append(rs.JSFuncCall(
+                    self.resources.append(rs._JSFuncCall(
                         src=str(item[0]),
                         location=item[1],
                     ))
+
         if self.resources:
             self.resources = WidgetBunch([r.req() for r in self.resources])
             for r in self.resources:
                 r.prepare()
+
         return self.generate_output(displays_on)
 
     def generate_output(self, engine_name):

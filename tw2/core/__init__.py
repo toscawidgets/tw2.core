@@ -11,8 +11,16 @@ from params import (Param, ChildParam, Variable, ChildVariable, Required,
 from widgets import (Widget, CompoundWidget, RepeatingWidget,
     DisplayOnlyWidget, Page)
 
-from resources import (JSSymbol, Link, JSLink, CSSLink, CSSSource, JSSource,
-    JSFuncCall, inject_resources, DirLink, encoder)
+from resources import (
+    JSSymbol,
+    Link,
+    JSLink,
+    CSSLink,
+    CSSSource,
+    JSSource,
+    inject_resources,
+    DirLink,
+)
 
 from validation import (
     Validator, LengthValidator,
@@ -32,7 +40,12 @@ from middleware import (
     register_resource,
 )
 
-from js import js_symbol, js_callback, js_function
+from js import (
+    js_symbol,
+    js_callback,
+    js_function,
+    encoder
+)
 
 from i18n import _, tw2_translation_string
 
