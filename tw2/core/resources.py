@@ -22,6 +22,16 @@ log = logging.getLogger(__name__)
 mimetypes.init()
 mimetypes.types_map['.ico'] = 'image/x-icon'
 
+# http://stackoverflow.com/questions/128573/using-property-on-classmethods
+class ClassProperty(object):
+    def __init__(self, getter, setter):
+        self.getter = getter
+        self.setter = setter
+    def __get__(self, cls, owner):
+        return getattr(cls, self.getter)()
+    def __set__(self, cls, value):
+        getattr(cls, self.setter)(value)
+
 
 class JSSymbol(object):
     def __init__(self, src):
@@ -247,25 +257,23 @@ class JSFuncCall(JSSource):
     """
     Inline JavaScript function call.
     """
-    src = None
-    function = pm.Param('Function name')
+    _src = None
+    function = pm.Param('Function name', attribute=True)
     args = pm.Param('Function arguments', default=None)
     location = 'bodybottom'  # TBD: afterwidget?
 
     def __str__(self):
-        if not self.src:
-            self.prepare()
         return self.src
 
     def prepare(self):
-        if not self.src:
+        if not self._src:
             args = ''
             if isinstance(self.args, dict):
                 args = encoder.encode(self.args)
             elif self.args:
                 args = ', '.join(encoder.encode(a) for a in self.args)
 
-            self.src = '%s(%s)' % (self.function, args)
+            self._src = '%s(%s)' % (self.function, args)
         super(JSFuncCall, self).prepare()
 
     def __hash__(self):
@@ -277,12 +285,27 @@ class JSFuncCall(JSSource):
         else:
             sargs = None
 
-        return hash((hasattr(self, 'src') and self.src or '') + (sargs or ''))
+        return hash((hasattr(self, '_src') and self._src or '') + (sargs or ''))
 
     def __eq__(self, other):
-        return (getattr(self, 'src', None) == getattr(other, 'src', None)
+        return (getattr(self, '_src', None) == getattr(other, '_src', None)
                 and getattr(self, 'args', None) == getattr(other, 'args', None)
                 )
+
+    @util.class_or_instance
+    def set_src(cls, extra, value):
+        cls._src = value
+
+    @util.class_or_instance
+    def get_src(cls, extra):
+        if not cls._src:
+            r = cls
+            if not isinstance(cls, cls.__class__):
+                r = cls.req()
+            r.prepare()
+        return cls._src
+
+    src=ClassProperty('get_src', 'set_src')
 
 
 class ResourcesApp(object):
