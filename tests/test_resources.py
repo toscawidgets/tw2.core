@@ -340,6 +340,29 @@ class TestResourcesMisc(TestCase):
         res = str(s.req())
         self.assert_(token in res, res)
 
+    def testJSFuncCallChained(self):
+        options = {'foo': 20}
+        jQuery = twc.js_function('jQuery')
+
+        when_ready = lambda func: js_callback(
+            '$(document).ready(function(){' + str(func) + '});'
+        )
+
+        class Dummy(twc.Widget):
+            id = 'dummy'
+            template = "foo"
+            inline_template_engine = "mako"
+
+            def prepare(self):
+                super(Dummy, self).prepare()
+                self.add_call(when_ready(
+                    jQuery('.%s' % self.id).buildMenu(options)
+                ))
+
+        output = Dummy.display()
+
+        eq_(output, "put real target data here")
+
     def testJSFuncCallDictArgs(self):
         args = dict(foo="foo", bar="bar")
         function = "jquery"
