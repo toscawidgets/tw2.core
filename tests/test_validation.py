@@ -17,6 +17,11 @@ repeating_widget = twc.RepeatingWidget(id='a', child=
     twc.Widget(validator=twc.Validator(required=True))
 )
 
+compound_keyed_widget = twc.CompoundWidget(id='a', children=[
+    twc.Widget(id='b', key='x', validator=twc.Validator(required=True)),
+    twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()),
+])
+
 class TestValidationError(tb.WidgetTest):
     def test_validator_msg(self):
         twc.core.request_local = tb.request_local_tst
@@ -105,7 +110,6 @@ class TestValidation(object):
         except ValidationError, ve:
             assert(ve.widget.error_msg == NeverValid.msgs['never'])
         
-
     def test_auto_unflatten(self):
         test = twc.CompoundWidget(id='a', children=[
             twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -205,6 +209,14 @@ class TestValidation(object):
 
     def test_compound_whole_validator(self):
         pass # TBD
+
+    def test_compound_keyed_children(self):
+        testapi.request(1)
+        inp = {'a': {'x':'test', 'y':'test2'}}
+        try:
+            compound_keyed_widget.validate(inp)
+        except twc.ValidationError, e:
+            assert "is not a valid OpenId" in str(e)
 
     def test_rw_pass(self):
         testapi.request(1)

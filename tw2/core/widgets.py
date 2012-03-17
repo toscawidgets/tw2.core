@@ -611,7 +611,7 @@ class CompoundWidget(Widget):
             try:
                 if c._sub_compound:
                     data.update(c._validate(value, data))
-                elif hasattr(c, 'id'):
+                elif hasattr(c, 'id') and c.id not in self.keyed_children:
                     val = c._validate(value.get(c.id), data)
                     if val is not vd.EmptyField:
                         data[c.id] = val
