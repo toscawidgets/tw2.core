@@ -202,6 +202,9 @@ class js_function(object):
             
     def __call__(self, *args):
         return _js_call(self.__name, [], args, called=True)
+
+    def __str__(self):
+        return self.__name
         
 
 class _js_call(object):

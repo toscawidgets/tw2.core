@@ -33,3 +33,10 @@ class TestJS(object):
     def test_js_callback(self):
         eq_(str(js_callback("update_div")), 'update_div')
         eq_(str(js_callback(js_function('foo')(1,2,3))), 'function(){foo(1, 2, 3)}')
+
+    def test_jsonified_js_function(self):
+        obj = {
+            'f': js_function("$.awesome")
+        }
+        json = self.encode(obj)
+        eq_(json, '{"f": $.awesome}')
