@@ -286,8 +286,8 @@ def register_resource(modname, filename, whole_dir):
         rl['queued_resources'] = rl.get('queued_resources', []) + [
             (modname, filename, whole_dir)
         ]
-        log.info("No middleware in place.  Queued %r->%r(%r) registration." %
-                 (modname, filename, whole_dir))
+        log.debug("No middleware in place.  Queued %r->%r(%r) registration." %
+                  (modname, filename, whole_dir))
 
 def register_controller(widget, path):
     """ API function for registering widget controllers.
@@ -307,8 +307,8 @@ def register_controller(widget, path):
     else:
         rl['queued_controllers'] = \
                 rl.get('queued_controllers', []) + [(widget, path)]
-        log.info("No middleware in place.  Queued %r->%r registration." %
-                 (path, widget))
+        log.debug("No middleware in place.  Queued %r->%r registration." %
+                  (path, widget))
 
 
 def make_middleware(app=None, config=None, **kw):
