@@ -223,10 +223,14 @@ class _js_call(object):
     def __get_js_repr(self):
         if self.__called:
             args = self.__args
-            return '%s(%s)' % (
+            rep = '%s(%s)' % (
                 self.__name,
                 ', '.join(imap(encoder.encode, args))
             )
+            return rep\
+                    .replace('\\"', '"')\
+                    .replace("\\'", "'")\
+                    .replace('\\n', '\n')
         else:
             return self.__name
 

@@ -15,6 +15,17 @@ class TestJS(object):
         json = self.encode({"onLoad": js_function("do_something")("param")})
         eq_(json, '{"onLoad": do_something(\\"param\\")}')
 
+    def test_js_function_composition(self):
+        f = js_function("f")
+        g = js_function("g")
+        h = js_function("h")
+
+        y = js_symbol("y")
+
+        obj = f(g(h("x", y)))
+
+        eq_(str(obj), """f(g(h("x", y)))""")
+
     def test_js_symbol(self):
         obj = self.encode({"onLoad": js_symbol("param")})
         eq_(obj, '{"onLoad": param}')
