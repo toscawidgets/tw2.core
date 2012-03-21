@@ -227,7 +227,10 @@ class _js_call(object):
                 self.__name,
                 ', '.join(imap(encoder.encode, args))
             )
-            return rep.replace('\n', '').replace('\\', '')
+            return rep\
+                    .replace('\\"', '"')\
+                    .replace("\\'", "'")\
+                    .replace('\\n', '\n')
         else:
             return self.__name
 
