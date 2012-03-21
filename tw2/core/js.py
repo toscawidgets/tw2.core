@@ -39,6 +39,7 @@ class TWEncoder(simplejson.encoder.JSONEncoder):
 
     """
     def __init__(self, *args, **kw):
+        kw['namedtuple_as_object'] = False
         self.pass_through = (_js_call, js_callback, js_symbol, js_function)
         super(TWEncoder, self).__init__(*args, **kw)
 

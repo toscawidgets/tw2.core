@@ -11,24 +11,13 @@ class TestJS(object):
         mw = twc.make_middleware(lambda *args, **kw: "I'm an app, lol!")
         testapi.request(1, mw=mw)
 
-    # Deprecated Test
-    #def test_js_function(self):
-    #    obj = self.encode({"onLoad": js_function("do_something")("param")})
-    #    assert obj == '{"onLoad": do_something(\\"param\\")}'
+    def test_js_function(self):
+        json = self.encode({"onLoad": js_function("do_something")("param")})
+        eq_(json, '{"onLoad": do_something(\\"param\\")}')
 
     def test_js_symbol(self):
         obj = self.encode({"onLoad": js_symbol("param")})
         eq_(obj, '{"onLoad": param}')
-
-    # Deprecated Test
-    #def test_mark_for_escape(self):
-    #    obj = 'MyObject'
-    #    assert self.twe.mark_for_escape(obj) == '*#*MyObject*#*'
-
-    # Deprecated Test
-    #def test_unescape_marked(self):
-    #    obj = '"*#*MyObject*#*"'
-    #    assert self.twe.unescape_marked(obj) == 'MyObject'
 
     def test_js_callback(self):
         eq_(str(js_callback("update_div")), 'update_div')
