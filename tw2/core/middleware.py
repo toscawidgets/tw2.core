@@ -185,7 +185,6 @@ class TwMiddleware(object):
 
         rl['queued_resources'] = []
 
-
     def __call__(self, environ, start_response):
         rl = core.request_local()
         rl.clear()
@@ -270,12 +269,12 @@ def register_resource(modname, filename, whole_dir):
     A resource must be registered for serving for it to be also registered for
     injection.
 
-    If the middleware is available, the resource is directly registered with the
-    ResourcesApp.
+    If the middleware is available, the resource is directly registered with
+    the ResourcesApp.
 
     If the middleware is not available, the resource is stored in the
-    request_local dict.  When the middleware is later initialized, those waiting
-    registrations are processed.
+    request_local dict.  When the middleware is later initialized, those
+    waiting registrations are processed.
     """
 
     rl = core.request_local()
@@ -288,6 +287,7 @@ def register_resource(modname, filename, whole_dir):
         ]
         log.debug("No middleware in place.  Queued %r->%r(%r) registration." %
                   (modname, filename, whole_dir))
+
 
 def register_controller(widget, path):
     """ API function for registering widget controllers.

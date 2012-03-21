@@ -45,7 +45,6 @@ class JSSymbol(js_symbol):
         self.src = self._name
 
 
-
 class Resource(wd.Widget):
     location = pm.Param(
         'Location on the page where the resource should be placed.' \
@@ -208,6 +207,7 @@ class JSSource(Resource):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
 
+
 class CSSSource(Resource):
     """
     Inline Cascading Style-Sheet code.
@@ -218,6 +218,7 @@ class CSSSource(Resource):
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
+
 
 class _JSFuncCall(JSSource):
     """
@@ -404,7 +405,8 @@ class _ResourceInjector(util.MultipleReplacer):
        >>> JSLink(link="http://example.com").inject()
        >>> html = "<html><head></head><body></body></html>"
        >>> inject_resources(html)
-       '<html><head><script type="text/javascript" src="http://example.com"></script></head><body></body></html>'
+       '<html><head><script type="text/javascript"
+        src="http://example.com"></script></head><body></body></html>'
 
     Once resources have been injected they are popped from request local and
     cannot be injected again (in the same request). This is useful in case
