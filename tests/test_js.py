@@ -24,8 +24,7 @@ class TestJS(object):
 
         obj = f(g(h("x", y)))
 
-        json = self.encode(obj)
-        eq_(str(f), """f(g(h("x", y)))""")
+        eq_(str(obj), """f(g(h("x", y)))""")
 
     def test_js_symbol(self):
         obj = self.encode({"onLoad": js_symbol("param")})
