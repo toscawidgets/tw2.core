@@ -46,7 +46,7 @@ class TWEncoder(simplejson.encoder.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, self.pass_through):
             return self.mark_for_escape(obj)
-        elif hasattr(obj, '_id'):
+        elif hasattr(obj, 'id'):
             return str(obj.id)
         return super(TWEncoder, self).default(obj)
 

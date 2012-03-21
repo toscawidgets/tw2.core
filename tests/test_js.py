@@ -29,3 +29,16 @@ class TestJS(object):
         }
         json = self.encode(obj)
         eq_(json, '{"f": $.awesome}')
+
+    def test_encoding_widget_id(self):
+        from tw2.core import Widget
+        w = Widget("foo")
+
+        f = js_callback(js_function('jQuery')(w).click(js_symbol('onClick')))
+        args = {'onLoad': f}
+
+        json = self.encode(args)
+        eq_(json, '{"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}')
+
+        json = self.encode({'args':args})
+        eq_(json, '{"args": {"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}}')
