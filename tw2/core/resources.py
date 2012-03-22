@@ -45,17 +45,39 @@ class JSSymbol(js_symbol):
         self.src = self._name
 
 
-class Resource(wd.Widget):
+class ResourceBundle(wd.Widget):
+    """ Just a list of resources.
+
+    Use it as follows:
+
+        >>> jquery_ui = ResourceBundle(resources=[jquery_js, jquery_css])
+        >>> jquery_ui.inject()
+
+    """
+
+    @classmethod
+    def inject(cls):
+        cls.req().prepare()
+
+    def prepare(self):
+        super(ResourceBundle, self).prepare()
+
+        rl = core.request_local()
+        rl_resources = rl.setdefault('resources', [])
+        rl_location = rl['middleware'].config.inject_resources_location
+
+        if self not in rl_resources:
+            for r in self.resources:
+                r.req().prepare()
+
+
+class Resource(ResourceBundle):
     location = pm.Param(
         'Location on the page where the resource should be placed.' \
         'This can be one of: head, headbottom, bodytop or bodybottom. '\
         'None means the resource will not be injected, which is still '\
         'useful, e.g. static images.', default=None)
     id = None
-
-    @classmethod
-    def inject(cls):
-        cls.req().prepare()
 
     def prepare(self):
         super(Resource, self).prepare()
@@ -67,9 +89,6 @@ class Resource(wd.Widget):
         if self not in rl_resources:
             if self.location is '__use_middleware':
                 self.location = rl_location
-
-            for r in self.resources:
-                r.req().prepare()
 
             rl_resources.append(self)
 
