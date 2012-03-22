@@ -215,8 +215,12 @@ class TestValidation(object):
         inp = {'a': {'x':'test', 'y':'test2'}}
         try:
             compound_keyed_widget.validate(inp)
+            assert False
         except twc.ValidationError, e:
-            assert "is not a valid OpenId" in str(e)
+            pass
+
+        cw = twc.core.request_local()['validated_widget']
+        assert "is not a valid OpenId" in cw.children.c.error_msg
 
     def test_rw_pass(self):
         testapi.request(1)
