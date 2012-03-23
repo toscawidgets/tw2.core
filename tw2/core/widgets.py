@@ -618,7 +618,7 @@ class CompoundWidget(Widget):
 
         #Validate non compound children
         for c in (child for child in self.children if not child._sub_compound):
-            d = value.get(c.key, '')
+            d = value.get(c.key, None)
             try:
                 val = c._validate(d, data)
                 if val is not vd.EmptyField:
