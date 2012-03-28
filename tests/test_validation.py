@@ -61,7 +61,7 @@ def test_unflatten_params_multi_dict():
     params = unflatten_params(MultiDict((('asdf:f1', 's1'), ('asdf:f2', 's2'))))
     eq_(params, {'asdf': {'f1': 's1', 'f2': 's2'}})
 
-class TestValidation(object):
+class TestValidation(TestCase):
     def setUp(self):
         testapi.setup()
 
@@ -109,7 +109,50 @@ class TestValidation(object):
             assert(False)
         except ValidationError, ve:
             assert(ve.widget.error_msg == NeverValid.msgs['never'])
-        
+
+    def test_compound_validation_formencode(self):
+        " Test that compound widgets validate with formencode. """
+
+        if not formencode:
+            self.skipTest()
+
+        class MatchyWidget(twc.CompoundWidget):
+            validator = formencode.validators.FieldsMatch('one', 'two')
+            one = twc.Widget
+            two = twc.Widget
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'foo'})
+        except ValidationError as ve:
+            assert False, "Widget should have validated correctly."
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            pass
+
+    def test_compound_validation_error_msgs(self):
+        " Test that compound widgets error_msgs show up in the right place. "
+
+        if not formencode:
+            self.skipTest()
+
+        class MatchyWidget(twc.CompoundWidget):
+            validator = formencode.validators.FieldsMatch('one', 'two')
+            one = twc.Widget
+            two = twc.Widget
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            print ve.widget.error_msg
+            for child in ve.widget.children:
+                print child.error_msg
+            assert 'do not match' in ve.widget.children[0].error_msg
+            assert 'do not match' not in ve.widget.error_msg
+
     def test_auto_unflatten(self):
         test = twc.CompoundWidget(id='a', children=[
             twc.Widget(id='b', validator=twc.Validator(required=True)),
