@@ -147,11 +147,9 @@ class TestValidation(TestCase):
             MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
             assert False, "Widget should not have validated."
         except ValidationError as ve:
-            print ve.widget.error_msg
-            for child in ve.widget.children:
-                print child.error_msg
             assert 'do not match' in ve.widget.children[0].error_msg
             assert 'do not match' not in ve.widget.error_msg
+            assert 'childerror' not in ve.widget.error_msg
 
     def test_auto_unflatten(self):
         test = twc.CompoundWidget(id='a', children=[

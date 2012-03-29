@@ -631,12 +631,14 @@ class CompoundWidget(Widget):
 
         # Validate self, usually a CompoundValidator or a FormEncode form-level
         # validator.
-        any_child_errors = False
+        exception_validator = self.validator
         if self.validator:
             try:
                 data = self.validator.to_python(data)
                 self.validator.validate_python(data, state)
             except catch, e:
+                # If it failed to validate, check if the error_dict has any
+                # messages pertaining specifically to this widget's children.
                 error_dict = getattr(e, 'error_dict', {})
                 if not error_dict:
                     raise
@@ -645,16 +647,17 @@ class CompoundWidget(Widget):
                     if getattr(c, 'key', None) in error_dict:
                         c.error_msg = error_dict[c.key]
                         data[c.key] = vd.Invalid
-                        any_child_errors = True
+                        exception_validator = None
                         any_errors = True
 
                 # Only re-raise this top-level exception if the validation error
                 # doesn't pertain to any of our children.
-                if not any_child_errors:
+                if exception_validator:
                     raise
 
         if any_errors:
-            raise vd.ValidationError('childerror', self.validator)
+            raise vd.ValidationError('childerror', exception_validator)
+
         return data
 
     @classmethod
