@@ -22,6 +22,9 @@ compound_keyed_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()),
 ])
 
+#This is required to make tests pass on non english systems
+formencode.api.set_stdtranslation(languages=['en'])
+
 class TestValidationError(tb.WidgetTest):
     def test_validator_msg(self):
         twc.core.request_local = tb.request_local_tst
@@ -142,6 +145,7 @@ class TestValidation(TestCase):
             validator = formencode.validators.FieldsMatch('one', 'two')
             one = twc.Widget
             two = twc.Widget
+            three = twc.Widget(validator=twc.Validator(required=True))
 
         try:
             MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
@@ -149,6 +153,14 @@ class TestValidation(TestCase):
         except ValidationError as ve:
             assert 'do not match' in ve.widget.children[0].error_msg
             assert 'do not match' not in ve.widget.error_msg
+            assert 'childerror' not in ve.widget.error_msg
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'foo', 'three':''})
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            assert 'Enter a value' in ve.widget.children[2].error_msg
+            assert 'Enter a value' not in ve.widget.error_msg
             assert 'childerror' not in ve.widget.error_msg
 
     def test_auto_unflatten(self):
