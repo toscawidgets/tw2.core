@@ -52,10 +52,17 @@ class ValidationError(BaseValidationError):
         mw = core.request_local().get('middleware')
         if isinstance(validator, Validator):
             msg = validator.msg_rewrites.get(msg, msg)
+
         if mw and msg in mw.config.validator_msgs:
             msg = mw.config.validator_msgs[msg]
         elif hasattr(validator, 'msgs') and msg in validator.msgs:
             msg = validator.msgs.get(msg, msg)
+
+        # In the event that the user specified a form-wide validator but
+        # they did not specify a childerror message, show no error.
+        if msg == 'childerror':
+            msg = ''
+
         msg = re.sub('\$(\w+)',
                 lambda m: str(getattr(validator, m.group(1))), unicode(msg))
         super(ValidationError, self).__init__(msg)
