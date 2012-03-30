@@ -77,6 +77,36 @@ class TestMiddleware(TestCase):
         finally:
             resources.inject_resources = real
 
+    def testTGStyleController(self):
+        """ Test turbogears style dispatch """
+        from tw2.core.middleware import ControllersApp, TwMiddleware
+        from tw2.core.compat import TGStyleController
+        controller_response = Response("CONTROLLER")
+
+        class WidgetMock(TGStyleController):
+            id = 'fake'
+
+            class Controller(object):
+                def foobar(self, request):
+                    return controller_response
+
+        mock = WidgetMock()
+        mw = TwMiddleware(None, controller_prefix="goo")
+        testapi.request(1, mw)
+        ca = ControllersApp()
+
+        ca.register(mock)
+        res = ca(Request.blank("/%s/%s/foobar" % (
+            mw.config.controller_prefix, mock.id
+        )))
+        self.assert_(res.status_int == 200, res.status_int)
+        self.assert_(res.body == controller_response.body, res.body)
+
+        res = ca(Request.blank("/%s/404" % mw.config.controller_prefix))
+        self.assert_(res.status_int == 404, res.status_int)
+        res = ca(Request.blank("%s/404" % mw.config.controller_prefix))
+        self.assert_(res.status_int == 404, res.status_int)
+
     def testControllerAppWithId(self):
         """
         controllerapp should dispatch to an object having id, and a

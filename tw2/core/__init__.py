@@ -47,6 +47,10 @@ from js import (
     encoder
 )
 
+from compat import (
+    TGStyleController,
+)
+
 from i18n import _, tw2_translation_string
 
 # Shortcut from Deprecated TWEncoder that was in js.py
