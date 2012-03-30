@@ -77,7 +77,7 @@ class TestMiddleware(TestCase):
         finally:
             resources.inject_resources = real
 
-    def testControllerApp(self):
+    def testControllerAppWithId(self):
         """
         controllerapp should dispatch to an object having id, and a
         request method taking a webob request based on path_info of
@@ -109,7 +109,7 @@ class TestMiddleware(TestCase):
         res = ca(Request.blank("%s/404" % mw.config.controller_prefix))
         self.assert_(res.status_int == 404, res.status_int)
 
-    def testControllerApp(self):
+    def testControllerAppWithoutId(self):
         """
         controllerapp should dispatch to an object having id, and a
         request method taking a webob request based on path_info of
