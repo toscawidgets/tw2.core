@@ -359,7 +359,7 @@ class Widget(pm.Parametered):
         """
 
         # Support backwards compatibility with tw1-style calling
-        if value and 'value' not in kw:
+        if value is not None and 'value' not in kw:
             kw['value'] = value
 
         if not self:
