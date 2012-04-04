@@ -3,6 +3,7 @@ include *.rst
 recursive-include docs *
 recursive-include tests *.py
 recursive-include tests *.txt
+recursive-include tests *.html
 recursive-include tw2/core/testbase *.py
 recursive-include tw2/core/test_templates *
 recursive-include tw2/core/templates *
