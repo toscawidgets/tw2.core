@@ -39,7 +39,6 @@ setup(
         'WebOb>=0.9.7',
         'simplejson >= 2.0',
         'PasteDeploy',
-        'weberror',
         'speaklater',
         'decorator',
         ],
