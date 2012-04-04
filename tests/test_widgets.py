@@ -450,7 +450,7 @@ class TestWidgetMisc(TestCase):
         i = T(id="test").req()
         self.assert_(i.keyed_children)
         data = dict(kct="foo", koct="bar")
-        expected = dict(ct="foo", oct="bar")
+        expected = dict(kct="foo", koct="bar")
         res = i._validate(data)
         self.assert_(res == expected, res)
 

@@ -390,6 +390,7 @@ import webtest as wt
 import tw2.core as twc
 import os
 
+
 class TestInPage(object):
     content_type = 'text/html'
     charset = 'UTF8'

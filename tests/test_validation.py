@@ -17,6 +17,14 @@ repeating_widget = twc.RepeatingWidget(id='a', child=
     twc.Widget(validator=twc.Validator(required=True))
 )
 
+compound_keyed_widget = twc.CompoundWidget(id='a', children=[
+    twc.Widget(id='b', key='x', validator=twc.Validator(required=True)),
+    twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()),
+])
+
+#This is required to make tests pass on non english systems
+formencode.api.set_stdtranslation(languages=['en'])
+
 class TestValidationError(tb.WidgetTest):
     def test_validator_msg(self):
         twc.core.request_local = tb.request_local_tst
@@ -56,7 +64,7 @@ def test_unflatten_params_multi_dict():
     params = unflatten_params(MultiDict((('asdf:f1', 's1'), ('asdf:f2', 's2'))))
     eq_(params, {'asdf': {'f1': 's1', 'f2': 's2'}})
 
-class TestValidation(object):
+class TestValidation(TestCase):
     def setUp(self):
         testapi.setup()
 
@@ -104,7 +112,56 @@ class TestValidation(object):
             assert(False)
         except ValidationError, ve:
             assert(ve.widget.error_msg == NeverValid.msgs['never'])
-        
+
+    def test_compound_validation_formencode(self):
+        " Test that compound widgets validate with formencode. """
+
+        if not formencode:
+            self.skipTest()
+
+        class MatchyWidget(twc.CompoundWidget):
+            validator = formencode.validators.FieldsMatch('one', 'two')
+            one = twc.Widget
+            two = twc.Widget
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'foo'})
+        except ValidationError as ve:
+            assert False, "Widget should have validated correctly."
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            pass
+
+    def test_compound_validation_error_msgs(self):
+        " Test that compound widgets error_msgs show up in the right place. "
+
+        if not formencode:
+            self.skipTest()
+
+        class MatchyWidget(twc.CompoundWidget):
+            validator = formencode.validators.FieldsMatch('one', 'two')
+            one = twc.Widget
+            two = twc.Widget
+            three = twc.Widget(validator=twc.Validator(required=True))
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            assert 'do not match' in ve.widget.children[0].error_msg
+            assert 'do not match' not in ve.widget.error_msg
+            assert 'childerror' not in ve.widget.error_msg
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'foo', 'three':''})
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            assert 'Enter a value' in ve.widget.children[2].error_msg
+            assert 'Enter a value' not in ve.widget.error_msg
+            assert 'childerror' not in ve.widget.error_msg
 
     def test_auto_unflatten(self):
         test = twc.CompoundWidget(id='a', children=[
@@ -205,6 +262,18 @@ class TestValidation(object):
 
     def test_compound_whole_validator(self):
         pass # TBD
+
+    def test_compound_keyed_children(self):
+        testapi.request(1)
+        inp = {'a': {'x':'test', 'y':'test2'}}
+        try:
+            compound_keyed_widget.validate(inp)
+            assert False
+        except twc.ValidationError, e:
+            pass
+
+        cw = twc.core.request_local()['validated_widget']
+        assert "is not a valid OpenId" in cw.children.c.error_msg
 
     def test_rw_pass(self):
         testapi.request(1)

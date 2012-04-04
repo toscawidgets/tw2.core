@@ -6,7 +6,9 @@ import traceback
 import logging
 log = logging.getLogger(__name__)
 
+
 def tw2_translation_string(sval):
+
     def lookup_provided_translator(_sval):
         mw = core.request_local().get('middleware')
         if not mw:

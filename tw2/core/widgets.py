@@ -359,7 +359,7 @@ class Widget(pm.Parametered):
         """
 
         # Support backwards compatibility with tw1-style calling
-        if value and 'value' not in kw:
+        if value is not None and 'value' not in kw:
             kw['value'] = value
 
         if not self:
@@ -607,42 +607,57 @@ class CompoundWidget(Widget):
         if formencode:
             catch = (catch, formencode.Invalid)
 
-        for c in self.children:
+        #Validate compound children
+        for c in (child for child in self.children if child._sub_compound):
             try:
-                if c._sub_compound:
-                    data.update(c._validate(value, data))
-                elif hasattr(c, 'id'):
-                    val = c._validate(value.get(c.id), data)
-                    if val is not vd.EmptyField:
-                        data[c.id] = val
+                data.update(c._validate(value, data))
             except catch, e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
-                # TBD - removed after merge
-                #if hasattr(e, 'value'):
-                #    c.value = e.value
-                if not c._sub_compound:
-                    data[c.id] = vd.Invalid
                 any_errors = True
-        for cid in self.keyed_children:
-            c = getattr(self.children, cid)
-            d = value.get(c.key)
-            if d and d is not vd.Invalid:
-                data[c.id] = c._validate(d, data)
+
+        #Validate non compound children
+        for c in (child for child in self.children if not child._sub_compound):
+            d = value.get(c.key, '')
+            try:
+                val = c._validate(d, data)
+                if val is not vd.EmptyField:
+                    data[c.key] = val
+            except catch, e:
+                if hasattr(e, 'msg'):
+                    c.error_msg = e.msg
+                data[c.key] = vd.Invalid
+                any_errors = True
+
+        # Validate self, usually a CompoundValidator or a FormEncode form-level
+        # validator.
+        exception_validator = self.validator
         if self.validator:
             try:
                 data = self.validator.to_python(data)
                 self.validator.validate_python(data, state)
             except catch, e:
+                # If it failed to validate, check if the error_dict has any
+                # messages pertaining specifically to this widget's children.
                 error_dict = getattr(e, 'error_dict', {})
+                if not error_dict:
+                    raise
+
                 for c in self.children:
-                    if error_dict and getattr(c, 'id', None) in error_dict:
-                        c.error_msg = error_dict[c.id]
-                        data[c.id] = vd.Invalid
-                raise
+                    if getattr(c, 'key', None) in error_dict:
+                        c.error_msg = error_dict[c.key]
+                        data[c.key] = vd.Invalid
+                        exception_validator = None
+                        any_errors = True
+
+                # Only re-raise this top-level exception if the validation error
+                # doesn't pertain to any of our children.
+                if exception_validator:
+                    raise
 
         if any_errors:
-            raise vd.ValidationError('childerror', self.validator)
+            raise vd.ValidationError('childerror', exception_validator)
+
         return data
 
     @classmethod
@@ -850,6 +865,10 @@ class DisplayOnlyWidget(Widget):
         if getattr(cls, 'children', None):
             cls.child = cls.child(children=cls.children)
             cls.children = []
+
+        if getattr(cls, 'validator', None):
+            cls.child.validator = cls.validator
+            cls.validator = None
 
         if not isinstance(cls.child, type) or \
            not issubclass(cls.child, Widget):

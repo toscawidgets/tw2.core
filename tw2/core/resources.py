@@ -45,18 +45,39 @@ class JSSymbol(js_symbol):
         self.src = self._name
 
 
+class ResourceBundle(wd.Widget):
+    """ Just a list of resources.
 
-class Resource(wd.Widget):
+    Use it as follows:
+
+        >>> jquery_ui = ResourceBundle(resources=[jquery_js, jquery_css])
+        >>> jquery_ui.inject()
+
+    """
+
+    @classmethod
+    def inject(cls):
+        cls.req().prepare()
+
+    def prepare(self):
+        super(ResourceBundle, self).prepare()
+
+        rl = core.request_local()
+        rl_resources = rl.setdefault('resources', [])
+        rl_location = rl['middleware'].config.inject_resources_location
+
+        if self not in rl_resources:
+            for r in self.resources:
+                r.req().prepare()
+
+
+class Resource(ResourceBundle):
     location = pm.Param(
         'Location on the page where the resource should be placed.' \
         'This can be one of: head, headbottom, bodytop or bodybottom. '\
         'None means the resource will not be injected, which is still '\
         'useful, e.g. static images.', default=None)
     id = None
-
-    @classmethod
-    def inject(cls):
-        cls.req().prepare()
 
     def prepare(self):
         super(Resource, self).prepare()
@@ -68,9 +89,6 @@ class Resource(wd.Widget):
         if self not in rl_resources:
             if self.location is '__use_middleware':
                 self.location = rl_location
-
-            for r in self.resources:
-                r.req().prepare()
 
             rl_resources.append(self)
 
@@ -208,6 +226,7 @@ class JSSource(Resource):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
 
+
 class CSSSource(Resource):
     """
     Inline Cascading Style-Sheet code.
@@ -218,6 +237,7 @@ class CSSSource(Resource):
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
+
 
 class _JSFuncCall(JSSource):
     """
@@ -404,7 +424,8 @@ class _ResourceInjector(util.MultipleReplacer):
        >>> JSLink(link="http://example.com").inject()
        >>> html = "<html><head></head><body></body></html>"
        >>> inject_resources(html)
-       '<html><head><script type="text/javascript" src="http://example.com"></script></head><body></body></html>'
+       '<html><head><script type="text/javascript"
+        src="http://example.com"></script></head><body></body></html>'
 
     Once resources have been injected they are popped from request local and
     cannot be injected again (in the same request). This is useful in case
