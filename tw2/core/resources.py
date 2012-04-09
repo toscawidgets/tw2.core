@@ -133,7 +133,7 @@ class Link(Resource):
                 frame, i = inspect.stack()[i][0], i + 1
 
             return frame.f_globals['__name__']
-        except Exception as e:
+        except Exception:
             return None
 
     @classmethod
