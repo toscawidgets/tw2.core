@@ -16,7 +16,7 @@ def tw2_translation_string(sval):
 
         try:
             return core.request_local()['middleware'].config.translator(_sval)
-        except TypeError as e:
+        except TypeError:
             log.warn(traceback.format_exc())
             return _sval
 
