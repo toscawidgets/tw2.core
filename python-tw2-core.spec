@@ -3,7 +3,7 @@
 %global modname tw2.core
 
 Name:           python-tw2-core
-Version:        2.0.2
+Version:        2.0.3
 Release:        1%{?dist}
 Summary:        Web widget creation toolkit based on TurboGears widgets
 
@@ -83,6 +83,11 @@ rm -rf %{buildroot}
 %{python_sitelib}/*
 
 %changelog
+* Wed Apr 11 2012 Ralph Bean <rbean@redhat.com> - 2.0.3-1
+- Packaged the latest release of tw2.core.
+- Fixed rpmlint - python-bytecode-without-source
+- Fixed rpmlint - non-executable-script
+
 * Tue Apr 10 2012 Ralph Bean <rbean@redhat.com> - 2.0.2-1
 - Packaged the latest release of tw2.core.
 - Added the %{?dist} macro to Release:
