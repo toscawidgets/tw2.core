@@ -5,5 +5,13 @@ recursive-include tests *.py
 recursive-include tests *.txt
 recursive-include tests *.html
 recursive-include tw2/core/testbase *.py
-recursive-include tw2/core/test_templates *
-recursive-include tw2/core/templates *
+recursive-include tw2/core/test_templates *.py
+recursive-include tw2/core/test_templates *.html
+recursive-include tw2/core/test_templates *.tmpl
+recursive-include tw2/core/test_templates *.kid
+recursive-include tw2/core/test_templates *.mak
+recursive-include tw2/core/templates *.py
+recursive-include tw2/core/templates *.html
+recursive-include tw2/core/templates *.tmpl
+recursive-include tw2/core/templates *.kid
+recursive-include tw2/core/templates *.mak
