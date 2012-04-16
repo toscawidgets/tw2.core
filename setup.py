@@ -7,7 +7,10 @@ from setuptools import setup
 
 # Ridiculous as it may seem, we need to import multiprocessing and logging here
 # in order to get tests to pass smoothly on python 2.7.
-import multiprocessing, logging
+try:
+    import multiprocessing, logging
+except:
+    pass
 
 def get_description(fname='README.rst'):
     # Adapted from PEAK-Rules' setup.py
@@ -32,7 +35,7 @@ _extra_mako = ["Mako >= 0.1.1"]
 
 setup(
     name='tw2.core',
-    version='2.0.3',
+    version='2.0.4',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=[
@@ -43,6 +46,7 @@ setup(
         'decorator',
         ],
     tests_require = [
+        'unittest2',
         'nose',
         'coverage',
         'BeautifulSoup',

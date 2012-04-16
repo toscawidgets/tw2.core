@@ -42,13 +42,13 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
    * Dynamic database-driven forms with :doc:`tw2 all by its standalone self
      </standalone>`.
    * Interactive relationship graphs with `tw2.jit and Pyramid
-     <http://threebean.wordpress.com/2011/03/07/sqlaradialgraph-in-a-pyramid-app>`_.
+     <http://threebean.org/blog/2011/03/07/sqlaradialgraph-in-a-pyramid-app>`_.
    * Interactive relationship graphs with `tw2.jit and TurboGears 2.1
-     <http://threebean.wordpress.com/2011/03/06/sqlalchemy-the-javascript-infovis-toolkit-jit>`_.
+     <http://threebean.org/blog/2011/03/06/sqlalchemy-the-javascript-infovis-toolkit-jit>`_.
    * `Database-aware jqgrid, with jqplot and portlets in a TG2.1 app
-     <http://threebean.wordpress.com/2011/04/30/tutorial-melting-your-face-off-with-tw2-and-turbogears2-1>`_.
+     <http://threebean.org/blog/2011/04/30/tutorial-melting-your-face-off-with-tw2-and-turbogears2-1>`_.
    * `Bubble charts with tw2.protovis
-     <http://threebean.wordpress.com/2010/10/24/python-wsgi-protovis-barcamproc-fall-2010/>`_.
+     <http://threebean.org/blog/2010/10/24/python-wsgi-protovis-barcamproc-fall-2010/>`_.
  * Nightly run `test results <http://tw2-tests.threebean.org/>`_.
  * Email list:  `toscawidgets-discuss
    <http://groups.google.com/group/toscawidgets-discuss/>`_.
