@@ -7,7 +7,10 @@ from setuptools import setup
 
 # Ridiculous as it may seem, we need to import multiprocessing and logging here
 # in order to get tests to pass smoothly on python 2.7.
-import multiprocessing, logging
+try:
+    import multiprocessing, logging
+except:
+    pass
 
 def get_description(fname='README.rst'):
     # Adapted from PEAK-Rules' setup.py
