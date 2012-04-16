@@ -44,10 +44,6 @@ class TWEncoder(simplejson.encoder.JSONEncoder):
     """
 
     def __init__(self, *args, **kw):
-
-        # This is required to get encoding of _js_call to work
-        kw['namedtuple_as_object'] = False
-
         # This makes encoded objects be prettily formatted.  It is very nice for
         # debugging and should be made configurable at some point.
         # TODO -- make json encoding pretty-printing configurable
@@ -55,6 +51,9 @@ class TWEncoder(simplejson.encoder.JSONEncoder):
 
         self.pass_through = (_js_call, js_callback, js_symbol, js_function)
         super(TWEncoder, self).__init__(*args, **kw)
+
+        # This is required to get encoding of _js_call to work
+        self.namedtuple_as_object = False
 
     def default(self, obj):
         if isinstance(obj, self.pass_through):
