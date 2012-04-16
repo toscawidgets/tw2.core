@@ -1,7 +1,7 @@
 """
 filling in the missing gaps in test coverage
 """
-from unittest import TestCase
+from unittest2 import TestCase
 import distutils.dist
 import StringIO
 import sys

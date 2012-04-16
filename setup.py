@@ -46,6 +46,7 @@ setup(
         'decorator',
         ],
     tests_require = [
+        'unittest2',
         'nose',
         'coverage',
         'BeautifulSoup',
