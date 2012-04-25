@@ -18,9 +18,9 @@ BuildArch:      noarch
 BuildRequires:  python2-devel
 BuildRequires:  python-setuptools
 %if %{?rhel}%{!?rhel:0} >= 6
-BuildRequires:       python-webob1.0 >= 0.9.7
+BuildRequires:  python-webob1.0 >= 0.9.7
 %else
-BuildRequires:       python-webob >= 0.9.7
+BuildRequires:  python-webob >= 0.9.7
 %endif
 BuildRequires:  python-simplejson >= 2.0
 BuildRequires:  python-decorator
