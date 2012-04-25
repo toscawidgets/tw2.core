@@ -1,3 +1,4 @@
+import types
 import warnings
 import webob as wo
 from pkg_resources import iter_entry_points, DistributionNotFound
@@ -205,10 +206,14 @@ class TwMiddleware(object):
                 else:
                     resp = wo.Response(status="404 Not Found")
 
-            ct = resp.headers.get('Content-Type', 'text/plain')
-            content_type = ct.lower()
+            ct = resp.headers.get('Content-Type', 'text/plain').lower()
 
-            if self.config.inject_resources and 'html' in content_type:
+            should_inject = (
+                self.config.inject_resources
+                and 'html' in ct
+                and not isinstance(resp.app_iter, types.GeneratorType)
+            )
+            if should_inject:
                 body = resources.inject_resources(
                     resp.body,
                     encoding=resp.charset,
