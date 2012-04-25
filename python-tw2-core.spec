@@ -3,7 +3,7 @@
 %global modname tw2.core
 
 Name:           python-tw2-core
-Version:        2.0.4
+Version:        2.0.5
 Release:        1%{?dist}
 Summary:        Web widget creation toolkit based on TurboGears widgets
 
@@ -11,7 +11,6 @@ Group:          Development/Languages
 License:        MIT
 URL:            http://toscawidgets.org
 Source0:        http://pypi.python.org/packages/source/t/%{modname}/%{modname}-%{version}.tar.gz
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
 # For building, generally
@@ -80,22 +79,23 @@ rm setup.cfg
 %{__python} setup.py build
 
 %install
-rm -rf %{buildroot}
 %{__python} setup.py install -O1 --skip-build \
-    --install-data=%{_datadir} --root %{buildroot}
+    --install-data=%{_datadir} --root=%{buildroot}
 
 %check
 PYTHONPATH=$(pwd) python setup.py test
 
-%clean
-rm -rf %{buildroot}
-
 %files
-%defattr(-,root,root,-)
 %doc README.rst LICENSE.txt
 %{python_sitelib}/*
 
 %changelog
+* Tue Apr 24 2012 Ralph Bean <rbean@redhat.com> - 2.0.5-1
+- Packaged latest version of tw2.core which fixes streaming WSGI compliance.
+- Removed defattr in the files section.
+- Removed clean section.  Not supporting EPEL5.
+- Removed references to buildroot.
+
 * Mon Apr 16 2012 Ralph Bean <rbean@redhat.com> - 2.0.4-1
 - Packaged latest version of tw2.core which fixes tests on py2.6.
 - Added awk line to make sure pkg_resources picks up the right WebOb on el6
