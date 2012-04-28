@@ -125,25 +125,16 @@ class EngineManager(dict):
             return lambda **kw: string.Template(template).substitute(
                 **dict(kw['info']['w'].iteritems())
             )
-        if src == dst and src in ('kid', 'genshi'):
+        if src == dst and src in ('genshi'):
             return self[src].transform
-        elif src == 'mako' and dst == 'kid':
-            from kid import XML
-            return lambda **kw: XML(template.render(**kw))
         elif src == 'mako' and dst == 'genshi':
             from genshi.core import Markup
             return lambda **kw: Markup(template.render(**kw).decode('utf-8'))
         elif src == 'mako':
             return template.render
-        elif src == 'kid' and dst == 'genshi':
-            from genshi.input import ET
-            return lambda **kw: ET(self[src].transform(**kw))
         elif dst == 'genshi':
             from genshi.core import Markup
             return lambda **kw: Markup(self[src].render(**kw))
-        elif dst == 'kid':
-            from kid import XML
-            return lambda **kw: XML(self[src].render(**kw))
         else:
             return self[src].render
 
