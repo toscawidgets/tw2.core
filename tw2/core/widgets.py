@@ -401,21 +401,21 @@ class Widget(pm.Parametered):
 
         return self.generate_output(displays_on)
 
-    def generate_output(self, engine_name):
+    def generate_output(self, displays_on):
         """
         Generate the actual output text for this widget.
 
         By default this renders the widget's template. Subclasses can override
         this method for purely programmatic output.
 
-        `engine_name`
+        `displays_on`
             The name of the template engine this widget is being displayed
             inside.
 
         Use it like this::
 
             class MyWidget(LeafWidget):
-                def generate_output(self, engine_name):
+                def generate_output(self, displays_on):
                     return "<span {0}>{1}</span>".format(self.attrs, self.text)
         """
 
@@ -429,11 +429,11 @@ class Widget(pm.Parametered):
             return output
 
         mw = core.request_local().get('middleware')
-        if engine_name is None:
+        if displays_on is None:
             if self.parent is None:
-                engine_name = mw and mw.config.default_engine or 'string'
+                displays_on = mw and mw.config.default_engine or 'string'
             else:
-                engine_name = template.get_engine_name(
+                displays_on = template.get_engine_name(
                     self.parent.template, mw)
 
         v = {'w': self}
@@ -443,7 +443,7 @@ class Widget(pm.Parametered):
                     v[p] = getattr(self, p)
 
         eng = mw and mw.engines or template.engine_manager
-        return eng.render(self.template, engine_name, v)
+        return eng.render(self.template, displays_on, v)
 
     @classmethod
     def validate(cls, params, state=None):
