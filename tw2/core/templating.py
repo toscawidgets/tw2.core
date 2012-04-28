@@ -1,6 +1,8 @@
 import os
 import core
 
+from util import memoize
+
 from webhelpers.html import literal
 
 # Just shorthand
@@ -11,10 +13,11 @@ engine_name_cache = {}
 rendering_extension_lookup = {
     'mako': ['mak', 'mako'],
     'genshi': ['html'],
-    'genshi_abs': ['html'],  #just for backwards compatibility with tw2 2.0.0
+    'genshi_abs': ['html'],  # just for backwards compatibility with tw2 2.0.0
 }
 
 
+@memoize
 def get_engine_name(template_name, mw=None):
     global engine_name_cache
 
@@ -60,6 +63,7 @@ def get_engine_name(template_name, mw=None):
     raise ValueError("Could not find engine name for %s" % template_name)
 
 
+@memoize
 def _get_dotted_filename(engine_name, template):
     from_loc, location, filename = template.rsplit('.', 2)
     module = __import__(location, globals(), locals(), [from_loc])
@@ -73,6 +77,7 @@ def _get_dotted_filename(engine_name, template):
     raise IOError("Couldn't find source for %r" % template)
 
 
+@memoize
 def get_source(engine_name, template, inline=False):
     if inline:
         return template
@@ -90,6 +95,7 @@ def get_source(engine_name, template, inline=False):
         return f.read()
 
 
+@memoize
 def get_render_callable(engine_name, displays_on, src):
     """ Returns a function that takes a template source and kwargs. """
 
@@ -106,6 +112,7 @@ def get_render_callable(engine_name, displays_on, src):
 
     raise NotImplementedError("Unhandled engine")
 
+
 def render(template_name, displays_on, kwargs, inline=False, mw=None):
     """ Highest level function, here for convenience.
 
@@ -116,4 +123,3 @@ def render(template_name, displays_on, kwargs, inline=False, mw=None):
     source = get_source(engine_name, template_name, inline)
     callback = get_render_callable(engine_name, displays_on, source)
     return callback(kwargs)
-

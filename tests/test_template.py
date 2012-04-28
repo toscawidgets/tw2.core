@@ -1,4 +1,5 @@
-import tw2.core as twc, testapi
+import tw2.core as twc
+import testapi
 import itertools
 import os
 import webob as wo
@@ -20,10 +21,11 @@ class TestTemplate(object):
         if engine:
             mw = twc.make_middleware(None, preferred_rendering_engines=[engine])
             testapi.request(1, mw)
+            twc.util.flush_memoization()
 
         out = twc.templating.render(template, 'string', data)
         assert(isinstance(out, unicode))
-        assert out == expected, out
+        eq_(out, expected)
 
     def test_get_source_inline(self):
         template_in = "awesome"
