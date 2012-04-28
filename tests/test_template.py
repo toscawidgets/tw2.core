@@ -2,7 +2,6 @@ import tw2.core as twc, testapi
 import webob as wo
 import os
 from nose.tools import raises, eq_
-from tw2.core.template import reset_engine_name_cache
 
 # TBD: only test engines that are installed
 engines = ['genshi', 'mako']
