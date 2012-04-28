@@ -6,7 +6,7 @@ import webob as wo
 from nose.tools import raises, eq_
 
 # TBD: only test engines that are installed
-engines = ['genshi', 'mako']
+engines = ['genshi', 'mako', 'jinja']
 
 
 class TestWD(twc.Widget):
@@ -112,11 +112,10 @@ class TestTemplate(object):
         twc.core.request_local()['middleware'] = twc.make_middleware(None)
         mtest = TestWD(id='x')
         for eng in engines:
-            print eng
             test = mtest.req()
             test.template = '%s:tw2.core.test_templates.inner_%s' % (eng, eng)
             out = test.display()
-            assert(out == '<p>TEST bob</p>')
+            eq_(out, '<p>TEST bob</p>')
 
     def test_widget_nesting(self):
         twc.core.request_local()['middleware'] = twc.make_middleware(None)

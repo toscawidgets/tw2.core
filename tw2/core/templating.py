@@ -14,6 +14,7 @@ rendering_extension_lookup = {
     'mako': ['mak', 'mako'],
     'genshi': ['html'],
     'genshi_abs': ['html'],  # just for backwards compatibility with tw2 2.0.0
+    'jinja': ['jinja', 'html'],
 }
 
 
@@ -27,11 +28,7 @@ def get_engine_name(template_name, mw=None):
     if ':' in template_name:
         engine_name = template_name.split(':', 1)[0]
         engine_name_cache[template_name] = engine_name
-
-    try:
-        return engine_name_cache[template_name]
-    except KeyError:
-        pass
+        return engine_name
 
     try:
         if mw is None:
@@ -39,7 +36,7 @@ def get_engine_name(template_name, mw=None):
             mw = rl['middleware']
         pref_rend_eng = mw.config.preferred_rendering_engines
     except (KeyError, AttributeError):
-        pref_rend_eng = ['mako', 'genshi']
+        pref_rend_eng = ['mako', 'genshi', 'jinja']
 
     # find the first file in the preffered engines available for templating
     for engine_name in pref_rend_eng:
@@ -51,7 +48,7 @@ def get_engine_name(template_name, mw=None):
             pass
 
     if not mw.config.strict_engine_selection:
-        pref_rend_eng = ['mako', 'genshi']
+        pref_rend_eng = ['mako', 'genshi', 'jinja']
         for engine_name in pref_rend_eng:
             try:
                 get_source(engine_name, template_name)
@@ -109,6 +106,11 @@ def get_render_callable(engine_name, displays_on, src):
         import genshi.template
         tmpl = genshi.template.MarkupTemplate(src)
         return lambda kwargs: literal(tmpl.generate(**kwargs))
+    elif engine_name == 'jinja':
+        import jinja2
+        tmpl = jinja2.Template(src)
+        return lambda kwargs: literal(tmpl.render(**kwargs))
+
 
     raise NotImplementedError("Unhandled engine")
 

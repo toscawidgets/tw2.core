@@ -73,7 +73,7 @@ class Config(object):
 
     `preferred_rendering_engines`
         List of rendering engines in order of preference.
-        (default: ['mako','genshi'])
+        (default: ['mako','genshi','jinja'])
 
     `strict_engine_selection`
         If set to true, TW2 will only select rendering engines from within your
@@ -83,7 +83,7 @@ class Config(object):
     `rendering_engine_lookup`
         A dictionary of file extensions you expect to use for each type of
         template engine.
-        (default: {'mako':'mak','genshi':'html'})
+        (default: {'mako':['mak', 'mako'],'genshi':['html'],'jinja':['html']})
 
     `script_name`
         A name to prepend to the url for all resource links (different from
@@ -106,11 +106,12 @@ class Config(object):
     validator_msgs = {}
     encoding = 'utf-8'
     auto_reload_templates = None
-    preferred_rendering_engines = ['mako', 'genshi']
+    preferred_rendering_engines = ['mako', 'genshi', 'jinja']
     strict_engine_selection = True
     rendering_extension_lookup = {
-        'mako': 'mak',
-        'genshi': 'html',
+        'mako': ['mak', 'mako'],
+        'genshi': ['html'],
+        'jinja': ['jinja', 'html'],
     }
     script_name = ''
 
@@ -136,21 +137,6 @@ class Config(object):
 
         if self.auto_reload_templates is None:
             self.auto_reload_templates = self.debug
-
-        self.available_rendering_engines = {}
-        for e in iter_entry_points("python.templating.engines"):
-            if not self.strict_engine_selection or \
-               e.name in self.preferred_rendering_engines:
-                try:
-                    self.available_rendering_engines[e.name] = e.load()
-                except DistributionNotFound:
-                    pass
-
-        # test to see if the rendering engines are available for the preferred
-        # engines selected
-        for engine_name in self.preferred_rendering_engines:
-            if engine_name not in self.available_rendering_engines:
-                self.preferred_rendering_engines.remove(engine_name)
 
 
 class TwMiddleware(object):

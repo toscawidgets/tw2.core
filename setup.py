@@ -30,6 +30,7 @@ def get_description(fname='README.rst'):
 # Requirements to install buffet plugins and engines
 _extra_genshi = ["Genshi >= 0.3.5"]
 _extra_mako = ["Mako >= 0.1.1"]
+_extra_jinja = ["jinja2"]
 
 setup(
     name='tw2.core',
@@ -52,11 +53,12 @@ setup(
         'FormEncode',
         'WebTest',
         'strainer',
-    ] +  _extra_genshi + _extra_mako,
+    ] +  _extra_genshi + _extra_mako + _extra_jinja,
     test_suite = 'nose.collector',
     extras_require = {
         'genshi': _extra_genshi,
         'mako': _extra_mako,
+        'jinja': _extra_jinja,
         },
     url = "http://toscawidgets.org/",
     download_url = "http://toscawidgets.org/download/",

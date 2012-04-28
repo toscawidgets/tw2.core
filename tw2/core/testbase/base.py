@@ -37,6 +37,7 @@ import tw2.core.templating as templating
 rendering_extension_lookup = {
     'mako': 'mak',
     'genshi': 'html',
+    'jinja': 'html',
 }
 rm = pk.ResourceManager()
 

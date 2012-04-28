@@ -91,7 +91,7 @@ class Widget(pm.Parametered):
     )
     inline_engine_name = pm.Param(
         'Name of an engine.  If specified, `template` is interpreted as ' +
-        'an *inline template* and not a path.  Only "mako" is supported.',
+        'an *inline template* and not a path.',
         default=None,
     )
     validator = pm.Param(
