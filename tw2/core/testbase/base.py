@@ -215,7 +215,7 @@ class WidgetTest(object):
 
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
         _request_id = None
-        template.reset_engine_name_cache()
+        template.engine_name_cache = {}
         mw = tmw.make_middleware(None, preferred_rendering_engines=[engine])
         self.request(1, mw)
         r = self.widget(_no_autoid=True, **attrs).display(**params)

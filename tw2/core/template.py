@@ -37,11 +37,6 @@ def template_available(template_name, engine_name, mw=None):
 
 engine_name_cache = {}
 
-
-def reset_engine_name_cache():
-    global engine_name_cache
-    engine_name_cache = {}
-
 engine_error_template = """Could not find template for: %s. You may need to
 specify a template engine name in the widget like mako:%s, or change the
 middleware setup to include the template's templating language in your

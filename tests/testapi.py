@@ -1,6 +1,6 @@
 import tw2.core as twc
+import tw2.core.template
 from tw2.core.testbase import base
-from tw2.core.template import reset_engine_name_cache
 
 twc.core.request_local = base.request_local_tst
 
@@ -8,7 +8,7 @@ twc.core.request_local = base.request_local_tst
 def setup():
     base._request_local = {}
     base._request_id = None
-    reset_engine_name_cache()
+    tw2.core.template.engine_name_cache = {}
 
 
 def request(requestid, mw=None):
