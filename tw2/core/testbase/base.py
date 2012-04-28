@@ -32,7 +32,7 @@ from xml.parsers.expat import ExpatError
 
 import tw2.core as twc
 import tw2.core.middleware as tmw
-import tw2.core.template as template
+import tw2.core.templating as templating
 
 rendering_extension_lookup = {
     'mako': 'mak',
@@ -215,7 +215,7 @@ class WidgetTest(object):
 
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
         _request_id = None
-        template.engine_name_cache = {}
+        templating.engine_name_cache = {}
         mw = tmw.make_middleware(None, preferred_rendering_engines=[engine])
         self.request(1, mw)
         r = self.widget(_no_autoid=True, **attrs).display(**params)

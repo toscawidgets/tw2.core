@@ -6,7 +6,6 @@ from paste.deploy.converters import asbool, asint
 
 import core
 import resources
-import template
 
 import logging
 log = logging.getLogger(__name__)
@@ -167,7 +166,6 @@ class TwMiddleware(object):
     def __init__(self, app, controllers=None, **config):
         self.app = app
         self.config = Config(**config)
-        self.engines = template.EngineManager()
         self.resources = resources.ResourcesApp(self.config)
         self.controllers = controllers or ControllersApp()
 

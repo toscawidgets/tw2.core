@@ -6,16 +6,11 @@ import inspect
 import warnings
 import webob
 
-import template
+import templating
 import core
 import util
 import validation as vd
 import params as pm
-
-try:
-    import mako.template
-except ImportError:
-    pass
 
 try:
     import formencode
@@ -419,31 +414,42 @@ class Widget(pm.Parametered):
                     return "<span {0}>{1}</span>".format(self.attrs, self.text)
         """
 
-        if self.inline_engine_name != None:
-            if self.inline_engine_name != 'mako':
-                raise ValueError("Only mako is supported for inline templates")
-            t = mako.template.Template(self.template)
-            output = t.render(w=self)
-            if isinstance(output, str):
-                output = output.decode('utf-8')
-            return output
-
         mw = core.request_local().get('middleware')
-        if displays_on is None:
-            if self.parent is None:
-                displays_on = mw and mw.config.default_engine or 'string'
-            else:
-                displays_on = template.get_engine_name(
-                    self.parent.template, mw)
 
-        v = {'w': self}
+        if not displays_on:
+            displays_on = self._get_default_displays_on(mw)
+
+        # Build the arguments used while rendering the template
+        kwargs = {'w': self}
         if mw and mw.config.params_as_vars:
             for p in self._params:
                 if hasattr(self, p):
-                    v[p] = getattr(self, p)
+                    kwargs[p] = getattr(self, p)
 
-        eng = mw and mw.engines or template.engine_manager
-        return eng.render(self.template, displays_on, v)
+        # Determine the engine name
+        if self.inline_engine_name:
+            engine_name = self.inline_engine_name
+        else:
+            engine_name = templating.get_engine_name(self.template)
+
+        # Load the template source
+        template_source = templating.get_source(
+            engine_name, self.template, self.inline_engine_name)
+
+        # Establish the render function
+        render = templating.get_render_callable(
+            engine_name, displays_on, template_source)
+
+        # Do it
+        return render(kwargs)
+
+    def _get_default_displays_on(self, mw):
+        if not self.parent:
+            if mw:
+                return mw.config.default_engine
+            return 'string'
+        else:
+            return templating.get_engine_name(self.parent.template, mw)
 
     @classmethod
     def validate(cls, params, state=None):
@@ -650,8 +656,8 @@ class CompoundWidget(Widget):
                         exception_validator = None
                         any_errors = True
 
-                # Only re-raise this top-level exception if the validation error
-                # doesn't pertain to any of our children.
+                # Only re-raise this top-level exception if the validation
+                # error doesn't pertain to any of our children.
                 if exception_validator:
                     raise
 

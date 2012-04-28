@@ -42,6 +42,7 @@ setup(
         'PasteDeploy',
         'speaklater',
         'decorator',
+        'webhelpers',
         ],
     tests_require = [
         'unittest2',
