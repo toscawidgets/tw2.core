@@ -124,7 +124,9 @@ When a value like ``{'title': 'my title'}`` is passed to MyForm, this will propa
 Template
 ========
 
-Every widget can have a template. ToscaWidgets aims to support any templating engine that support the ``buffet`` interface, which is an initiative by the TurboGears project to create a standard interface for template libraries. In practice, there are more differences between template engines than the buffet interface standardises. So, ToscaWidgets has some template-language hooks, and support is primarily for: Genshi, Mako, Kid and Cheetah.
+Every widget can have a template.  Toscawidgets has some template-language hooks which currently support Genshi, Mako, and Jinja2.
+
+At one point, ToscaWidgets2 aimed to support any templating engine that supported the ``buffet`` interface, (an initiative by the TurboGears project to create a standard interface for template libraries). In practice though, there are more differences between template engines than the buffet interface standardises so this approach has been dropped.
 
 The :attr:`template` parameter takes the form ``engine_name:template_path``. The ``engine_name`` is the name that the template engine defines in the ``python.templating.engines`` entry point, e.g. ``genshi`` or ``mako``. The ``template_path`` is a string the engine can use to locate the template; usually this is dot-notation that mimics the semantics of Python's import statement, e.g. ``myapp.templates.mytemplate``. Genshi templates allow specifications like ``./template.html`` which is beneficial for simple applications.
 
