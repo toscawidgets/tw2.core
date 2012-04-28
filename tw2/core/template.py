@@ -28,8 +28,6 @@ def template_available(template_name, engine_name, mw=None):
         rendering_extension_lookup = {
             'mako': 'mak',
             'genshi': 'html',
-            'cheetah': 'tmpl',
-            'kid': 'kid',
         }
 
     ext = rendering_extension_lookup[engine_name]
@@ -69,14 +67,14 @@ def get_engine_name(template_name, mw=None):
             mw = rl['middleware']
         pref_rend_eng = mw.config.preferred_rendering_engines
     except (KeyError, AttributeError):
-        pref_rend_eng = ['mako', 'genshi', 'cheetah', 'kid']
+        pref_rend_eng = ['mako', 'genshi']
     # find the first file in the preffered engines available for templating
     for engine_name in pref_rend_eng:
         if template_available(template_name, engine_name, mw):
             engine_name_cache[template_name] = engine_name
             return engine_name
     if not mw.config.strict_engine_selection:
-        pref_rend_eng = ['mako', 'genshi', 'cheetah', 'kid']
+        pref_rend_eng = ['mako', 'genshi']
         for engine_name in pref_rend_eng:
             if template_available(template_name, engine_name):
                 engine_name_cache[template_name] = engine_name
@@ -104,7 +102,7 @@ class EngineManager(dict):
         if engine_name == 'genshi' and '/' in template_path:
             engine_name = 'genshi_abs'
 
-        if engine_name not in ['string', 'cheetah']:
+        if engine_name not in ['string']:
             template = self[engine_name].load_template(template_path)
 
         if engine_name == 'string':

@@ -37,8 +37,6 @@ import tw2.core.template as template
 rendering_extension_lookup = {
     'mako': 'mak',
     'genshi': 'html',
-    'cheetah': 'tmpl',
-    'kid': 'kid',
 }
 rm = pk.ResourceManager()
 
