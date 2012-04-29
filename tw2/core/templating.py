@@ -111,7 +111,6 @@ def get_render_callable(engine_name, displays_on, src):
         tmpl = jinja2.Template(src)
         return lambda kwargs: literal(tmpl.render(**kwargs))
 
-
     raise NotImplementedError("Unhandled engine")
 
 
