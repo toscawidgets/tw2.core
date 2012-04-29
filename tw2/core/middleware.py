@@ -73,7 +73,7 @@ class Config(object):
 
     `preferred_rendering_engines`
         List of rendering engines in order of preference.
-        (default: ['mako','genshi','jinja'])
+        (default: ['mako','genshi','jinja','kajiki'])
 
     `strict_engine_selection`
         If set to true, TW2 will only select rendering engines from within your
@@ -83,7 +83,12 @@ class Config(object):
     `rendering_engine_lookup`
         A dictionary of file extensions you expect to use for each type of
         template engine.
-        (default: {'mako':['mak', 'mako'],'genshi':['html'],'jinja':['html']})
+        (default: {
+            'mako':['mak', 'mako'],
+            'genshi':['html'],
+            'jinja':['html', 'jinja'],
+            'kajiki':['html', 'kajiki'],
+        })
 
     `script_name`
         A name to prepend to the url for all resource links (different from
@@ -106,12 +111,13 @@ class Config(object):
     validator_msgs = {}
     encoding = 'utf-8'
     auto_reload_templates = None
-    preferred_rendering_engines = ['mako', 'genshi', 'jinja']
+    preferred_rendering_engines = ['mako', 'genshi', 'jinja', 'kajiki']
     strict_engine_selection = True
     rendering_extension_lookup = {
         'mako': ['mak', 'mako'],
         'genshi': ['html'],
         'jinja': ['jinja', 'html'],
+        'kajiki': ['kajiki', 'html'],
     }
     script_name = ''
 
