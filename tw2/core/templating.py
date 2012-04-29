@@ -96,7 +96,7 @@ def get_source(engine_name, template, inline=False):
 def get_render_callable(engine_name, displays_on, src):
     """ Returns a function that takes a template source and kwargs. """
 
-    # TODO -- handle displays_on or remove it
+    # See the discussion here re: `displays_on` -- http://bit.ly/JRqbRw
 
     if engine_name == 'mako':
         import mako.template
