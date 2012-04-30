@@ -85,9 +85,9 @@ class Config(object):
         template engine.
         (default: {
             'mako':['mak', 'mako'],
-            'genshi':['html'],
-            'jinja':['html', 'jinja'],
-            'kajiki':['html', 'kajiki'],
+            'genshi':['genshi', 'html'],
+            'jinja':['jinja', 'html'],
+            'kajiki':['kajiki', 'html'],
         })
 
     `script_name`
@@ -115,9 +115,9 @@ class Config(object):
     strict_engine_selection = True
     rendering_extension_lookup = {
         'mako': ['mak', 'mako'],
-        'genshi': ['html'],
-        'jinja': ['jinja', 'html'],
-        'kajiki': ['kajiki', 'html'],
+        'genshi': ['genshi', 'html'],
+        'jinja':['jinja', 'html'],
+        'kajiki':['kajiki', 'html'],
     }
     script_name = ''
 

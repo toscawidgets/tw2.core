@@ -94,14 +94,14 @@ def get_source(engine_name, template, inline=False):
 
 
 @memoize
-def get_render_callable(engine_name, displays_on, src):
+def get_render_callable(engine_name, displays_on, src, filename=None):
     """ Returns a function that takes a template source and kwargs. """
 
     # See the discussion here re: `displays_on` -- http://bit.ly/JRqbRw
 
     if engine_name == 'mako':
         import mako.template
-        tmpl = mako.template.Template(src)
+        tmpl = mako.template.Template(text=src, filename=filename)
         return lambda kwargs: literal(tmpl.render(**kwargs))
     elif engine_name in ('genshi', 'genshi_abs'):
         import genshi.template
@@ -125,7 +125,16 @@ def render(template_name, displays_on, kwargs, inline=False, mw=None):
     Makes use of *all* other functions in this module.
     """
 
-    engine_name = get_engine_name(template_name, mw)
+    # Determine the engine name
+    if not inline:
+        engine_name = get_engine_name(template_name, mw)
+    else:
+        engine_name = inline
+
+    # Load the template source
     source = get_source(engine_name, template_name, inline)
-    callback = get_render_callable(engine_name, displays_on, source)
+    # Establish the render function
+    callback = get_render_callable(
+        engine_name, displays_on, source, template_name)
+    # Do it
     return callback(kwargs)

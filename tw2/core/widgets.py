@@ -426,22 +426,13 @@ class Widget(pm.Parametered):
                 if hasattr(self, p):
                     kwargs[p] = getattr(self, p)
 
-        # Determine the engine name
-        if self.inline_engine_name:
-            engine_name = self.inline_engine_name
-        else:
-            engine_name = templating.get_engine_name(self.template)
-
-        # Load the template source
-        template_source = templating.get_source(
-            engine_name, self.template, self.inline_engine_name)
-
-        # Establish the render function
-        render = templating.get_render_callable(
-            engine_name, displays_on, template_source)
-
-        # Do it
-        return render(kwargs)
+        return templating.render(
+            self.template,
+            displays_on,
+            kwargs,
+            self.inline_engine_name,
+            mw,
+        )
 
     def _get_default_displays_on(self, mw):
         if not self.parent:
