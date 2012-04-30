@@ -1,0 +1,4 @@
+<html xmlns:py="http://genshi.edgewall.org/">
+<head><title>$w.title</title></head>
+<body py:attrs="w.attrs"><h1>$w.title</h1>${w.child and w.child.display()}</body>
+</html>

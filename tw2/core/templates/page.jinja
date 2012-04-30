@@ -1,0 +1,8 @@
+<html>
+<head><title>{{w.title or ''}}</title></head>
+<body {{w.attrs | xmlattr}}><h1>{{w.title or ''}}</h1>
+{% if w.child %}
+{{w.child.display()}}
+{% endif %}
+</body>
+</html>
