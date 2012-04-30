@@ -10,6 +10,7 @@ from difflib import unified_diff
 from cStringIO import StringIO
 from BeautifulSoup import BeautifulSoup as bs
 from nose.tools import eq_
+from nose import SkipTest
 
 from xhtmlify import (
     xhtmlify,
@@ -34,11 +35,6 @@ import tw2.core as twc
 import tw2.core.middleware as tmw
 import tw2.core.templating as templating
 
-rendering_extension_lookup = {
-    'mako': 'mak',
-    'genshi': 'html',
-    'jinja': 'html',
-}
 rm = pk.ResourceManager()
 
 _BOOLEAN_ATTRS = frozenset(['selected', 'checked', 'compact', 'declare',
@@ -201,29 +197,29 @@ class WidgetTest(object):
         return self.request(1)
 
     def _get_all_possible_engines(self):
-        if self.widget is None:
-            return
-        template = self.widget.template
-        try:
-            engine, template_name = template.split(':', 1)
+        for engine in templating.rendering_extension_lookup:
             yield engine
-        except:
-            for engine, ext in rendering_extension_lookup.iteritems():
-                split = template.rsplit('.', 1)
-                fname = '.'.join((split[1], ext))
-                if(os.path.isfile(rm.resource_filename(split[0], fname))):
-                    yield engine
 
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
         _request_id = None
         templating.engine_name_cache = {}
         mw = tmw.make_middleware(None, preferred_rendering_engines=[engine])
         self.request(1, mw)
-        r = self.widget(_no_autoid=True, **attrs).display(**params)
+        try:
+            r = self.widget(_no_autoid=True, **attrs).display(**params)
+        except ValueError as e:
+            if str(e).startswith("Could not find engine name"):
+                raise SkipTest("No template for engine %r" % engine)
+            else:
+                raise
+
         # reset the cache as not to affect other tests
         assert_eq_xml(r, expected, self.wrap)
 
     def test_display(self):
+        if not self.widget:
+            return
+
         for engine in self._get_all_possible_engines():
             yield self._check_rendering_vs_expected, engine, \
                     self.attrs, self.params, self.expected
