@@ -13,7 +13,7 @@ class TestJS(object):
 
     def test_js_function(self):
         json = self.encode({"onLoad": js_function("do_something")("param")})
-        eq_(json, '{"onLoad": do_something(\\"param\\")}')
+        eq_(json, '{"onLoad": do_something("param")}')
 
     def test_js_function_composition(self):
         f = js_function("f")
@@ -49,7 +49,22 @@ class TestJS(object):
         args = {'onLoad': f}
 
         json = self.encode(args)
-        eq_(json, '{"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}')
+        eq_(json, '{"onLoad": function(){jQuery("foo").click(onClick)}}')
 
         json = self.encode({'args':args})
-        eq_(json, '{"args": {"onLoad": function(){jQuery(\\"foo\\").click(onClick)}}}')
+        eq_(json, '{"args": {"onLoad": function(){jQuery("foo").click(onClick)}}}')
+
+    def test_quotes_no_escape(self):
+        f = twc.js_callback("function() { return 'c'; }")
+        json = self.encode({'onLoad': f})
+        eq_(json, '{"onLoad": function() { return \'c\'; }}')
+
+    def test_quotes_escape(self):
+        f = twc.js_callback("function() { return \"c\"; }")
+        json = self.encode({'onLoad': f})
+        eq_(json, '{"onLoad": function() { return "c"; }}')
+
+    def test_quotes_tripled(self):
+        f = twc.js_callback("""function() { return "c"; }""")
+        json = self.encode({'onLoad': f})
+        eq_(json, '{"onLoad": function() { return "c"; }}')
