@@ -16,6 +16,7 @@ rendering_extension_lookup = {
     'genshi_abs': ['html'],  # just for backwards compatibility with tw2 2.0.0
     'jinja': ['jinja', 'html'],
     'kajiki': ['kajiki', 'html'],
+    'chameleon': ['pt'],
 }
 
 
@@ -37,7 +38,7 @@ def get_engine_name(template_name, mw=None):
             mw = rl['middleware']
         pref_rend_eng = mw.config.preferred_rendering_engines
     except (KeyError, AttributeError):
-        pref_rend_eng = ['mako', 'genshi', 'jinja', 'kajiki']
+        pref_rend_eng = ['mako', 'genshi', 'jinja', 'kajiki', 'chameleon']
 
     # find the first file in the preffered engines available for templating
     for engine_name in pref_rend_eng:
@@ -49,7 +50,7 @@ def get_engine_name(template_name, mw=None):
             pass
 
     if not mw.config.strict_engine_selection:
-        pref_rend_eng = ['mako', 'genshi', 'jinja', 'kajiki']
+        pref_rend_eng = ['mako', 'genshi', 'jinja', 'kajiki', 'chameleon']
         for engine_name in pref_rend_eng:
             try:
                 get_source(engine_name, template_name)
@@ -115,6 +116,10 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
         import kajiki
         tmpl = kajiki.XMLTemplate(src)
         return lambda kwargs: literal(tmpl(kwargs).render())
+    elif engine_name == 'chameleon':
+        import chameleon
+        tmpl = chameleon.PageTemplate(src, filename=filename)
+        return lambda kwargs: literal(tmpl.render(**kwargs).strip())
 
     raise NotImplementedError("Unhandled engine")
 
@@ -133,8 +138,10 @@ def render(template_name, displays_on, kwargs, inline=False, mw=None):
 
     # Load the template source
     source = get_source(engine_name, template_name, inline)
+
     # Establish the render function
     callback = get_render_callable(
         engine_name, displays_on, source, template_name)
+
     # Do it
     return callback(kwargs)

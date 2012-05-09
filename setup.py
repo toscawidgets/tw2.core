@@ -32,6 +32,7 @@ _extra_genshi = ["Genshi >= 0.3.5"]
 _extra_mako = ["Mako >= 0.1.1"]
 _extra_jinja = ["jinja2"]
 _extra_kajiki = ["kajiki"]
+_extra_chameleon = ["chameleon"]
 
 setup(
     name='tw2.core',
@@ -54,13 +55,20 @@ setup(
         'FormEncode',
         'WebTest',
         'strainer',
-    ] +  _extra_genshi + _extra_mako + _extra_jinja + _extra_kajiki,
+    ] + \
+    _extra_genshi + \
+    _extra_mako + \
+    _extra_jinja + \
+    _extra_kajiki + \
+    _extra_chameleon,
+
     test_suite = 'nose.collector',
     extras_require = {
         'genshi': _extra_genshi,
         'mako': _extra_mako,
         'jinja': _extra_jinja,
         'kajiki': _extra_kajiki,
+        'chameleon': _extra_chameleon,
         },
     url = "http://toscawidgets.org/",
     download_url = "http://toscawidgets.org/download/",

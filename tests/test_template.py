@@ -6,7 +6,7 @@ import webob as wo
 from nose.tools import raises, eq_
 
 # TBD: only test engines that are installed
-engines = ['genshi', 'mako', 'jinja', 'kajiki']
+engines = ['genshi', 'mako', 'jinja', 'kajiki', 'chameleon']
 
 
 class TestWD(twc.Widget):
