@@ -63,8 +63,8 @@ def get_engine_name(template_name, mw=None):
 
 @memoize
 def _get_dotted_filename(engine_name, template):
-    from_loc, location, filename = template.rsplit('.', 2)
-    module = __import__(location, globals(), locals(), [from_loc])
+    location, filename = template.rsplit('.', 1)
+    module = __import__(location, globals(), locals(), ['*'])
     parent_dir = SEP.join(module.__file__.split(SEP)[:-1])
 
     for extension in rendering_extension_lookup[engine_name]:
