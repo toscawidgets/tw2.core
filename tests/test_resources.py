@@ -315,6 +315,10 @@ class TestResourcesMisc(TestCase):
         l = twr.Link(link="http://google.com")
         self.assert_(hash(l.req()))  # meh
 
+    def testAutoModname(self):
+        l = twr.Link(filename="somefile")
+        eq_(l.modname, __name__)
+
     def testAutoModnameReqPrep(self):
         l = twr.Link(filename="somefile")
         l = l.req()
