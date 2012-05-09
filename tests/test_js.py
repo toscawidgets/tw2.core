@@ -68,3 +68,15 @@ class TestJS(object):
         f = twc.js_callback("""function() { return "c"; }""")
         json = self.encode({'onLoad': f})
         eq_(json, '{"onLoad": function() { return "c"; }}')
+
+    def test_multiline_js(self):
+        """ https://github.com/toscawidgets/tw2.core/issues/12 """
+        raw = """
+            $(document).ready(function() {
+                  console.log("This is multiline javascript");
+            });
+        """
+        expected = '{"onLoad": %s}' % raw
+        f = js_symbol(raw)
+        json = self.encode({'onLoad': f})
+        eq_(json, expected)
