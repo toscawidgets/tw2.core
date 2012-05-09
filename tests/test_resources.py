@@ -319,13 +319,13 @@ class TestResourcesMisc(TestCase):
         l = twr.Link(filename="somefile")
         l = l.req()
         l.prepare()
-        eq_(l.modname, "test_resources")
+        eq_(l.modname, __name__)
 
     def testAutoModnameInject(self):
         l = twr.Link(filename="somefile")
         l.inject()
         local = tw2.core.core.request_local()
-        eq_(local['resources'][0].modname, "test_resources")
+        eq_(local['resources'][0].modname, __name__)
 
     def testDirLink(self):
         dl = twr.DirLink(modname="tw2.core", filename="somefile")
