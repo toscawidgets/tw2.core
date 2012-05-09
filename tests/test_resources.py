@@ -295,7 +295,7 @@ class TestResourcesMisc(TestCase):
         enc = twc.encoder
         enc.encode("")
         res = enc.default(twr.JSSymbol("X"))
-        self.assert_(res.startswith("*#*"))
+        self.assert_(res.startswith("TW2Encoder_unescape_"))
 
         try:
             res = enc.default(None)

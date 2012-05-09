@@ -7,6 +7,7 @@ you include as JSLinks or inline using JSSources. This module is only intended
 as a "bridge" or interface between Python and JavaScript so JS function
 **calls** can be generated programatically.
 """
+import re
 import sys
 
 import logging
@@ -49,6 +50,7 @@ class TWEncoder(simplejson.encoder.JSONEncoder):
         # TODO -- make json encoding pretty-printing configurable
         #kw['indent'] = '  '
 
+        self.unescape_pattern = re.compile('"TW2Encoder_unescape_([0-9]*)"')
         self.pass_through = (_js_call, js_callback, js_symbol, js_function)
         super(TWEncoder, self).__init__(*args, **kw)
 
@@ -57,20 +59,39 @@ class TWEncoder(simplejson.encoder.JSONEncoder):
 
     def default(self, obj):
         if isinstance(obj, self.pass_through):
-            return self.mark_for_escape(obj)
-        elif hasattr(obj, 'id'):
+            result = self.mark_for_escape(obj)
+            return result
+
+        if hasattr(obj, '__json__'):
+            return obj.__json__()
+
+        if hasattr(obj, 'id'):
             return str(obj.id)
+
         return super(TWEncoder, self).default(obj)
 
     def encode(self, obj):
+        self.unescape_symbols = {}
+        encoded = super(TWEncoder, self).encode(obj)
+        unescaped = self.unescape_marked(encoded)
+        self.unescape_symbols = {}
+        return unescaped
+
         encoded = super(TWEncoder, self).encode(obj)
         return self.unescape_marked(encoded)
 
     def mark_for_escape(self, obj):
-        return '*#*%s*#*' % obj
+        self.unescape_symbols[id(obj)] = obj
+        return 'TW2Encoder_unescape_' + str(id(obj))
 
     def unescape_marked(self, encoded):
-        return encoded.replace('"*#*', '').replace('*#*"', '')
+        def unescape(match):
+            obj_id = int(match.group(1))
+            obj = self.unescape_symbols[obj_id]
+            return str(obj)
+
+        return self.unescape_pattern.sub(unescape, encoded)
+
 
 encoder = None  # This gets reset at the bottom of the file.
 
