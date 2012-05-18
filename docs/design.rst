@@ -169,6 +169,18 @@ To define a resource, just add a :class:`tw2.core.Resource` subclass to the widg
 
 Resources are widgets, but follow a slightly different lifecycle. Resource subclasses are passed into the :attr:`resources` parameter. An instance is created for each request, but this is only done at the time of the parent Widget's :meth:`display` method. This gives widgets a chance to add dynamic resources in their :meth:`prepare` method.
 
+**Using Your Own Resources**
+
+Resources that are defined by pre-existing tw2 packages can be altered globally.
+For instance, say that you want to use your own patched version of jquery and
+you want all tw2 packages that require jquery to use your version, and not the
+one already packaged up in ``tw2.jquery``.  The following code will alter
+``jquery_js`` in not just the local scope, but also in all other modules that
+have use it (including ``tw2.jqplugins.ui``)::
+
+    import tw2.jquery
+    tw2.jquery.jquery_js.link = "/path/to/my/patched/jquery.js"
+
 **Deploying Resources**
 
 If running behind mod_wsgi, tw2 resource provisioning will typically fail.
