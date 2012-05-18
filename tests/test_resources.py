@@ -284,6 +284,8 @@ def test_find_charset():
 
 
 class TestResourcesMisc(TestCase):
+    real_modname = 'nose.importer'
+
     def testJSSymbol(self):
         """
         should set the src attribute
@@ -295,7 +297,7 @@ class TestResourcesMisc(TestCase):
         enc = twc.encoder
         enc.encode("")
         res = enc.default(twr.JSSymbol("X"))
-        self.assert_(res.startswith("*#*"))
+        self.assert_(res.startswith("TW2Encoder_unescape_"))
 
         try:
             res = enc.default(None)
@@ -315,17 +317,21 @@ class TestResourcesMisc(TestCase):
         l = twr.Link(link="http://google.com")
         self.assert_(hash(l.req()))  # meh
 
+    def testAutoModname(self):
+        l = twr.Link(filename="somefile")
+        eq_(l.modname, self.real_modname)
+
     def testAutoModnameReqPrep(self):
         l = twr.Link(filename="somefile")
         l = l.req()
         l.prepare()
-        eq_(l.modname, "test_resources")
+        eq_(l.modname, self.real_modname)
 
     def testAutoModnameInject(self):
         l = twr.Link(filename="somefile")
         l.inject()
         local = tw2.core.core.request_local()
-        eq_(local['resources'][0].modname, "test_resources")
+        eq_(local['resources'][0].modname, self.real_modname)
 
     def testDirLink(self):
         dl = twr.DirLink(modname="tw2.core", filename="somefile")
