@@ -176,7 +176,7 @@ For instance, say that you want to use your own patched version of jquery and
 you want all tw2 packages that require jquery to use your version, and not the
 one already packaged up in ``tw2.jquery``.  The following code will alter
 ``jquery_js`` in not just the local scope, but also in all other modules that
-have use it (including ``tw2.jqplugins.ui``)::
+use it (including ``tw2.jqplugins.ui``)::
 
     import tw2.jquery
     tw2.jquery.jquery_js.link = "/path/to/my/patched/jquery.js"
