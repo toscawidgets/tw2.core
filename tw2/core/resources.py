@@ -120,7 +120,8 @@ class Link(Resource):
         default=False,
     )
 
-    def guess_modname(self):
+    @classmethod
+    def guess_modname(cls):
         """ Try to guess my modname.
 
         If I wasn't supplied any modname, take a guess by stepping back up the
@@ -138,6 +139,10 @@ class Link(Resource):
 
     @classmethod
     def post_define(cls):
+
+        if not cls.modname:
+            cls.modname = cls.guess_modname()
+
         if not cls.no_inject:
             if getattr(cls, 'filename', None) and \
                type(cls.filename) != property:
@@ -147,9 +152,6 @@ class Link(Resource):
                 )
 
     def prepare(self):
-        if not self.modname:
-            self.modname = self.guess_modname()
-
         rl = core.request_local()
         if not self.no_inject:
             if not hasattr(self, 'link'):
