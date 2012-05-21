@@ -207,7 +207,7 @@ class WidgetTest(object):
         self.request(1, mw)
         try:
             r = self.widget(_no_autoid=True, **attrs).display(**params)
-        except ValueError as e:
+        except ValueError, e:
             if str(e).startswith("Could not find engine name"):
                 raise SkipTest("No template for engine %r" % engine)
             else:

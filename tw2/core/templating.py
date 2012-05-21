@@ -90,8 +90,15 @@ def get_source(engine_name, template, inline=False):
     else:
         filename = _get_dotted_filename(engine_name, template)
 
-    with open(filename, 'r') as f:
-        return f.read()
+    # TODO -- use a context manager here once we drop support for py2.5.
+    f = open(filename, 'r')
+
+    try:
+        source = f.read()
+    finally:
+        f.close()
+
+    return source
 
 
 @memoize

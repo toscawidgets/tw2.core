@@ -9,8 +9,20 @@ from nose.tools import raises, eq_
 engines = ['genshi', 'mako', 'jinja', 'kajiki', 'chameleon']
 
 
+# Python 2.5 support shim.  TODO -- remove this in the future.
+if not hasattr(itertools, 'product'):
+    def product(*args):
+        if not args:
+            return iter(((),))  # yield tuple()
+        return (items + (item,)
+                for items in product(*args[:-1]) for item in args[-1])
+
+    itertools.product = product
+
+
 class TestWD(twc.Widget):
     test = twc.Param(default='bob')
+
 
 class TestTemplate(object):
     def setUp(self):
