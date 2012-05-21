@@ -6,7 +6,10 @@ import datetime
 import formencode
 from nose.tools import eq_, raises
 from webob.multidict import MultiDict
-from unittest2 import TestCase
+from unittest import TestCase
+import sys
+
+HAS_SKIP = sys.version_info[0] == 2 and sys.version_info[1] == 7
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -117,7 +120,10 @@ class TestValidation(TestCase):
         " Test that compound widgets validate with formencode. """
 
         if not formencode:
-            self.skipTest()
+            if HAS_SKIP:
+                self.skipTest()
+            else:
+                return  # Just pretend like we passed.
 
         class MatchyWidget(twc.CompoundWidget):
             validator = formencode.validators.FieldsMatch('one', 'two')
@@ -126,20 +132,23 @@ class TestValidation(TestCase):
 
         try:
             MatchyWidget.validate({'one': 'foo', 'two': 'foo'})
-        except ValidationError as ve:
+        except ValidationError, ve:
             assert False, "Widget should have validated correctly."
 
         try:
             MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
             assert False, "Widget should not have validated."
-        except ValidationError as ve:
+        except ValidationError, ve:
             pass
 
     def test_compound_validation_error_msgs(self):
         " Test that compound widgets error_msgs show up in the right place. "
 
         if not formencode:
-            self.skipTest()
+            if HAS_SKIP:
+                self.skipTest()
+            else:
+                return  # Just pretend like we passed
 
         class MatchyWidget(twc.CompoundWidget):
             validator = formencode.validators.FieldsMatch('one', 'two')
@@ -150,7 +159,7 @@ class TestValidation(TestCase):
         try:
             MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
             assert False, "Widget should not have validated."
-        except ValidationError as ve:
+        except ValidationError, ve:
             assert 'do not match' in ve.widget.children[0].error_msg
             assert 'do not match' not in ve.widget.error_msg
             assert 'childerror' not in ve.widget.error_msg
@@ -158,7 +167,7 @@ class TestValidation(TestCase):
         try:
             MatchyWidget.validate({'one': 'foo', 'two': 'foo', 'three':''})
             assert False, "Widget should not have validated."
-        except ValidationError as ve:
+        except ValidationError, ve:
             assert 'Enter a value' in ve.widget.children[2].error_msg
             assert 'Enter a value' not in ve.widget.error_msg
             assert 'childerror' not in ve.widget.error_msg

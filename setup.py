@@ -1,6 +1,7 @@
 """Setuptools setup file"""
 
-import sys, os
+import sys
+import os
 import logging
 
 from setuptools import setup
@@ -8,9 +9,11 @@ from setuptools import setup
 # Ridiculous as it may seem, we need to import multiprocessing and logging here
 # in order to get tests to pass smoothly on python 2.7.
 try:
-    import multiprocessing, logging
+    import multiprocessing
+    import logging
 except:
     pass
+
 
 def get_description(fname='README.rst'):
     # Adapted from PEAK-Rules' setup.py
@@ -34,21 +37,25 @@ _extra_jinja = ["jinja2"]
 _extra_kajiki = ["kajiki"]
 _extra_chameleon = ["chameleon"]
 
+requires = [
+    'WebOb>=0.9.7',
+    'simplejson >= 2.0',
+    'PasteDeploy',
+    'speaklater',
+    'decorator',
+    'webhelpers',
+]
+
+if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
+    requires.append('WebOb<=1.1.1')
+
 setup(
     name='tw2.core',
-    version='2.0.5',
+    version='2.0.6',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
-    install_requires=[
-        'WebOb>=0.9.7',
-        'simplejson >= 2.0',
-        'PasteDeploy',
-        'speaklater',
-        'decorator',
-        'webhelpers',
-        ],
+    install_requires=requires,
     tests_require = [
-        'unittest2',
         'nose',
         'coverage',
         'BeautifulSoup',
