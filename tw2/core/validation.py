@@ -190,7 +190,7 @@ class Validator(object):
             setattr(self, k, kw[k])
 
     def to_python(self, value):
-        if self.required and (value is None or not value):
+        if self.required and value is None:
             raise ValidationError('required', self)
         if isinstance(value, basestring) and self.strip:
             value = value.strip()
