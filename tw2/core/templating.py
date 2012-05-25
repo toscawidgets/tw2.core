@@ -64,6 +64,7 @@ def get_engine_name(template_name, mw=None):
 
 @memoize
 def _get_dotted_filename(engine_name, template):
+    template = _strip_engine_name(template)
     location, filename = template.rsplit('.', 1)
     module = __import__(location, globals(), locals(), ['*'])
     parent_dir = SEP.join(module.__file__.split(SEP)[:-1])
@@ -75,18 +76,21 @@ def _get_dotted_filename(engine_name, template):
 
     raise IOError("Couldn't find source for %r" % template)
 
+def _strip_engine_name(template):
+    """ Strip off the leading engine name from the template if it exists. """
+    if any(map(template.lstrip().startswith, rendering_extension_lookup)):
+        return template.split(':', 1)[1]
+
+    return template
+
 
 @memoize
 def get_source(engine_name, template, inline=False):
     if inline:
         return template
 
-    # Strip off the leading engine name from the template if it exists
-    if any(map(template.lstrip().startswith, rendering_extension_lookup)):
-        template = template.split(':', 1)[1]
-
     if SEP in template:
-        filename = template
+        filename = _strip_engine_name(template)
     else:
         filename = _get_dotted_filename(engine_name, template)
 
@@ -109,12 +113,28 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
 
     if engine_name == 'mako':
         import mako.template
-        tmpl = mako.template.Template(text=src, filename=filename)
+        args = dict(
+            text=src,
+            filename=filename,
+        )
+
+        if filename:
+            from mako.lookup import TemplateLookup
+
+            if SEP not in filename:
+                filename = _get_dotted_filename(engine_name, filename)
+
+            directory = os.path.sep.join(filename.split(os.path.sep)[:-1])
+            args['lookup'] = TemplateLookup(directories=[directory])
+
+        tmpl = mako.template.Template(**args)
         return lambda kwargs: literal(tmpl.render(**kwargs))
     elif engine_name in ('genshi', 'genshi_abs'):
         import genshi.template
         tmpl = genshi.template.MarkupTemplate(src)
-        return lambda kwargs: literal(tmpl.generate(**kwargs))
+        return lambda kwargs: literal(
+            ''.join(tmpl.generate(**kwargs).serialize('xhtml'))
+        )
     elif engine_name == 'jinja':
         import jinja2
         tmpl = jinja2.Template(src)
