@@ -3,8 +3,6 @@ tw2.core contains the base Widgets from which all others are derived.
 """
 from core import (WidgetError)
 
-from template import (EngineError)
-
 from params import (Param, ChildParam, Variable, ChildVariable, Required,
     Deferred, ParameterError, Auto)
 

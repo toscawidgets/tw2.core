@@ -93,3 +93,30 @@ class MultipleReplacer(object):
 
 def abort(req, status):
     return webob.Response(request=req, status=status, content_type="text/html")
+
+
+_memoization_flush_callbacks = []
+
+
+class memoize(object):
+    def __init__(self, f):
+        global _memoization_flush_callbacks
+        self.f = f
+        self.mem = {}
+        _memoization_flush_callbacks.append(self._flush)
+
+    def _flush(self):
+        self.mem = {}
+
+    def __call__(self, *args, **kwargs):
+        if (args, str(kwargs)) in self.mem:
+            return self.mem[args, str(kwargs)]
+        else:
+            tmp = self.f(*args, **kwargs)
+            self.mem[args, str(kwargs)] = tmp
+            return tmp
+
+
+def flush_memoization():
+    for cb in _memoization_flush_callbacks:
+        cb()

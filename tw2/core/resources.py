@@ -228,6 +228,11 @@ class JSSource(Resource):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
 
+    def prepare(self):
+        super(JSSource, self).prepare()
+        if not self.src:
+            raise ValueError("%r must be provided a 'src' attr" % self)
+
 
 class CSSSource(Resource):
     """
@@ -239,6 +244,11 @@ class CSSSource(Resource):
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
+
+    def prepare(self):
+        super(CSSSource, self).prepare()
+        if not self.src:
+            raise ValueError("%r must be provided a 'src' attr" % self)
 
 
 class _JSFuncCall(JSSource):
