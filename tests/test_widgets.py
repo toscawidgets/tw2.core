@@ -90,8 +90,9 @@ class TestWidgets(object):
         try:
             MyTest.display()
             assert(False)
-        except TypeError:
-            # this will raise a type error because "Undefined" is found (not a string)
+        except NameError:
+            # this will raise a name error because "Undefined"
+            # is found (not a string)
             pass
 
 
