@@ -138,10 +138,11 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
     elif engine_name == 'jinja':
         import jinja2
         tmpl = jinja2.Template(src)
+        tmpl.filename = filename
         return lambda kwargs: literal(tmpl.render(**kwargs))
     elif engine_name == 'kajiki':
         import kajiki
-        tmpl = kajiki.XMLTemplate(src)
+        tmpl = kajiki.XMLTemplate(src, filename=filename)
         return lambda kwargs: literal(tmpl(kwargs).render())
     elif engine_name == 'chameleon':
         import chameleon
