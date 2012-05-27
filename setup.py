@@ -51,7 +51,7 @@ if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
 
 setup(
     name='tw2.core',
-    version='2.1.0a3',
+    version='2.1.0a4',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=requires,

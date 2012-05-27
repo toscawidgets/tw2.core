@@ -140,12 +140,12 @@ class Link(Resource):
     @classmethod
     def post_define(cls):
 
-        if not cls.modname:
-            cls.modname = cls.guess_modname()
-
         if not cls.no_inject:
             if getattr(cls, 'filename', None) and \
                type(cls.filename) != property:
+
+                if not cls.modname:
+                    cls.modname = cls.guess_modname()
 
                 md.register_resource(
                     cls.modname or '__anon__', cls.filename, cls.whole_dir
