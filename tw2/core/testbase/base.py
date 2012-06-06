@@ -160,6 +160,10 @@ class WidgetTest(object):
     `wrap`
         Wrap expected and the result in an element.  Useful if the template
         generates an xml snippet with more than one top level element.
+
+    `engines`
+        A list of engines to try tests with.  Defaults to all of them.
+
     """
 
     template_engine = 'string'
@@ -171,6 +175,8 @@ class WidgetTest(object):
     declarative = False
     validate_params = None
     wrap = False
+
+    engines = templating.rendering_extension_lookup.keys()
 
     def request(self, requestid, mw=None):
         if mw is None:
@@ -194,6 +200,7 @@ class WidgetTest(object):
         )
         if self.declarative:
             self.widget = TW2WidgetBuilder(self.widget, **self.attrs)
+
         return self.request(1)
 
     def _get_all_possible_engines(self):
@@ -201,6 +208,8 @@ class WidgetTest(object):
             yield engine
 
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
+        if self.engines and engine not in self.engines:
+            raise SkipTest("%r not in engines %r" % (engine, self.engines))
         _request_id = None
         templating.engine_name_cache = {}
         mw = tmw.make_middleware(None, preferred_rendering_engines=[engine])

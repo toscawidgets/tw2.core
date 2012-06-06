@@ -4,6 +4,7 @@ import itertools
 import os
 import webob as wo
 from nose.tools import raises, eq_
+from strainer.operators import assert_eq_xhtml
 
 # TBD: only test engines that are installed
 engines = ['genshi', 'mako', 'jinja', 'kajiki', 'chameleon']
@@ -139,6 +140,25 @@ class TestTemplate(object):
                 children=[TestWD(id='y', template=inner)]
             )
             eq_(test.display(), '<p>TEST <p>TEST bob</p></p>')
+
+    def test_widget_relative_inheritance(self):
+        twc.core.request_local()['middleware'] = twc.make_middleware(None)
+
+        # These aren't yet supported in the tests yet.
+        ignored_engines = ['jinja', 'kajiki', 'chameleon']
+
+        for engine in engines:
+            if engine in ignored_engines:
+                continue
+            template = "%s:tw2.core.test_templates.child_%s" % (engine, engine)
+            test = twc.Widget(id='x', template=template)
+            expected = """
+            <html>
+                <head><title>Parent</title></head>
+                <body>Child</body>
+            </html>
+            """
+            assert_eq_xhtml(test.display(), expected)
 
     def test_genshi_abs(self):
         test_dir = os.path.sep.join(__file__.split(os.path.sep)[:-1])
