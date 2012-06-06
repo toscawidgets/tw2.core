@@ -111,6 +111,14 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
 
     # See the discussion here re: `displays_on` -- http://bit.ly/JRqbRw
 
+    directory = None
+    if filename:
+
+        if SEP not in filename:
+            filename = _get_dotted_filename(engine_name, filename)
+
+        directory = os.path.sep.join(filename.split(os.path.sep)[:-1])
+
     if engine_name == 'mako':
         import mako.template
         args = dict(
@@ -120,30 +128,39 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
 
         if filename:
             from mako.lookup import TemplateLookup
-
-            if SEP not in filename:
-                filename = _get_dotted_filename(engine_name, filename)
-
-            directory = os.path.sep.join(filename.split(os.path.sep)[:-1])
-            args['lookup'] = TemplateLookup(directories=[directory])
+            args['lookup'] = TemplateLookup(
+                directories=[directory, SEP])
 
         tmpl = mako.template.Template(**args)
         return lambda kwargs: literal(tmpl.render(**kwargs))
+
     elif engine_name in ('genshi', 'genshi_abs'):
         import genshi.template
-        tmpl = genshi.template.MarkupTemplate(src)
+        args = dict(
+            source=src,
+        )
+
+        if filename:
+            args['loader'] = genshi.template.TemplateLoader([
+                genshi.template.loader.directory(directory),
+            ])
+
+        tmpl = genshi.template.MarkupTemplate(**args)
         return lambda kwargs: literal(
             ''.join(tmpl.generate(**kwargs).serialize('xhtml'))
         )
+
     elif engine_name == 'jinja':
         import jinja2
         tmpl = jinja2.Template(src)
         tmpl.filename = filename
         return lambda kwargs: literal(tmpl.render(**kwargs))
+
     elif engine_name == 'kajiki':
         import kajiki
         tmpl = kajiki.XMLTemplate(src, filename=filename)
         return lambda kwargs: literal(tmpl(kwargs).render())
+
     elif engine_name == 'chameleon':
         import chameleon
         tmpl = chameleon.PageTemplate(src, filename=filename)
