@@ -423,6 +423,10 @@ class TestDateValidator(tb.ValidatorTest):
     to_python_params =   ['01/01/2009', 'asdf']
     to_python_expected = [datetime.date(2009, 1, 1), ValidationError]
 
+    attrs = [{'required': False}, {'required': True}]
+    params = ['', '']
+    expected = [None, ValidationError]
+
     from_python_attrs = [{}, {}]
     from_python_params = [datetime.date(2009, 1, 1)]
     from_python_expected = ['01/01/2009']
@@ -442,6 +446,10 @@ class TestDatetimeValidator(tb.ValidatorTest):
     to_python_attrs =    [{}, {}]
     to_python_params =   ['01/01/2009 01:00', 'asdf']
     to_python_expected = [datetime.datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M'), ValidationError]
+
+    attrs = [{'required': False}, {'required': True}]
+    params = ['', '']
+    expected = [None, ValidationError]
 
     from_python_attrs = [{}, {}]
     from_python_params = [datetime.datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M')]
