@@ -420,7 +420,7 @@ class DateValidator(RangeValidator):
         except ValueError:
             raise ValidationError('baddate', self)
 
-    def validate_python(self, value, state):
+    def validate_python(self, value, state=None):
         super(DateValidator, self).validate_python(value, state)
         if self.required and not value:
             raise ValidationError('required', self)
