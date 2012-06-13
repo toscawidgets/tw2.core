@@ -412,11 +412,18 @@ class DateValidator(RangeValidator):
 
     def to_python(self, value):
         value = super(DateValidator, self).to_python(value)
+        if not value:
+            return None
         try:
             date = time.strptime(value, self.format)
             return datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
         except ValueError:
             raise ValidationError('baddate', self)
+
+    def validate_python(self, value, state):
+        super(DateValidator, self).validate_python(value, state)
+        if self.required and not value:
+            raise ValidationError('required', self)
 
     def from_python(self, value):
         return value and value.strftime(self.format) or ''
@@ -434,8 +441,8 @@ class DateTimeValidator(DateValidator):
     format = '%d/%m/%Y %H:%M'
 
     def to_python(self, value):
-        if value is None:
-            return value
+        if not value:
+            return None
         try:
             return datetime.datetime.strptime(value, self.format)
         except ValueError:
