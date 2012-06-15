@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import tw2.core as twc
 import testapi
 import itertools
