@@ -371,7 +371,7 @@ class TestWidgetMisc(TestCase):
             err_msg = "NO"
 
             class MockValidator(vd.Validator):
-                def from_python(self, value):
+                def from_python(self, value, state=None):
                     raise vd.Invalid(err_msg)
 
             class T(wd.Widget):
@@ -546,7 +546,7 @@ class TestRepeatingWidget(TestCase):
 
     def testValidator(self):
         class V(vd.Validator):
-            def to_python(self, data):
+            def to_python(self, data, state=None):
                 self._called = True
         class T(wd.RepeatingWidget):
             child = wd.Widget()
@@ -591,7 +591,7 @@ class TestDisplayOnlyWidget(TestCase):
         err = vd.ValidationError("Failed")
 
         class V(vd.Validator):
-            def to_python(self, value):
+            def to_python(self, value, state=None):
                 raise err
 
         class C(wd.Widget):

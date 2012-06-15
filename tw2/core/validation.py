@@ -73,9 +73,9 @@ class ValidationError(BaseValidationError):
         return self.msg
 
 
-def safe_validate(validator, value):
+def safe_validate(validator, value, state=None):
     try:
-        value = validator.to_python(value)
+        value = validator.to_python(value, state=None)
         validator.validate_python(value)
         return value
     except ValidationError:
@@ -189,7 +189,7 @@ class Validator(object):
         for k in kw:
             setattr(self, k, kw[k])
 
-    def to_python(self, value):
+    def to_python(self, value, state=None):
         if self.required and value is None:
             raise ValidationError('required', self)
         if isinstance(value, basestring) and self.strip:
@@ -200,7 +200,7 @@ class Validator(object):
         if self.required and not value:
             raise ValidationError('required', self)
 
-    def from_python(self, value):
+    def from_python(self, value, state=None):
         return value
 
     def __repr__(self):
@@ -220,7 +220,7 @@ class BlankValidator(Validator):
     Always returns EmptyField. This is the default for hidden fields,
     so their values are not included in validated data.
     """
-    def to_python(self, value):
+    def to_python(self, value, state=None):
         return EmptyField
 
 
@@ -311,8 +311,8 @@ class IntValidator(RangeValidator):
         'notint': _('Must be an integer'),
     }
 
-    def to_python(self, value):
-        value = super(IntValidator, self).to_python(value)
+    def to_python(self, value, state=None):
+        value = super(IntValidator, self).to_python(value, state)
         try:
             if value is None or str(value) == '':
                 return None
@@ -330,7 +330,7 @@ class IntValidator(RangeValidator):
             if self.max and value > self.max:
                 raise ValidationError('toobig', self)
 
-    def from_python(self, value):
+    def from_python(self, value, state=None):
         if value is None:
             return None
         else:
@@ -346,8 +346,8 @@ class BoolValidator(RangeValidator):
         'required': ('bool_required', _('You must select this'))
     }
 
-    def to_python(self, value):
-        value = super(BoolValidator, self).to_python(value)
+    def to_python(self, value, state=None):
+        value = super(BoolValidator, self).to_python(value, state)
         return str(value).lower() in ('on', 'yes', 'true', '1')
 
 
@@ -410,8 +410,8 @@ class DateValidator(RangeValidator):
     def max_str(self):
         return self.max.strftime(self.format)
 
-    def to_python(self, value):
-        value = super(DateValidator, self).to_python(value)
+    def to_python(self, value, state=None):
+        value = super(DateValidator, self).to_python(value, state)
         if not value:
             return None
         try:
@@ -425,7 +425,7 @@ class DateValidator(RangeValidator):
         if self.required and not value:
             raise ValidationError('required', self)
 
-    def from_python(self, value):
+    def from_python(self, value, state=None):
         return value and value.strftime(self.format) or ''
 
 
@@ -440,7 +440,7 @@ class DateTimeValidator(DateValidator):
     }
     format = '%d/%m/%Y %H:%M'
 
-    def to_python(self, value):
+    def to_python(self, value, state=None):
         if not value:
             return None
         try:
