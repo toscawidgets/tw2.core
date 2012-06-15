@@ -13,9 +13,10 @@ engine_name_cache = {}
 _default_rendering_extension_lookup = {
     'mako': ['mak', 'mako'],
     'genshi': ['genshi', 'html'],
-    'genshi_abs': ['genshi', 'html'], # just for backwards compatibility with tw2 2.0.0
-    'jinja':['jinja', 'html'],
-    'kajiki':['kajiki', 'html'],
+    # just for backwards compatibility with tw2 2.0.0
+    'genshi_abs': ['genshi', 'html'],
+    'jinja': ['jinja', 'html'],
+    'kajiki': ['kajiki', 'html'],
     'chameleon': ['pt']
 }
 
@@ -27,6 +28,7 @@ def get_rendering_extensions_lookup(mw):
         if mw is None:
             return _default_rendering_extension_lookup
     return mw.config.rendering_extension_lookup
+
 
 @memoize
 def get_engine_name(template_name, mw=None):
@@ -84,6 +86,7 @@ def _get_dotted_filename(engine_name, template, mw=None):
             return abs_filename
 
     raise IOError("Couldn't find source for %r" % template)
+
 
 def _strip_engine_name(template, mw=None):
     """ Strip off the leading engine name from the template if it exists. """
