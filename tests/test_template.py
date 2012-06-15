@@ -3,6 +3,7 @@ import testapi
 import itertools
 import os
 import webob as wo
+import contextlib
 from nose.tools import raises, eq_
 from strainer.operators import assert_eq_xhtml
 
@@ -19,6 +20,14 @@ if not hasattr(itertools, 'product'):
                 for items in product(*args[:-1]) for item in args[-1])
 
     itertools.product = product
+
+
+@contextlib.contextmanager
+def directory(location):
+    old_location = os.getcwd()
+    os.chdir(location)
+    yield
+    os.chdir(old_location)
 
 
 class TestWD(twc.Widget):
@@ -166,8 +175,14 @@ class TestTemplate(object):
         twc.Widget(template='genshi_abs:%s' % fname).display()
 
     def test_genshi_relative_filename(self):
-        """ Issue #30 -- http://bit.ly/LT4rBP """
+        """ Issue #30 take 1 -- http://bit.ly/LT4rBP """
         twc.Widget(template='genshi:./tests/test.html').display()
+
+    def test_genshi_relative_filename_cwd(self):
+        """ Issue #30 take 2 -- http://bit.ly/LT4rBP """
+
+        with directory('./tests'):
+            twc.Widget(template='genshi:./test.html').display()
 
     def test_rendering_extension_propagation(self):
         mw = twc.make_middleware(None, preferred_rendering_engines=['genshi', 'jinja'],
