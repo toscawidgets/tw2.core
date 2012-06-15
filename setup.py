@@ -43,7 +43,7 @@ requires = [
     'PasteDeploy',
     'speaklater',
     'decorator',
-    'webhelpers',
+    'markupsafe',
 ]
 
 if sys.version_info[0] == 2 and sys.version_info[1] <= 5:

@@ -3,7 +3,7 @@ import core
 
 from util import memoize
 
-from webhelpers.html import literal
+from markupsafe import Markup
 
 # Just shorthand
 SEP = os.path.sep
@@ -145,7 +145,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
                 directories=[directory, SEP])
 
         tmpl = mako.template.Template(**args)
-        return lambda kwargs: literal(tmpl.render(**kwargs))
+        return lambda kwargs: Markup(tmpl.render(**kwargs))
 
     elif engine_name in ('genshi', 'genshi_abs'):
         import genshi.template
@@ -159,7 +159,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
             ])
 
         tmpl = genshi.template.MarkupTemplate(**args)
-        return lambda kwargs: literal(
+        return lambda kwargs: Markup(
             ''.join(tmpl.generate(**kwargs).serialize('xhtml'))
         )
 
@@ -167,17 +167,17 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
         import jinja2
         tmpl = jinja2.Template(src)
         tmpl.filename = filename
-        return lambda kwargs: literal(tmpl.render(**kwargs))
+        return lambda kwargs: Markup(tmpl.render(**kwargs))
 
     elif engine_name == 'kajiki':
         import kajiki
         tmpl = kajiki.XMLTemplate(src, filename=filename)
-        return lambda kwargs: literal(tmpl(kwargs).render())
+        return lambda kwargs: Markup(tmpl(kwargs).render())
 
     elif engine_name == 'chameleon':
         import chameleon
         tmpl = chameleon.PageTemplate(src, filename=filename)
-        return lambda kwargs: literal(tmpl.render(**kwargs).strip())
+        return lambda kwargs: Markup(tmpl.render(**kwargs).strip())
 
     raise NotImplementedError("Unhandled engine")
 
