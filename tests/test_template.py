@@ -164,3 +164,18 @@ class TestTemplate(object):
         test_dir = os.path.sep.join(__file__.split(os.path.sep)[:-1])
         fname = os.path.sep.join([test_dir, 'test.html'])
         twc.Widget(template='genshi_abs:%s' % fname).display()
+
+    def test_rendering_extension_propagation(self):
+        mw = twc.make_middleware(None, preferred_rendering_engines=['genshi', 'jinja'],
+                                       rendering_extension_lookup={'genshi':['genshi', 'html'],
+                                                                   'jinja':['jinja']})
+        assert twc.templating.get_engine_name('tw2.core.test_templates.parent_genshi', mw) == 'genshi'
+
+        #flush caches to avoid wrong results due to cached results
+        twc.util.flush_memoization()
+        twc.templating.engine_name_cache = {}
+
+        mw = twc.make_middleware(None, preferred_rendering_engines=['genshi', 'jinja'],
+                                       rendering_extension_lookup={'genshi':['genshi'],
+                                                                   'jinja':['jinja', 'html']})
+        assert twc.templating.get_engine_name('tw2.core.test_templates.parent_genshi', mw) == 'jinja'

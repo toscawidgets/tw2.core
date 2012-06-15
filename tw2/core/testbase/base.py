@@ -175,8 +175,7 @@ class WidgetTest(object):
     declarative = False
     validate_params = None
     wrap = False
-
-    engines = templating.rendering_extension_lookup.keys()
+    engines = templating._default_rendering_extension_lookup.keys()
 
     def request(self, requestid, mw=None):
         if mw is None:
@@ -204,7 +203,7 @@ class WidgetTest(object):
         return self.request(1)
 
     def _get_all_possible_engines(self):
-        for engine in templating.rendering_extension_lookup:
+        for engine in templating._default_rendering_extension_lookup:
             yield engine
 
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
