@@ -10,15 +10,23 @@ SEP = os.path.sep
 
 engine_name_cache = {}
 
-rendering_extension_lookup = {
+_default_rendering_extension_lookup = {
     'mako': ['mak', 'mako'],
-    'genshi': ['html'],
-    'genshi_abs': ['html'],  # just for backwards compatibility with tw2 2.0.0
-    'jinja': ['jinja', 'html'],
-    'kajiki': ['kajiki', 'html'],
-    'chameleon': ['pt'],
+    'genshi': ['genshi', 'html'],
+    'genshi_abs': ['genshi', 'html'], # just for backwards compatibility with tw2 2.0.0
+    'jinja':['jinja', 'html'],
+    'kajiki':['kajiki', 'html'],
+    'chameleon': ['pt']
 }
 
+
+def get_rendering_extensions_lookup(mw):
+    if mw is None:
+        rl = core.request_local()
+        mw = rl.get('middleware')
+        if mw is None:
+            return _default_rendering_extension_lookup
+    return mw.config.rendering_extension_lookup
 
 @memoize
 def get_engine_name(template_name, mw=None):
@@ -43,7 +51,7 @@ def get_engine_name(template_name, mw=None):
     # find the first file in the preffered engines available for templating
     for engine_name in pref_rend_eng:
         try:
-            get_source(engine_name, template_name)
+            get_source(engine_name, template_name, mw=mw)
             engine_name_cache[template_name] = engine_name
             return engine_name
         except IOError:
@@ -53,7 +61,7 @@ def get_engine_name(template_name, mw=None):
         pref_rend_eng = ['mako', 'genshi', 'jinja', 'kajiki', 'chameleon']
         for engine_name in pref_rend_eng:
             try:
-                get_source(engine_name, template_name)
+                get_source(engine_name, template_name, mw=mw)
                 engine_name_cache[template_name] = engine_name
                 return engine_name
             except IOError:
@@ -63,8 +71,9 @@ def get_engine_name(template_name, mw=None):
 
 
 @memoize
-def _get_dotted_filename(engine_name, template):
-    template = _strip_engine_name(template)
+def _get_dotted_filename(engine_name, template, mw=None):
+    rendering_extension_lookup = get_rendering_extensions_lookup(mw)
+    template = _strip_engine_name(template, mw)
     location, filename = template.rsplit('.', 1)
     module = __import__(location, globals(), locals(), ['*'])
     parent_dir = SEP.join(module.__file__.split(SEP)[:-1])
@@ -76,8 +85,9 @@ def _get_dotted_filename(engine_name, template):
 
     raise IOError("Couldn't find source for %r" % template)
 
-def _strip_engine_name(template):
+def _strip_engine_name(template, mw=None):
     """ Strip off the leading engine name from the template if it exists. """
+    rendering_extension_lookup = get_rendering_extensions_lookup(mw)
     if any(map(template.lstrip().startswith, rendering_extension_lookup)):
         return template.split(':', 1)[1]
 
@@ -85,14 +95,14 @@ def _strip_engine_name(template):
 
 
 @memoize
-def get_source(engine_name, template, inline=False):
+def get_source(engine_name, template, inline=False, mw=None):
     if inline:
         return template
 
     if SEP in template:
-        filename = _strip_engine_name(template)
+        filename = _strip_engine_name(template, mw=mw)
     else:
-        filename = _get_dotted_filename(engine_name, template)
+        filename = _get_dotted_filename(engine_name, template, mw=mw)
 
     # TODO -- use a context manager here once we drop support for py2.5.
     f = open(filename, 'r')
@@ -182,7 +192,7 @@ def render(template_name, displays_on, kwargs, inline=False, mw=None):
         engine_name = inline
 
     # Load the template source
-    source = get_source(engine_name, template_name, inline)
+    source = get_source(engine_name, template_name, inline, mw)
 
     # Establish the render function
     callback = get_render_callable(

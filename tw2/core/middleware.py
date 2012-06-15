@@ -116,8 +116,10 @@ class Config(object):
     rendering_extension_lookup = {
         'mako': ['mak', 'mako'],
         'genshi': ['genshi', 'html'],
+        'genshi_abs': ['genshi', 'html'], # just for backwards compatibility with tw2 2.0.0
         'jinja':['jinja', 'html'],
         'kajiki':['kajiki', 'html'],
+        'chameleon': ['pt']
     }
     script_name = ''
 
