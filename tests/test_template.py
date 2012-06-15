@@ -165,6 +165,10 @@ class TestTemplate(object):
         fname = os.path.sep.join([test_dir, 'test.html'])
         twc.Widget(template='genshi_abs:%s' % fname).display()
 
+    def test_genshi_relative_filename(self):
+        """ Issue #30 -- http://bit.ly/LT4rBP """
+        twc.Widget(template='genshi:./tests/test.html').display()
+
     def test_rendering_extension_propagation(self):
         mw = twc.make_middleware(None, preferred_rendering_engines=['genshi', 'jinja'],
                                        rendering_extension_lookup={'genshi':['genshi', 'html'],
