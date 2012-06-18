@@ -6,7 +6,7 @@ from util import memoize
 from markupsafe import Markup
 
 # Just shorthand
-SEP = os.path.sep
+SEP, ALTSEP, EXTSEP = os.path.sep, os.path.altsep, os.path.extsep
 
 engine_name_cache = {}
 
@@ -32,8 +32,6 @@ def get_rendering_extensions_lookup(mw):
 
 @memoize
 def get_engine_name(template_name, mw=None):
-    global engine_name_cache
-
     if template_name in engine_name_cache:
         return engine_name_cache[template_name]
 
@@ -81,7 +79,7 @@ def _get_dotted_filename(engine_name, template, mw=None):
     parent_dir = SEP.join(module.__file__.split(SEP)[:-1])
 
     for extension in rendering_extension_lookup[engine_name]:
-        abs_filename = parent_dir + SEP + filename + '.' + extension
+        abs_filename = parent_dir + SEP + filename + EXTSEP + extension
         if os.path.exists(abs_filename):
             return abs_filename
 
@@ -102,7 +100,7 @@ def get_source(engine_name, template, inline=False, mw=None):
     if inline:
         return template
 
-    if SEP in template:
+    if SEP in template or (ALTSEP and ALTSEP in template):
         filename = _strip_engine_name(template, mw=mw)
     else:
         filename = _get_dotted_filename(engine_name, template, mw=mw)
@@ -127,22 +125,20 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
     directory = None
     if filename:
 
-        if SEP not in filename:
+        if SEP not in filename and (not ALTSEP or ALTSEP not in filename):
             filename = _get_dotted_filename(engine_name, filename)
 
-        directory = os.path.sep.join(filename.split(os.path.sep)[:-1])
+        directory = os.path.dirname(filename)
 
     if engine_name == 'mako':
         import mako.template
-        args = dict(
-            text=src,
-            filename=filename,
-        )
+        args = dict(text=src)
 
         if filename:
+            args['filename'] = os.path.relpath(filename, directory)
             from mako.lookup import TemplateLookup
             args['lookup'] = TemplateLookup(
-                directories=[directory, SEP])
+                directories=[directory])
 
         tmpl = mako.template.Template(**args)
         return lambda kwargs: Markup(tmpl.render(**kwargs))
