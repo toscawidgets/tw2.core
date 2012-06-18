@@ -135,7 +135,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
         args = dict(text=src)
 
         if filename:
-            args['filename'] = os.path.relpath(filename, directory)
+            args['filename'] = relpath(filename, directory)
             from mako.lookup import TemplateLookup
             args['lookup'] = TemplateLookup(
                 directories=[directory])
