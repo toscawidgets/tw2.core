@@ -1,7 +1,7 @@
 import os
 import core
 
-from util import memoize
+from util import memoize, relpath
 
 from markupsafe import Markup
 
