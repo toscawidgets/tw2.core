@@ -137,8 +137,6 @@ except ImportError:
             start = os.curdir
         if not path:
             raise ValueError("no path specified")
-
-        # This may not work on windows.  See http://bit.ly/LT4rBP
         start_list = op.abspath(start).split(op.sep)
         path_list = op.abspath(path).split(op.sep)
 
