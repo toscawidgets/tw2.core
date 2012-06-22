@@ -6,7 +6,7 @@ import os
 import webob as wo
 import contextlib
 from nose.tools import raises, eq_
-from strainer.operators import assert_eq_xhtml
+from sieve.operators import assert_eq_xml
 
 # TBD: only test engines that are installed
 engines = ['genshi', 'mako', 'jinja', 'kajiki', 'chameleon']
@@ -168,7 +168,7 @@ class TestTemplate(object):
                 <body>Child</body>
             </html>
             """
-            assert_eq_xhtml(test.display(), expected)
+            assert_eq_xml(test.display(), expected)
 
     def test_genshi_abs(self):
         test_dir = os.path.sep.join(__file__.split(os.path.sep)[:-1])
