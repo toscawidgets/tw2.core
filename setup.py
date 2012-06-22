@@ -61,7 +61,7 @@ setup(
         'BeautifulSoup',
         'FormEncode',
         'WebTest',
-        'strainer',
+        'sieve >= 0.1.5',
     ] + \
     _extra_genshi + \
     _extra_mako + \

@@ -1,7 +1,7 @@
 import webob as wo, webtest as wt, tw2.core as twc, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
 import tw2.core.core
 from nose.tools import eq_, raises
-from strainer.operators import eq_xhtml
+from sieve.operators import eq_xml
 from unittest import TestCase
 
 js = twc.JSLink(link='paj')
@@ -151,7 +151,7 @@ class TestResources(object):
         rl = testapi.request(1, mw)
         js.req(no_inject=True).prepare()
         out = twc.inject_resources(html)
-        assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello</body></html>')
+        assert eq_xml(out, '<html><head><title>a</title></head><body>hello</body></html>')
 
     def test_inject_head(self):
         rl = testapi.request(1, mw)
@@ -159,7 +159,7 @@ class TestResources(object):
         csssrc.inject()
         out = twc.inject_resources(html)
         print out
-        assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script>\
+        assert eq_xml(out, '<html><head><script type="text/javascript" src="paj"></script>\
             <style type="text/css">.bob { font-weight: bold; }</style>\
             <title>a</title></head><body>hello</body></html>')
 
@@ -167,13 +167,13 @@ class TestResources(object):
         rl = testapi.request(1, mw)
         jssrc.inject()
         out = twc.inject_resources(html)
-        assert eq_xhtml(out, '<html><head><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
+        assert eq_xml(out, '<html><head><title>a</title></head><body>hello<script type="text/javascript">bob</script></body></html>')
 
     def test_inject_css(self):
         rl = testapi.request(1, mw)
         csssrc.inject()
         out = twc.inject_resources(html)
-        assert eq_xhtml(out, '<html><head><style type="text/css">.bob { font-weight: bold; }</style>\
+        assert eq_xml(out, '<html><head><style type="text/css">.bob { font-weight: bold; }</style>\
             <title>a</title></head><body>hello</body></html>')
 
     def test_inject_both(self):
@@ -182,7 +182,7 @@ class TestResources(object):
         jssrc.inject()
         csssrc.inject()
         out = twc.inject_resources(html)
-        assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script>\
+        assert eq_xml(out, '<html><head><script type="text/javascript" src="paj"></script>\
             <style type="text/css">.bob { font-weight: bold; }</style>\
             <title>a</title></head><body>hello<script type="text/javascript">bob</script>\
             </body></html>')
@@ -218,7 +218,7 @@ class TestResources(object):
 
     def test_mw_inject(self):
         testapi.request(1, mw)
-        assert eq_xhtml(tst_mw.get('/').body, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
+        assert eq_xml(tst_mw.get('/').body, '<html><head><script type="text/javascript" src="paj"></script><title>a</title></head><body>hello</body></html>')
 
     def test_mw_inject_html_only(self):
         testapi.request(1, mw)
@@ -242,7 +242,7 @@ class TestJSLink(tb.WidgetTest):
 class TestCssLink(tb.WidgetTest):
     widget = twr.CSSLink
     attrs = {'link':'something'}
-    expected = '<link rel="stylesheet" type="text/css" href="something" media="all">'
+    expected = '<link rel="stylesheet" type="text/css" href="something" media="all"/>'
 
 
 class TestJsSource(tb.WidgetTest):

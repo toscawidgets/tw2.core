@@ -17,15 +17,9 @@ from xhtmlify import (
     ValidationError,
 )
 
-from strainer.operators import (
-    remove_whitespace_nodes,
-    remove_namespace,
-    eq_xhtml,
-    in_xhtml,
-    assert_in_xhtml,
-    assert_eq_xhtml,
-    normalize_to_xhtml,
-    replace_escape_chars,
+from sieve.operators import (
+    assert_eq_xml,
+    assert_in_xml,
 )
 
 import xml.etree.ElementTree as etree
@@ -51,37 +45,6 @@ def replace_boolean_attrs(needle):
         if eyelet in needle:
             needle = needle.replace(eyelet, '%s="%s" ' % (attr, attr))
     return needle
-
-
-def fix_xml(needle):
-    needle = replace_escape_chars(needle)
-    # first, we need to make sure the needle is valid html
-    """
-    try:
-        validate_html(needle)
-    except HTMLParser.HTMLParseError:
-        print "error with: %s"%needle
-        raise
-    """
-    # then we close all the open-ended tags to make sure it will compare
-    # properly
-    #needle = bs(needle).prettify()
-    needle = xhtmlify(needle)
-    try:
-        needle_node = etree.fromstring(needle)
-    except ExpatError, e:
-        raise ExpatError('Could not parse %s into xml. %s' % (
-            needle, e.args[0]
-        ))
-    needle_node = remove_whitespace_nodes(needle_node)
-    remove_namespace(needle_node)
-    needle_s = etree.tostring(needle_node)
-    return needle_s
-
-in_xml = in_xhtml
-eq_xml = eq_xhtml
-assert_in_xml = assert_in_xhtml
-assert_eq_xml = assert_eq_xhtml
 
 
 def request_local_tst():
@@ -222,7 +185,7 @@ class WidgetTest(object):
                 raise
 
         # reset the cache as not to affect other tests
-        assert_eq_xml(r, expected, self.wrap)
+        assert_eq_xml(r, expected, wrapped=self.wrap)
 
     def test_display(self):
         if not self.widget:
@@ -433,15 +396,15 @@ class TestInPage(object):
 class TestInPageTest(TestInPage):
     def test_base(self):
         res = self.app.get('/')
-        assert_in_xhtml(
+        assert_in_xml(
             '<script type="text/javascript" src="paj"></script>',
             res.body
         )
-        assert_in_xhtml(
+        assert_in_xml(
             '<link type="text/css" rel="stylesheet" media="all" href="joe" />',
             res.body
         )
-        assert_in_xhtml(
+        assert_in_xml(
             '<p>TEST test</p>',
             res.body
         )
