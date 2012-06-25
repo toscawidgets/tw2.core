@@ -3,7 +3,6 @@ import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
 from nose.tools import eq_
 from webob import Request, Response
 from nose.tools import raises, eq_
-import formencode as fe
 from sieve.operators import eq_xml
 from unittest import TestCase
 
@@ -141,6 +140,11 @@ class TestWidget(tb.WidgetTest):
     validate_params = [[None, {'w':''}, None, vd.ValidationError],[None, {}, None, vd.ValidationError]]
 
     def test_fe_validator(self):
+        try:
+            import formencode as fe
+        except ImportError, e:
+            self.skipTest(str(e))
+
         class FEWidget(wd.Widget):
             validator = fe.validators.Int()
         FEWidget(id="s").validate({'s':'3'})

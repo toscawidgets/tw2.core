@@ -3,13 +3,17 @@ import tw2.core.testbase as tb
 from tw2.core.validation import *
 import re
 import datetime
-import formencode
 from nose.tools import eq_, raises
 from webob.multidict import MultiDict
 from unittest import TestCase
 import sys
 
-HAS_SKIP = sys.version_info[0] == 2 and sys.version_info[1] == 7
+try:
+    import formencode
+    # This is required to make tests pass on non english systems
+    formencode.api.set_stdtranslation(languages=['en'])
+except ImportError:
+    formencode = None
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -20,13 +24,6 @@ repeating_widget = twc.RepeatingWidget(id='a', child=
     twc.Widget(validator=twc.Validator(required=True))
 )
 
-compound_keyed_widget = twc.CompoundWidget(id='a', children=[
-    twc.Widget(id='b', key='x', validator=twc.Validator(required=True)),
-    twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()),
-])
-
-#This is required to make tests pass on non english systems
-formencode.api.set_stdtranslation(languages=['en'])
 
 class TestValidationError(tb.WidgetTest):
     def test_validator_msg(self):
@@ -71,7 +68,20 @@ class TestValidation(TestCase):
     def setUp(self):
         testapi.setup()
 
+
+    def formencode_skip(self):
+        if not formencode:
+            if sys.version_info[0] == 2 and sys.version_info[1] == 7:
+                self.skipTest("No formencode.")
+            else:
+                return True  # Just pretend like we passed.
+
+        return False
+
     def test_catch_errors(self):
+        if self.formencode_skip():
+            return
+
         try:
             twc.validation.catch_errors(lambda s, x: formencode.validators.Int.to_python(x))(None, 'x')
             assert(False)
@@ -119,11 +129,8 @@ class TestValidation(TestCase):
     def test_compound_validation_formencode(self):
         " Test that compound widgets validate with formencode. """
 
-        if not formencode:
-            if HAS_SKIP:
-                self.skipTest()
-            else:
-                return  # Just pretend like we passed.
+        if self.formencode_skip():
+            return
 
         class MatchyWidget(twc.CompoundWidget):
             validator = formencode.validators.FieldsMatch('one', 'two')
@@ -144,11 +151,8 @@ class TestValidation(TestCase):
     def test_compound_validation_error_msgs(self):
         " Test that compound widgets error_msgs show up in the right place. "
 
-        if not formencode:
-            if HAS_SKIP:
-                self.skipTest()
-            else:
-                return  # Just pretend like we passed
+        if self.formencode_skip():
+            return
 
         class MatchyWidget(twc.CompoundWidget):
             validator = formencode.validators.FieldsMatch('one', 'two')
@@ -238,8 +242,8 @@ class TestValidation(TestCase):
         except twc.ValidationError:
             pass
 
-        assert(test.value == 'x')
-        assert(test.error_msg == 'Must be an integer')
+        eq_(test.value, 'x')
+        eq_(test.error_msg, 'Must be an integer')
 
     def test_compound_pass(self):
         testapi.request(1)
@@ -273,6 +277,14 @@ class TestValidation(TestCase):
         pass # TBD
 
     def test_compound_keyed_children(self):
+        if self.formencode_skip():
+            return
+
+        compound_keyed_widget = twc.CompoundWidget(id='a', children=[
+            twc.Widget(id='b', key='x', validator=twc.Validator(required=True)),
+            twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()),
+        ])
+
         testapi.request(1)
         inp = {'a': {'x':'test', 'y':'test2'}}
         try:

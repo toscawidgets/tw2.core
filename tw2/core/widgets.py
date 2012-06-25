@@ -289,9 +289,15 @@ class Widget(pm.Parametered):
                isinstance(self.validator, formencode.Validator) and \
                self.value is None:
                 value = {}
+
+            if formencode:
+                INVALID_ERRORS = (vd.Invalid, formencode.api.Invalid)
+            else:
+                INVALID_ERRORS = vd.Invalid
+
             try:
                 value = self.validator.from_python(value)
-            except (vd.Invalid, formencode.api.Invalid), e:
+            except INVALID_ERRORS, e:
                 value = str(value)
                 self.error_msg = e.msg
             if formencode and value == {} and self.value is None:
