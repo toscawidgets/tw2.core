@@ -59,9 +59,8 @@ setup(
         'nose',
         'coverage',
         'BeautifulSoup',
-        'FormEncode',
-        'WebTest',
-        'sieve >= 0.1.5',
+        'WebTest',          # py3 - READY
+        'sieve >= 0.1.5',   # py3 - READY
     ] + \
     _extra_genshi + \
     _extra_mako + \

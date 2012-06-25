@@ -1,8 +1,8 @@
 import os
 import re
 import copy
+import unittest
 
-import formencode as fe
 import itertools as it
 import pkg_resources as pk
 
@@ -28,6 +28,13 @@ from xml.parsers.expat import ExpatError
 import tw2.core as twc
 import tw2.core.middleware as tmw
 import tw2.core.templating as templating
+
+try:
+    import formencode as fe
+    VALIDATION_ERRORS = (twc.ValidationError, fe.Invalid)
+except ImportError:
+    VALIDATION_ERRORS = (twc.ValidationError)
+
 
 rm = pk.ResourceManager()
 
@@ -79,7 +86,7 @@ def TW2WidgetBuilder(widget, **attrs):
     return MyTestWidget
 
 
-class WidgetTest(object):
+class WidgetTest(unittest.TestCase):
     """
     This class provides a basis for testing all widget classes.  It's setup
     will automatically create a request, and a widget of the type specified.
@@ -150,7 +157,7 @@ class WidgetTest(object):
         rl['middleware'] = mw
         return request_local_tst()
 
-    def setup(self):
+    def setUp(self):
         global _request_id, _request_local
         _request_local = {}
         _request_id = None
@@ -296,7 +303,7 @@ class ValidatorTest(object):
         rl['middleware'] = mw
         return request_local_tst()
 
-    def setup(self):
+    def setUp(self):
         global _request_id, _request_local
         _request_local = {}
         _request_id = None
@@ -309,7 +316,7 @@ class ValidatorTest(object):
                           method='validate_python'):
         vld = self.validator(**attrs)
         if isinstance(expected, type) and \
-           issubclass(expected, (twc.ValidationError, fe.Invalid)):
+           issubclass(expected, (VALIDATION_ERRORS)):
             try:
                 if method == 'validate_python':
                     params = vld.to_python(params)
@@ -363,7 +370,7 @@ class TestInPage(object):
 
     html = "<html><head><title>TITLE</title></head><body>%s</body></html>"
 
-    def setup(self):
+    def setUp(self):
         global _request_local
         _request_local = {}
         self.mw = twc.make_middleware(self)

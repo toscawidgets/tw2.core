@@ -34,7 +34,15 @@ if formencode:
             formencode.Invalid.__init__(self, msg, None, None)
 else:
     class BaseValidationError(core.WidgetError):
-        pass
+        def __init__(self, msg):
+            self.msg = msg
+            super(BaseValidationError, self).__init__(self, msg)
+
+        def __str__(self):
+            return self.msg
+
+        def __unicode__(self):
+            return unicode(str(self))
 
 
 class ValidationError(BaseValidationError):
