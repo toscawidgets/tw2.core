@@ -147,8 +147,9 @@ class Widget(pm.Parametered):
                 vw = None
 
             if vw:
-                # TODO -- **kw is ignored here.  Is that okay?
                 ins = vw
+                for key, value in kw.items():
+                    setattr(ins, key, value)
 
         if ins is None:
             # We weren't the validated widget (or there wasn't one), so
