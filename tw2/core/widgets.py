@@ -129,9 +129,34 @@ class Widget(pm.Parametered):
     def req(cls, **kw):
         """
         Generate an instance of the widget.
+
+        Return the validated widget for this request if one exists.
         """
-        ins = object.__new__(cls)
-        ins.__init__(**kw)
+
+        ins = None
+
+        # Create an instance.  First check for the validated widget.
+        vw = vw_class = core.request_local().get('validated_widget')
+        if vw:
+            # Pull out actual class instances to compare to see if this
+            # is really the widget that was actually validated
+            if not getattr(vw_class, '__bases__', None):
+                vw_class = vw.__class__
+
+            if vw_class is not cls:
+                vw = None
+
+            if vw:
+                ins = vw
+                for key, value in kw.items():
+                    setattr(ins, key, value)
+
+        if ins is None:
+            # We weren't the validated widget (or there wasn't one), so
+            # create a new instance
+            ins = object.__new__(cls)
+            ins.__init__(**kw)
+
         return ins
 
     def __new__(cls, id=None, **kw):
@@ -364,21 +389,7 @@ class Widget(pm.Parametered):
             kw['value'] = value
 
         if not self:
-            # Create a self (since we were called as a classmethod)
-            vw = vw_class = core.request_local().get('validated_widget')
-            if vw:
-                # Pull out actual class instances to compare to see if this
-                # is really the widget that was actually validated
-                if not getattr(vw_class, '__bases__', None):
-                    vw_class = vw.__class__
-                if vw_class is not cls:
-                    vw = None
-                if vw:
-                    self = vw
-            if self is None:
-                # We weren't the validated widget (or there wasn't one), so
-                # create a new instance
-                self = cls.req(**kw)
+            self = cls.req(**kw)
 
         if not self.parent:
             self.prepare()
