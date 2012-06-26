@@ -58,7 +58,6 @@ setup(
     tests_require = [
         'nose',
         'coverage',
-        'BeautifulSoup',
         'WebTest',          # py3 - READY
         'sieve >= 0.1.5',   # py3 - READY
     ] + \
