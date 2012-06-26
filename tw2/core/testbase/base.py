@@ -8,7 +8,6 @@ import pkg_resources as pk
 
 from difflib import unified_diff
 from cStringIO import StringIO
-from BeautifulSoup import BeautifulSoup as bs
 from nose.tools import eq_
 from nose import SkipTest
 
