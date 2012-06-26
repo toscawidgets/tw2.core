@@ -2,7 +2,8 @@ import types
 import warnings
 import webob as wo
 from pkg_resources import iter_entry_points, DistributionNotFound
-from paste.deploy.converters import asbool, asint
+
+from tw2.core.util import asbool, asint
 
 import core
 import resources
