@@ -12,14 +12,14 @@ import sys
 
 import logging
 from itertools import imap
-import simplejson.encoder
+import json.encoder
 
 __all__ = ["js_callback", "js_function", "js_symbol", "encode"]
 
 log = logging.getLogger(__name__)
 
 
-class TWEncoder(simplejson.encoder.JSONEncoder):
+class TWEncoder(json.encoder.JSONEncoder):
     """A JSON encoder that can encode Widgets, js_calls, js_symbols and
     js_callbacks.
 

@@ -39,7 +39,6 @@ _extra_chameleon = ["chameleon"]
 
 requires = [
     'WebOb>=0.9.7',         # py3 - READY
-    'simplejson >= 2.0',    # Unnecessary once we drop py 2.5 support.
     'PasteDeploy',          # oh god...
     'speaklater',           # py3 - READY
     'decorator',            # py3 - READY
