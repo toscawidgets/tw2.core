@@ -38,12 +38,12 @@ _extra_kajiki = ["kajiki"]
 _extra_chameleon = ["chameleon"]
 
 requires = [
-    'WebOb>=0.9.7',
-    'simplejson >= 2.0',
-    'PasteDeploy',
-    'speaklater',
-    'decorator',
-    'markupsafe',
+    'WebOb>=0.9.7',         # py3 - READY
+    'simplejson >= 2.0',    # Unnecessary once we drop py 2.5 support.
+    'PasteDeploy',          # oh god...
+    'speaklater',           # py3 - READY
+    'decorator',            # py3 - READY
+    'markupsafe',           # py3 - READY
 ]
 
 if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
@@ -56,8 +56,8 @@ setup(
     long_description = get_description(),
     install_requires=requires,
     tests_require = [
-        'nose',
-        'coverage',
+        'nose',             # py3 - READY
+        'coverage',         # py3 - READY
         'WebTest',          # py3 - READY
         'sieve >= 0.1.5',   # py3 - READY
     ] + \
