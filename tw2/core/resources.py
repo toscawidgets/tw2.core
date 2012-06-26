@@ -5,7 +5,6 @@ import os
 import webob as wo
 import pkg_resources as pr
 import mimetypes
-import simplejson
 import inspect
 import warnings
 
