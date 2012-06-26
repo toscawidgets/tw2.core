@@ -39,7 +39,6 @@ _extra_chameleon = ["chameleon"]
 
 requires = [
     'WebOb>=0.9.7',         # py3 - READY
-    'PasteDeploy',          # oh god...
     'speaklater',           # py3 - READY
     'decorator',            # py3 - READY
     'markupsafe',           # py3 - READY
