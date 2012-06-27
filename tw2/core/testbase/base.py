@@ -175,6 +175,9 @@ class WidgetTest(unittest.TestCase):
         for engine in templating._default_rendering_extension_lookup:
             yield engine
 
+    def skipTest(message):
+        raise SkipTest(message)
+
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
         if self.engines and engine not in self.engines:
             raise SkipTest("%r not in engines %r" % (engine, self.engines))
