@@ -70,6 +70,31 @@ class TestWidgets(object):
         ins.prepare()
         assert(ins.template == 'test')
 
+    def test_deferred_value_no_subclass(self):
+        test = twc.Widget(id='test',
+                          template="<p>${w.value}</p>",
+                          inline_engine_name="mako",
+                          value=twc.Deferred(lambda: 'test'))
+        assert(test.value != 'test')
+        ins = test.req()
+        ins.prepare()
+        assert(ins.value == 'test')
+        assert(test.display() == "<p>test</p>")
+
+    def test_deferred_value_subclass(self):
+        class TestWidget(twc.Widget):
+            id='test'
+            inline_engine_name = 'mako'
+            template = "<p>${w.value}</p>"
+            value=twc.Deferred(lambda: 'test')
+
+        test = TestWidget
+        assert(test.value != 'test')
+        ins = test.req()
+        ins.prepare()
+        assert(ins.value == 'test')
+        assert(test.display() == "<p>test</p>")
+
     def test_child_attr(self):
         class LayoutContainer(twc.CompoundWidget):
             label = twc.ChildParam(default='b')
