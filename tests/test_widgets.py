@@ -70,6 +70,29 @@ class TestWidgets(object):
         ins.prepare()
         assert(ins.template == 'test')
 
+    def test_deferred_value_no_subclass(self):
+        test = twc.Widget(id='test',
+                          template="<p>${w.value}</p>",
+                          inline_engine_name="mako",
+                          value=twc.Deferred(lambda: 'test'))
+        assert(test.value != 'test')
+        ins = test.req()
+        ins.prepare()
+        assert(ins.value == 'test')
+        assert(test.display() == "<p>test</p>")
+
+    def test_deferred_value_subclass(self):
+        class TestWidget(twc.Widget):
+            id='test'
+            inline_engine_name = 'mako'
+            template = "<p>${w.value}</p>"
+            value=twc.Param()
+
+        test = TestWidget
+
+        eq_(test.display(value="test"), "<p>test</p>")
+        eq_(test.display(value=twc.Deferred(lambda: 'test')), "<p>test</p>")
+
     def test_child_attr(self):
         class LayoutContainer(twc.CompoundWidget):
             label = twc.ChildParam(default='b')
@@ -182,6 +205,29 @@ class TestWidgetNoneBug(tb.WidgetTest):
     attrs = {'validator':twc.IntValidator}
     params = {'value':None}
     expected = '<p> </p>'
+
+
+def test_arguments_to_display_as_class_method():
+    """ As of Issue #41, this passes. """
+
+    class TestWidget(twc.Widget):
+        template = "<p>${w.value}</p>"
+        inline_engine_name = "mako"
+        value = twc.Param()
+
+    eq_(TestWidget.display(value="test"), "<p>test</p>")
+
+
+def test_arguments_to_display_as_instance_method():
+    """ As of Issue #41, this fails. """
+
+    class TestWidget(twc.Widget):
+        template = "<p>${w.value}</p>"
+        inline_engine_name = "mako"
+        value = twc.Param()
+
+    ins = TestWidget.req()
+    eq_(ins.display(value="test"), "<p>test</p>")
 
 
 class TestSubCompoundWidget(tb.WidgetTest):
@@ -371,7 +417,7 @@ class TestWidgetMisc(TestCase):
             err_msg = "NO"
 
             class MockValidator(vd.Validator):
-                def from_python(self, value):
+                def from_python(self, value, state=None):
                     raise vd.Invalid(err_msg)
 
             class T(wd.Widget):
@@ -546,7 +592,7 @@ class TestRepeatingWidget(TestCase):
 
     def testValidator(self):
         class V(vd.Validator):
-            def to_python(self, data):
+            def to_python(self, data, state=None):
                 self._called = True
         class T(wd.RepeatingWidget):
             child = wd.Widget()
@@ -591,7 +637,7 @@ class TestDisplayOnlyWidget(TestCase):
         err = vd.ValidationError("Failed")
 
         class V(vd.Validator):
-            def to_python(self, value):
+            def to_python(self, value, state=None):
                 raise err
 
         class C(wd.Widget):

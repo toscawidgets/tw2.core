@@ -120,3 +120,46 @@ class memoize(object):
 def flush_memoization():
     for cb in _memoization_flush_callbacks:
         cb()
+
+
+# relpath support for python-2.5
+# Taken from https://github.com/nipy/nipype/issues/62
+# Related to https://github.com/toscawidgets/tw2.core/issues/30
+try:
+    from os.path import relpath
+except ImportError:
+    import os
+    import os.path as op
+
+    def relpath(path, start=None):
+        """Return a relative version of a path"""
+        if start is None:
+            start = os.curdir
+        if not path:
+            raise ValueError("no path specified")
+        start_list = op.abspath(start).split(op.sep)
+        path_list = op.abspath(path).split(op.sep)
+
+        if start_list[0].lower() != path_list[0].lower():
+            unc_path, rest = op.splitunc(path)
+            unc_start, rest = op.splitunc(start)
+            if bool(unc_path) ^ bool(unc_start):
+                raise ValueError(
+                    "Cannot mix UNC and non-UNC paths (%s and%s)" %
+                    (path, start))
+            else:
+                raise ValueError(
+                    "path is on drive %s, start on drive %s"
+                    % (path_list[0], start_list[0]))
+
+        # Work out how much of the filepath is shared by start and path.
+        for i in range(min(len(start_list), len(path_list))):
+            if start_list[i].lower() != path_list[i].lower():
+                break
+        else:
+            i += 1
+
+        rel_list = [op.pardir] * (len(start_list) - i) + path_list[i:]
+        if not rel_list:
+            return os.curdir
+        return op.join(*rel_list)

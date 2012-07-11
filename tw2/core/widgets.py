@@ -129,9 +129,34 @@ class Widget(pm.Parametered):
     def req(cls, **kw):
         """
         Generate an instance of the widget.
+
+        Return the validated widget for this request if one exists.
         """
-        ins = object.__new__(cls)
-        ins.__init__(**kw)
+
+        ins = None
+
+        # Create an instance.  First check for the validated widget.
+        vw = vw_class = core.request_local().get('validated_widget')
+        if vw:
+            # Pull out actual class instances to compare to see if this
+            # is really the widget that was actually validated
+            if not getattr(vw_class, '__bases__', None):
+                vw_class = vw.__class__
+
+            if vw_class is not cls:
+                vw = None
+
+            if vw:
+                ins = vw
+                for key, value in kw.items():
+                    setattr(ins, key, value)
+
+        if ins is None:
+            # We weren't the validated widget (or there wasn't one), so
+            # create a new instance
+            ins = object.__new__(cls)
+            ins.__init__(**kw)
+
         return ins
 
     def __new__(cls, id=None, **kw):
@@ -280,6 +305,7 @@ class Widget(pm.Parametered):
             dfr = getattr(self, a)
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
+
         if self.validator and not hasattr(self, '_validated'):
             value = self.value
 
@@ -289,18 +315,23 @@ class Widget(pm.Parametered):
                isinstance(self.validator, formencode.Validator) and \
                self.value is None:
                 value = {}
+
             try:
                 value = self.validator.from_python(value)
             except (vd.Invalid, formencode.api.Invalid), e:
                 value = str(value)
                 self.error_msg = e.msg
+
             if formencode and value == {} and self.value is None:
                 value = None
+
             self.value = value
+
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.compound_id:
                 self.attrs['id'] = self.compound_id
+
             for a in self._attr:
                 view_name = self._params[a].view_name
                 if self.attrs.get(view_name):
@@ -357,22 +388,18 @@ class Widget(pm.Parametered):
         if value is not None and 'value' not in kw:
             kw['value'] = value
 
-        if not self:
-            # Create a self (since we were called as a classmethod)
-            vw = vw_class = core.request_local().get('validated_widget')
-            if vw:
-                # Pull out actual class instances to compare to see if this
-                # is really the widget that was actually validated
-                if not getattr(vw_class, '__bases__', None):
-                    vw_class = vw.__class__
-                if vw_class is not cls:
-                    vw = None
-                if vw:
-                    self = vw
-            if self is None:
-                # We weren't the validated widget (or there wasn't one), so
-                # create a new instance
-                self = cls.req(**kw)
+        # Support arguments to .display on either instance or class
+        # https://github.com/toscawidgets/tw2.core/issues/41
+        if self:
+            for key, value in kw.items():
+                setattr(self, key, value)
+        else:
+            self = cls.req(**kw)
+
+        # Register any deferred params that are handed to us late in the game
+        # (after post_define).  The .prepare method handles processing them
+        # later.
+        self._deferred += [k for k, v in kw.items() if isinstance(v, pm.Deferred)]
 
         if not self.parent:
             self.prepare()

@@ -103,7 +103,7 @@ class TestValidation(TestCase):
         """
         class NeverValid(Validator):
             msgs = {"never": "this is never valid"}
-            def to_python(self, value):
+            def to_python(self, value, state=None):
                 raise ValidationError("never", self)
 
         class FailWidget(twc.CompoundWidget):
@@ -199,7 +199,7 @@ class TestValidation(TestCase):
 
     def test_prepare_validate(self):
         class MyValidator(twc.Validator):
-            def from_python(self, value):
+            def from_python(self, value, state=None):
                 return value.upper()
         test = twc.Widget(id='a', template='b', validator=MyValidator()).req()
         testapi.request(1)
