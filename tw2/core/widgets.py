@@ -305,6 +305,7 @@ class Widget(pm.Parametered):
             dfr = getattr(self, a)
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
+
         if self.validator and not hasattr(self, '_validated'):
             value = self.value
 
@@ -314,18 +315,23 @@ class Widget(pm.Parametered):
                isinstance(self.validator, formencode.Validator) and \
                self.value is None:
                 value = {}
+
             try:
                 value = self.validator.from_python(value)
             except (vd.Invalid, formencode.api.Invalid), e:
                 value = str(value)
                 self.error_msg = e.msg
+
             if formencode and value == {} and self.value is None:
                 value = None
+
             self.value = value
+
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.compound_id:
                 self.attrs['id'] = self.compound_id
+
             for a in self._attr:
                 view_name = self._params[a].view_name
                 if self.attrs.get(view_name):
