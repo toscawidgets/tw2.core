@@ -86,14 +86,12 @@ class TestWidgets(object):
             id='test'
             inline_engine_name = 'mako'
             template = "<p>${w.value}</p>"
-            value=twc.Deferred(lambda: 'test')
+            value=twc.Param()
 
         test = TestWidget
-        assert(test.value != 'test')
-        ins = test.req()
-        ins.prepare()
-        assert(ins.value == 'test')
-        assert(test.display() == "<p>test</p>")
+
+        eq_(test.display(value="test"), "<p>test</p>")
+        eq_(test.display(value=twc.Deferred(lambda: 'test')), "<p>test</p>")
 
     def test_child_attr(self):
         class LayoutContainer(twc.CompoundWidget):
