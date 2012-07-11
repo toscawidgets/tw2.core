@@ -382,7 +382,12 @@ class Widget(pm.Parametered):
         if value is not None and 'value' not in kw:
             kw['value'] = value
 
-        if not self:
+        # Support arguments to .display on either instance or class
+        # https://github.com/toscawidgets/tw2.core/issues/41
+        if self:
+            for key, value in kw.items():
+                setattr(self, key, value)
+        else:
             self = cls.req(**kw)
 
         if not self.parent:
