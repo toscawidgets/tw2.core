@@ -396,6 +396,11 @@ class Widget(pm.Parametered):
         else:
             self = cls.req(**kw)
 
+        # Register any deferred params that are handed to us late in the game
+        # (after post_define).  The .prepare method handles processing them
+        # later.
+        self._deferred += [k for k, v in kw.items() if isinstance(v, pm.Deferred)]
+
         if not self.parent:
             self.prepare()
 
