@@ -209,6 +209,29 @@ class TestWidgetNoneBug(tb.WidgetTest):
     expected = '<p> </p>'
 
 
+def test_arguments_to_display_as_class_method():
+    """ As of Issue #41, this passes. """
+
+    class TestWidget(twc.Widget):
+        template = "<p>${w.value}</p>"
+        inline_engine_name = "mako"
+        value = twc.Param()
+
+    eq_(TestWidget.display(value="test"), "<p>test</p>")
+
+
+def test_arguments_to_display_as_instance_method():
+    """ As of Issue #41, this fails. """
+
+    class TestWidget(twc.Widget):
+        template = "<p>${w.value}</p>"
+        inline_engine_name = "mako"
+        value = twc.Param()
+
+    ins = TestWidget.req()
+    eq_(ins.display(value="test"), "<p>test</p>")
+
+
 class TestSubCompoundWidget(tb.WidgetTest):
     widget = SubCompoundTestWidget
     attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
