@@ -236,7 +236,7 @@ class Widget(pm.Parametered):
                 )
 
         cls.resources = [r(parent=cls) for r in cls.resources]
-        cls._deferred = [k for k, v in cls.__dict__.iteritems()
+        cls._deferred = [k for k, v in inspect.getmembers(cls)
                          if isinstance(v, pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
 

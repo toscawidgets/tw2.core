@@ -81,7 +81,7 @@ class TestWidgets(object):
         assert(ins.value == 'test')
         assert(test.display() == "<p>test</p>")
 
-    def test_deferred_value_subclass(self):
+    def test_deferred_value_subclass_with_display(self):
         class TestWidget(twc.Widget):
             id='test'
             inline_engine_name = 'mako'
@@ -92,6 +92,20 @@ class TestWidgets(object):
 
         eq_(test.display(value="test"), "<p>test</p>")
         eq_(test.display(value=twc.Deferred(lambda: 'test')), "<p>test</p>")
+
+    def test_deferred_value_subclass(self):
+        class TestWidget(twc.Widget):
+            id='test'
+            inline_engine_name = 'mako'
+            template = "<p>${w.value}</p>"
+            value=twc.Param(attribute=True)
+
+        test = TestWidget
+        expected = "<p>test</p>"
+        # This should be fine
+        eq_(test(value=twc.Deferred(lambda: 'test')).display(), expected)
+        # This one is more tricky.
+        eq_(test(value=twc.Deferred(lambda: 'test'))().display(), expected)
 
     def test_child_attr(self):
         class LayoutContainer(twc.CompoundWidget):
