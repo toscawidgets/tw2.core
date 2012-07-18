@@ -78,6 +78,16 @@ class TestValidation(TestCase):
         except twc.ValidationError:
             pass
 
+    def test_unicode_catch_errors(self):
+        try:
+            formencode.api.set_stdtranslation(languages=['tr'])
+            twc.validation.catch_errors(lambda s, x: formencode.validators.Int.to_python(x))(None, 'x')
+            assert(False)
+        except twc.ValidationError:
+            pass
+        finally:
+            formencode.api.set_stdtranslation(languages=['en'])
+
     def test_unflatten(self):
         assert(twc.validation.unflatten_params({'a':1, 'b:c':2}) ==
             {'a':1, 'b':{'c':2}})
