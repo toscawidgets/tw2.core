@@ -6,6 +6,9 @@ _BOOLEAN_ATTRS = frozenset(['selected', 'checked', 'compact', 'declare',
 
 def htmlbools(v):
     attrs = copy(v)
-    for key in filter(lambda k: k in _BOOLEAN_ATTRS and attrs[k], attrs.keys()):
-        attrs[key] = key
+    for key in filter(lambda k: k in _BOOLEAN_ATTRS, attrs.keys()):
+        if attrs[key]:
+            attrs[key] = key
+        else:
+            attrs[key] = None
     return attrs
