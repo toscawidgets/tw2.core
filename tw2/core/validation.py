@@ -94,9 +94,10 @@ def catch_errors(fn):
             d = fn(self, *args, **kw)
             return d
         except catch, e:
+            e_msg = unicode(e)
             if self:
-                self.error_msg = str(e)
-            raise ValidationError(str(e), widget=self)
+                self.error_msg = e_msg
+            raise ValidationError(e_msg, widget=self)
     return wrapper
 
 

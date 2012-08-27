@@ -25,3 +25,8 @@ Build Status
 +----------+-----------+
 | develop  | |develop| |
 +----------+-----------+
+
+Documentation
+-------------
+
+Documentation is hosted at `ReadTheDocs <http://tw2core.rtfd.org>`_.
