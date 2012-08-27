@@ -161,7 +161,12 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
 
     elif engine_name == 'jinja':
         import jinja2
-        tmpl = jinja2.Template(src)
+        from jinja_util import htmlbools
+        env = jinja2.environment.get_spontaneous_environment()
+        env.filters['htmlbools'] = htmlbools
+        tmpl = env.from_string(src, template_class=jinja2.Template)
+        #tmpl = jinja2.Template(src)
+        #tmpl.environment.filters['htmlbools'] = htmlbools
         tmpl.filename = filename
         return lambda kwargs: Markup(tmpl.render(**kwargs))
 
