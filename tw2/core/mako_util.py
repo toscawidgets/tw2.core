@@ -2,6 +2,7 @@ import unicodedata
 from mako.runtime import Undefined
 from copy import copy
 
+from markupsafe import Markup
 from cgi import escape
 #from mako.filters import xml_escape
 
@@ -27,7 +28,7 @@ def attrs(context, args=None, attrs=None):
     new_attrs = [u'%s="%s"' % (k, escape(unicode(k in bools and k or v), True))
                  for k, v in args.iteritems()
                  if (k not in bools and v is not None) or (k in bools and v)]
-    return u" ".join(new_attrs)
+    return Markup(u" ".join(new_attrs))
 
 
 def compat(context, attr):

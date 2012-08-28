@@ -16,6 +16,8 @@ import params as pm
 import middleware as md
 from js import encoder, js_symbol
 
+from markupsafe import Markup
+
 log = logging.getLogger(__name__)
 
 
@@ -275,7 +277,7 @@ class _JSFuncCall(JSSource):
             elif self.args:
                 args = ', '.join(encoder.encode(a) for a in self.args)
 
-            self.src = '%s(%s)' % (self.function, args)
+            self.src = Markup('%s(%s)' % (self.function, args))
         super(_JSFuncCall, self).prepare()
 
     def __hash__(self):
