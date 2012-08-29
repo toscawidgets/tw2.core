@@ -262,8 +262,9 @@ class TestJsFuncall(tb.WidgetTest):
     expected = None
 
     def test_display(self):
-        r = self.widget(**self.attrs).display(**self.params)
-        assert r == """<script type="text/javascript">foo("a", "b")</script>""", r
+        for t in self._get_all_possible_engines():
+            r = self.widget(**self.attrs).display(template='%s:%s' % (t, twr._JSFuncCall.template))
+            assert r == """<script type="text/javascript">foo("a", "b")</script>""", r
 
 from pkg_resources import Requirement
 class TestResourcesApp:
