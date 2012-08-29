@@ -266,6 +266,53 @@ class TestJsFuncall(tb.WidgetTest):
             r = self.widget(**self.attrs).display(template='%s:%s' % (t, twr._JSFuncCall.template))
             assert r == """<script type="text/javascript">foo("a", "b")</script>""", r
 
+class TestJSSourceEscaping(tb.WidgetTest):
+    widget = twr.JSSource
+    attrs = {}
+    expected = None
+
+    def test_display(self):
+        s = twr.JSSource(src='''
+function test(a, b) {
+    if (b < 5)
+        return b;
+    else
+        return "OK";
+}
+''')
+        r = s.req()
+        displays = []
+        for e in self._get_all_possible_engines():
+            displays.append(r.display(template='%s:%s' % (e, twr.JSSource.template)))
+
+        compare_to = str(displays[0]).strip()
+        equal_displays = filter(lambda x:str(x).strip()==compare_to, displays)
+        assert len(displays) == len(equal_displays), equal_displays
+
+class TestCSSSourceEscaping(tb.WidgetTest):
+    widget = twr.CSSSource
+    attrs = {}
+    expected = None
+
+    def test_display(self):
+        s = twr.CSSSource(src='''
+p > strong:after {
+    content:"WOAH, this was STRONG!";
+}
+''')
+
+        r = s.req()
+        displays = []
+        for e in self._get_all_possible_engines():
+            #CSSource misses pt template.
+            if e in ['chameleon']:
+                continue
+            displays.append(r.display(template='%s:%s' % (e, twr.CSSSource.template)))
+
+        compare_to = str(displays[0]).strip()
+        equal_displays = filter(lambda x:str(x).strip()==compare_to, displays)
+        assert len(displays) == len(equal_displays), equal_displays
+
 from pkg_resources import Requirement
 class TestResourcesApp:
 
