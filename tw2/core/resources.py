@@ -234,7 +234,7 @@ class JSSource(Resource):
         super(JSSource, self).prepare()
         if not self.src:
             raise ValueError("%r must be provided a 'src' attr" % self)
-
+        self.src = Markup(self.src)
 
 class CSSSource(Resource):
     """
@@ -251,7 +251,7 @@ class CSSSource(Resource):
         super(CSSSource, self).prepare()
         if not self.src:
             raise ValueError("%r must be provided a 'src' attr" % self)
-
+        self.src = Markup(self.src)
 
 class _JSFuncCall(JSSource):
     """
@@ -277,7 +277,7 @@ class _JSFuncCall(JSSource):
             elif self.args:
                 args = ', '.join(encoder.encode(a) for a in self.args)
 
-            self.src = Markup('%s(%s)' % (self.function, args))
+            self.src = '%s(%s)' % (self.function, args)
         super(_JSFuncCall, self).prepare()
 
     def __hash__(self):
