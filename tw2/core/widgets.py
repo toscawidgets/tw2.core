@@ -209,6 +209,8 @@ class Widget(pm.Parametered):
             cls.attrs = cls.attrs.copy()
             cls.attrs['id'] = cls.compound_id
 
+        cls.compound_key = cls._gen_compound_key()
+
         if hasattr(cls, 'request') and getattr(cls, 'id', None):
             import middleware
             path = cls._gen_compound_id(for_url=True)
@@ -275,6 +277,17 @@ class Widget(pm.Parametered):
                 return str(getattr(cls, 'repetition', None))
         else:
             return getattr(cls, 'id', None)
+
+    @classmethod
+    def _gen_compound_key(cls):
+        if not cls.key:
+            return None
+
+        parent_key = getattr(cls.parent, 'compound_key', None)
+        if parent_key:
+            return ':'.join([parent_key, cls.key])
+        else:
+            return cls.key
 
     @classmethod
     def get_link(cls):
@@ -898,6 +911,7 @@ class DisplayOnlyWidget(Widget):
            not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
 
+        cls.compound_key = None
         cls._sub_compound = cls.child._sub_compound
         cls_id = getattr(cls, 'id', None)
         child_id = getattr(cls.child, 'id', None)
@@ -910,9 +924,9 @@ class DisplayOnlyWidget(Widget):
             cls.id = child_id
             DisplayOnlyWidget.post_define.im_func(cls)
             Widget.post_define.im_func(cls)
-            cls.child = cls.child(parent=cls)
+            cls.child = cls.child(parent=cls, key=cls.key)
         else:
-            cls.child = cls.child(id=cls_id, parent=cls)
+            cls.child = cls.child(id=cls_id, key=cls.key, parent=cls)
 
     @classmethod
     def _gen_compound_id(cls, for_url):
