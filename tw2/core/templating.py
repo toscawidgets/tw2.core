@@ -132,7 +132,8 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
 
     if engine_name == 'mako':
         import mako.template
-        args = dict(text=src)
+        args = dict(text=src, imports=["from markupsafe import escape_silent"],
+                    default_filters=['escape_silent'])
 
         if filename:
             args['filename'] = relpath(filename, directory)
@@ -162,7 +163,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
     elif engine_name == 'jinja':
         import jinja2
         from jinja_util import htmlbools
-        env = jinja2.environment.get_spontaneous_environment()
+        env = jinja2.environment.Environment(autoescape=True)
         env.filters['htmlbools'] = htmlbools
         tmpl = env.from_string(src, template_class=jinja2.Template)
         tmpl.filename = filename

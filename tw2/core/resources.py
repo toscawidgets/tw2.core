@@ -16,6 +16,8 @@ import params as pm
 import middleware as md
 from js import encoder, js_symbol
 
+from markupsafe import Markup
+
 log = logging.getLogger(__name__)
 
 
@@ -232,7 +234,7 @@ class JSSource(Resource):
         super(JSSource, self).prepare()
         if not self.src:
             raise ValueError("%r must be provided a 'src' attr" % self)
-
+        self.src = Markup(self.src)
 
 class CSSSource(Resource):
     """
@@ -249,7 +251,7 @@ class CSSSource(Resource):
         super(CSSSource, self).prepare()
         if not self.src:
             raise ValueError("%r must be provided a 'src' attr" % self)
-
+        self.src = Markup(self.src)
 
 class _JSFuncCall(JSSource):
     """
