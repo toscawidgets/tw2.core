@@ -117,14 +117,13 @@ def get_source(engine_name, template, inline=False, mw=None):
 
 
 @memoize
-def get_render_callable(engine_name, displays_on, src, filename=None):
+def get_render_callable(engine_name, displays_on, src, filename=None, inline=False):
     """ Returns a function that takes a template source and kwargs. """
 
     # See the discussion here re: `displays_on` -- http://bit.ly/JRqbRw
 
     directory = None
-    if filename:
-
+    if filename and not inline:
         if SEP not in filename and (not ALTSEP or ALTSEP not in filename):
             filename = _get_dotted_filename(engine_name, filename)
 
@@ -135,7 +134,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
         args = dict(text=src, imports=["from markupsafe import escape_silent"],
                     default_filters=['escape_silent'])
 
-        if filename:
+        if directory:
             args['filename'] = relpath(filename, directory)
             from mako.lookup import TemplateLookup
             args['lookup'] = TemplateLookup(
@@ -150,7 +149,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None):
             source=src,
         )
 
-        if filename:
+        if directory:
             args['loader'] = genshi.template.TemplateLoader([
                 genshi.template.loader.directory(directory),
             ])
@@ -199,7 +198,7 @@ def render(template_name, displays_on, kwargs, inline=False, mw=None):
 
     # Establish the render function
     callback = get_render_callable(
-        engine_name, displays_on, source, template_name)
+        engine_name, displays_on, source, template_name, inline)
 
     # Do it
     return callback(kwargs)
