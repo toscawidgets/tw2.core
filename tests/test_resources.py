@@ -360,6 +360,26 @@ class TestResourcesMisc(TestCase):
         self.assert_("foo" in  res, res)
         self.assert_("bar" in res, res)
 
+    def testEncoderEmbedded(self):
+        """ JQGrid Issue #6
+
+        https://github.com/toscawidgets/tw2.jqplugins.jqgrid/issues/6
+        """
+        enc = twc.encoder
+        data = {
+            'rowlist': [30, 60, 100],
+        }
+        result = enc.encode(data)
+
+        class Widget(twc.Widget):
+            inline_engine_name = "mako"
+            template = "${w.options | n}"
+            # If template is set to the following, then this fails.
+            #template = "${w.options}"
+            options = result
+
+        eq_(Widget.display().strip(), result.strip())
+
     def testLinkHash(self):
         l = twr.Link(link="http://google.com")
         self.assert_(hash(l.req()))  # meh
