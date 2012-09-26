@@ -11,5 +11,5 @@ class TestRequestLocal:
 
         start_new_thread(put_request_local_in_shared_queue, ())
 
-        assert queue.get() is twc.util.thread_local(), (
+        assert queue.get() is not twc.util.thread_local(), (
             'Expected anything except %r but got it' % twc.util.thread_local())
