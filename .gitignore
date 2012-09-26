@@ -15,3 +15,4 @@ virtualenv
 external
 htmlcov
 *.swp
+tags
