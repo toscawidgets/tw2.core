@@ -40,6 +40,16 @@ class TestWidgets(object):
         output = test.display("foo")
         eq_(output, u'<p>foo </p>')
 
+    def test_inline_template_with_no_markup(self):
+        """ Ticket #69 """
+        test = twc.Widget(
+            id='test',
+            template="${w.value}",
+            inline_engine_name="mako",
+        )
+        output = test.display("foo")
+        eq_(output, u'foo')
+
     def xxtest_required(self):
         test = twc.Widget(id='test')
         try:

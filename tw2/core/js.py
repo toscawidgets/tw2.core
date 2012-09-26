@@ -45,8 +45,8 @@ class TWEncoder(json.encoder.JSONEncoder):
     """
 
     def __init__(self, *args, **kw):
-        # This makes encoded objects be prettily formatted.  It is very nice for
-        # debugging and should be made configurable at some point.
+        # This makes encoded objects be prettily formatted.  It is very nice
+        # for debugging and should be made configurable at some point.
         # TODO -- make json encoding pretty-printing configurable
         #kw['indent'] = '  '
 

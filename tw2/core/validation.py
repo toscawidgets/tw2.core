@@ -189,7 +189,7 @@ class Validator(object):
         'required': _('Enter a value'),
         'decode': _('Received in wrong character set; should be $encoding'),
         'corrupt': _('Form submission received corrupted; please try again'),
-        'childerror': _(''),  # Children of this widget have errors
+        'childerror': '',  # Children of this widget have errors
     }
     required = False
     strip = True
