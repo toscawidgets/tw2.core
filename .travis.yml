@@ -6,7 +6,7 @@ python:
 # Someday, soon.
 # - "3.2"
 install: python setup.py install
-script: python setup.py test
+script: python setup.py nosetests
 notifications:
     email: false
     irc:

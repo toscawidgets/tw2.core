@@ -53,6 +53,7 @@ setup(
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=requires,
+    setup_requires=['nose'],
     tests_require = [
         'nose',             # py3 - READY
         'coverage',         # py3 - READY
