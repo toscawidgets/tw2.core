@@ -89,6 +89,9 @@ class TestValidation(TestCase):
             pass
 
     def test_unicode_catch_errors(self):
+        if self.formencode_skip():
+            return
+
         try:
             formencode.api.set_stdtranslation(languages=['tr'])
             twc.validation.catch_errors(lambda s, x: formencode.validators.Int.to_python(x))(None, 'x')
@@ -195,7 +198,7 @@ class TestValidation(TestCase):
 
     def test_unflatten_decode(self):
         assert(twc.validation.unflatten_params({'a': u'\u1234'.encode('utf-8')}) == {'a':u'\u1234'})
-        
+
     def test_unflatten_error(self):
         try:
             twc.validation.unflatten_params({'a': chr(128)})
