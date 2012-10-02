@@ -1,0 +1,111 @@
+# Translations template for tw2.core.
+# Copyright (C) 2012 ORGANIZATION
+# This file is distributed under the same license as the tw2.core project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: tw2.core 2.1.2\n"
+"Report-Msgid-Bugs-To: toscawidgets-discuss@googlegroups.com\n"
+"POT-Creation-Date: 2012-10-02 00:21+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+
+#: tw2/core/validation.py:181
+msgid "Enter a value"
+msgstr ""
+
+#: tw2/core/validation.py:182
+msgid "Received in wrong character set; should be $encoding"
+msgstr ""
+
+#: tw2/core/validation.py:183
+msgid "Form submission received corrupted; please try again"
+msgstr ""
+
+#: tw2/core/validation.py:240
+msgid "Value is too short"
+msgstr ""
+
+#: tw2/core/validation.py:241
+msgid "Value is too long"
+msgstr ""
+
+#: tw2/core/validation.py:262
+msgid "Must be at least $min characters"
+msgstr ""
+
+#: tw2/core/validation.py:264
+msgid "Cannot be longer than $max characters"
+msgstr ""
+
+#: tw2/core/validation.py:275
+msgid "Select at least $min"
+msgstr ""
+
+#: tw2/core/validation.py:276
+msgid "Select no more than $max"
+msgstr ""
+
+#: tw2/core/validation.py:292
+msgid "Must be at least $min"
+msgstr ""
+
+#: tw2/core/validation.py:293
+msgid "Cannot be more than $max"
+msgstr ""
+
+#: tw2/core/validation.py:312
+msgid "Must be an integer"
+msgstr ""
+
+#: tw2/core/validation.py:347
+msgid "You must select this"
+msgstr ""
+
+#: tw2/core/validation.py:364 tw2/core/validation.py:462
+msgid "Invalid value"
+msgstr ""
+
+#: tw2/core/validation.py:384
+msgid "Must follow date format $format_str"
+msgstr ""
+
+#: tw2/core/validation.py:385
+msgid "Cannot be earlier than $min_str"
+msgstr ""
+
+#: tw2/core/validation.py:386
+msgid "Cannot be later than $max_str"
+msgstr ""
+
+#: tw2/core/validation.py:440
+msgid "Must follow date/time format $format_str"
+msgstr ""
+
+#: tw2/core/validation.py:477
+msgid "Must be a valid email address"
+msgstr ""
+
+#: tw2/core/validation.py:487
+msgid "Must be a valid URL"
+msgstr ""
+
+#: tw2/core/validation.py:506
+msgid "Must be a valid IP address"
+msgstr ""
+
+#: tw2/core/validation.py:507
+msgid "Must be a valid IP network block"
+msgstr ""
+
+#: tw2/core/validation.py:532
+msgid "Must match $other_field_str"
+msgstr ""
+
