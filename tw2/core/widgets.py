@@ -11,7 +11,7 @@ import core
 import util
 import validation as vd
 import params as pm
-from validation import VALIDATION_ERRORS
+from validation import VALIDATION_ERRORS, SUPPORTED_VALIDATORS
 
 try:
     import formencode
@@ -224,16 +224,10 @@ class Widget(pm.Parametered):
                         vd.Validator(required=True)
 
             if isinstance(cls.validator, type) and \
-               issubclass(cls.validator, vd.Validator):
+                    issubclass(cls.validator, SUPPORTED_VALIDATORS):
                 cls.validator = cls.validator()
 
-            if formencode and isinstance(cls.validator, type) and \
-               issubclass(cls.validator, formencode.Validator):
-                cls.validator = cls.validator()
-
-            if not isinstance(cls.validator, vd.Validator) and \
-               not (formencode and
-                    isinstance(cls.validator, formencode.Validator)):
+            if not isinstance(cls.validator, SUPPORTED_VALIDATORS):
                 raise pm.ParameterError(
                     "Validator must be either a tw2 or FormEncode validator"
                 )

@@ -14,10 +14,9 @@ from i18n import _
 if not hasattr(webob, 'MultiDict'):
     webob.MultiDict = webob.multidict.MultiDict
 
-try:
-    import formencode
-except ImportError:
-    formencode = None
+
+SUPPORTED_VALIDATORS = ()
+VALIDATION_ERRORS = ()
 
 
 class Invalid(object):
@@ -38,7 +37,6 @@ class ValidationError(core.WidgetError):
     defaults to :class:`Validator` otherwise.
     """
     def __init__(self, msg, validator=None, widget=None):
-        # from nose.tools import set_trace; set_trace()
         self.widget = widget
         validator = validator or Validator
         mw = core.request_local().get('middleware')
@@ -72,11 +70,6 @@ class ValidationError(core.WidgetError):
     def __unicode__(self):
         return unicode(str(self))
 
-# Tuple of supported validation errors
-VALIDATION_ERRORS = (ValidationError, )
-
-if formencode:
-    VALIDATION_ERRORS = VALIDATION_ERRORS + (formencode.Invalid,)
 
 
 def safe_validate(validator, value, state=None):
@@ -607,3 +600,15 @@ class Any(CompoundValidator):
 
         if len(msg) == len(self.validators):
             raise ValidationError(' or '.join(set(msg)), self)
+
+
+SUPPORTED_VALIDATORS = (Validator, )
+VALIDATION_ERRORS = (ValidationError, )
+
+try:
+    import formencode
+
+    VALIDATION_ERRORS = VALIDATION_ERRORS + (formencode.Invalid,)
+    SUPPORTED_VALIDATORS = SUPPORTED_VALIDATORS + (formencode.Validator,)
+except ImportError:
+    pass
