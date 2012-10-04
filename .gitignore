@@ -4,6 +4,8 @@ Thumbs.db
 docs/.output/
 .coverage
 .noseids
+.project
+.pydevproject
 html
 dist
 build

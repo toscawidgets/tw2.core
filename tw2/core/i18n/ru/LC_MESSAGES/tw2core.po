@@ -1,0 +1,112 @@
+# Russian translations for tw2.core.
+# Copyright (C) 2012 ORGANIZATION
+# This file is distributed under the same license as the tw2.core project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+# Christoph Zwerschke <cito@online.de>, 2012.
+msgid ""
+msgstr ""
+"Project-Id-Version: tw2.core 2.1.2\n"
+"Report-Msgid-Bugs-To: toscawidgets-discuss@googlegroups.com\n"
+"POT-Creation-Date: 2012-10-02 00:21+0200\n"
+"PO-Revision-Date: 2012-10-02 01:31+0200\n"
+"Last-Translator: Christoph Zwerschke <cito@online.de>\n"
+"Language-Team: Russian <toscawidgets-discuss@googlegroups.com>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Generated-By: Babel 0.9.6\n"
+
+#: tw2/core/validation.py:181
+msgid "Enter a value"
+msgstr "Введите значение"
+
+#: tw2/core/validation.py:182
+msgid "Received in wrong character set; should be $encoding"
+msgstr "Пришло в неправильном наборе символов; должно быть $encoding"
+
+#: tw2/core/validation.py:183
+msgid "Form submission received corrupted; please try again"
+msgstr "Прошла неисправная передача формы; пожалуйста, попробуйте еще раз"
+
+#: tw2/core/validation.py:240
+msgid "Value is too short"
+msgstr "Слишком короткое значение "
+
+#: tw2/core/validation.py:241
+msgid "Value is too long"
+msgstr "Слишком длинное значение"
+
+#: tw2/core/validation.py:262
+msgid "Must be at least $min characters"
+msgstr "Должно быть не меньше чем $min символов"
+
+#: tw2/core/validation.py:264
+msgid "Cannot be longer than $max characters"
+msgstr "Должно быть не больше чем $max символов"
+
+#: tw2/core/validation.py:275
+msgid "Select at least $min"
+msgstr "Выберите не менее чем $min"
+
+#: tw2/core/validation.py:276
+msgid "Select no more than $max"
+msgstr "Выберите не более чем $max"
+
+#: tw2/core/validation.py:292
+msgid "Must be at least $min"
+msgstr "Должно быть не меньше чем $min"
+
+#: tw2/core/validation.py:293
+msgid "Cannot be more than $max"
+msgstr "Должно быть не больше чем $max"
+
+#: tw2/core/validation.py:312
+msgid "Must be an integer"
+msgstr "Введите целое число"
+
+#: tw2/core/validation.py:347
+msgid "You must select this"
+msgstr "Необходимо выбрать это"
+
+#: tw2/core/validation.py:364 tw2/core/validation.py:462
+msgid "Invalid value"
+msgstr "Неправильное значение"
+
+#: tw2/core/validation.py:384
+msgid "Must follow date format $format_str"
+msgstr "Введите дату в виде $format_str"
+
+#: tw2/core/validation.py:385
+msgid "Cannot be earlier than $min_str"
+msgstr "Не должно быть раньше чем $min_str"
+
+#: tw2/core/validation.py:386
+msgid "Cannot be later than $max_str"
+msgstr "Не должно быть позже чем $max_str"
+
+#: tw2/core/validation.py:440
+msgid "Must follow date/time format $format_str"
+msgstr "Введите дату/время в виде $format_str"
+
+#: tw2/core/validation.py:477
+msgid "Must be a valid email address"
+msgstr "Введите email адрес"
+
+#: tw2/core/validation.py:487
+msgid "Must be a valid URL"
+msgstr "Введите верный URL"
+
+#: tw2/core/validation.py:506
+msgid "Must be a valid IP address"
+msgstr "Введите верный IP адрес"
+
+#: tw2/core/validation.py:507
+msgid "Must be a valid IP network block"
+msgstr "Введите верный IP блок сети"
+
+#: tw2/core/validation.py:532
+msgid "Must match $other_field_str"
+msgstr "Должно совпадать с $other_field_str"
