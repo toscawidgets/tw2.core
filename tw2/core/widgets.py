@@ -11,6 +11,7 @@ import core
 import util
 import validation as vd
 import params as pm
+from validation import VALIDATION_ERRORS
 
 try:
     import formencode
@@ -645,15 +646,11 @@ class CompoundWidget(Widget):
         any_errors = False
         data = {}
 
-        catch = vd.ValidationError
-        if formencode:
-            catch = (catch, formencode.Invalid)
-
         #Validate compound children
         for c in (child for child in self.children if child._sub_compound):
             try:
                 data.update(c._validate(value, data))
-            except catch, e:
+            except VALIDATION_ERRORS as e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
                 any_errors = True
@@ -665,7 +662,7 @@ class CompoundWidget(Widget):
                 val = c._validate(d, data)
                 if val is not vd.EmptyField:
                     data[c.key] = val
-            except catch, e:
+            except VALIDATION_ERRORS as e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
                 data[c.key] = vd.Invalid
@@ -678,7 +675,7 @@ class CompoundWidget(Widget):
             try:
                 data = self.validator.to_python(data)
                 self.validator.validate_python(data, state)
-            except catch, e:
+            except VALIDATION_ERRORS as e:
                 # If it failed to validate, check if the error_dict has any
                 # messages pertaining specifically to this widget's children.
                 error_dict = getattr(e, 'error_dict', {})
