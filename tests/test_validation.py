@@ -4,8 +4,8 @@ from tw2.core.validation import *
 import re
 import datetime
 
-from nose.tools import (
-    eq_, raises, assert_raises, assert_equals, assert_is_instance)
+from nose.tools import eq_, raises, assert_raises, assert_equals
+from tw2.core.testbase import assert_is_instance
 
 from types import UnicodeType
 from mock import Mock
