@@ -3,17 +3,19 @@ import tw2.core.testbase as tb
 from tw2.core.validation import *
 import re
 import datetime
-from nose.tools import eq_, raises
+
+from nose.tools import eq_, raises, assert_equals
+from tw2.core.testbase import assert_is_instance, assert_raises
+
+from types import UnicodeType
+from mock import Mock
 from webob.multidict import MultiDict
 from unittest import TestCase
 import sys
 
-try:
-    import formencode
-    # This is required to make tests pass on non english systems
-    formencode.api.set_stdtranslation(languages=['en'])
-except ImportError:
-    formencode = None
+import formencode
+# This is required to make tests pass on non english systems
+formencode.api.set_stdtranslation(languages=['en'])
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -34,21 +36,27 @@ class TestValidationError(tb.WidgetTest):
         eq_(e.message,'s1')
 
 
-def _test_stupid_fe_import_requirement():
-    "i tried, but seriously, sometimes 100% coverage aint worth it"
-    import sys
-    removed_items = []
-    pre = sys.path[:]
-    pre_mod = copy.copy(sys.modules)
-    del sys.modules['formencode']
-    del sys.modules['tw2']
-    for item in pre:
-        if 'formencode' in item.lower():
-            sys.path.remove(item)
-            removed_items = item
-    import tw2.core.validation
-    sys.path = pre
-    sys.modules = pre_mod
+def assert_equal_unicode(first, second, msg=None):
+    assert_equals(first, second, msg)
+    assert_is_instance(first, UnicodeType, msg)
+    assert_is_instance(second, UnicodeType, msg)
+
+
+class TestValidationErrorMessages(object):
+    def test_uses_message_as_string_representation(self):
+        message = 'Validation message key'
+
+        validation_error = ValidationError(message)
+
+        assert_equals(str(validation_error), message)
+
+    def test_uses_message_as_unicode_representation(self):
+        ascii_message = 'Validation message key'
+
+        validation_error = ValidationError(ascii_message)
+
+        assert_equal_unicode(validation_error.__str__(), unicode(ascii_message))
+
 
 def test_safe_validate():
     v = Validator(required="true")
@@ -64,42 +72,44 @@ def test_unflatten_params_multi_dict():
     params = unflatten_params(MultiDict((('asdf:f1', 's1'), ('asdf:f2', 's2'))))
     eq_(params, {'asdf': {'f1': 's1', 'f2': 's2'}})
 
+
+def raise_formencode_validation_error(message):
+    raise formencode.Invalid('Some FormEncode validation error', None, None)
+
+
+class TestCatchErrorsDecorator(object):
+
+    def test_wrapps_and_bubles_up_tw2_validation_errors(self):
+        def raise_tw2_validation_error(message):
+            raise ValidationError(msg='ToscaWidgets2 validation error')
+
+        with assert_raises(ValidationError):
+            catch_errors(raise_tw2_validation_error)(None)
+
+    def test_wrapps_and_bubles_up_formencode_validation_errors(self):
+        with assert_raises(ValidationError):
+            catch_errors(raise_formencode_validation_error)(None)
+
+    def test_encodes_message_in_unicode(self):
+        with assert_raises(ValidationError) as cm:
+            catch_errors(raise_formencode_validation_error)(None)
+
+        validation_error = cm.exception
+
+        assert_equal_unicode(validation_error.message, unicode('Some FormEncode validation error'))
+
+    def test_sets_widgets_error_message(self):
+        widget = Mock()
+
+        with assert_raises(ValidationError):
+            catch_errors(raise_formencode_validation_error)(widget)
+
+        assert_equals(widget.error_msg, u'Some FormEncode validation error')
+
+
 class TestValidation(TestCase):
     def setUp(self):
         testapi.setup()
-
-
-    def formencode_skip(self):
-        if not formencode:
-            if sys.version_info[0] == 2 and sys.version_info[1] == 7:
-                self.skipTest("No formencode.")
-            else:
-                return True  # Just pretend like we passed.
-
-        return False
-
-    def test_catch_errors(self):
-        if self.formencode_skip():
-            return
-
-        try:
-            twc.validation.catch_errors(lambda s, x: formencode.validators.Int.to_python(x))(None, 'x')
-            assert(False)
-        except twc.ValidationError:
-            pass
-
-    def test_unicode_catch_errors(self):
-        if self.formencode_skip():
-            return
-
-        try:
-            formencode.api.set_stdtranslation(languages=['tr'])
-            twc.validation.catch_errors(lambda s, x: formencode.validators.Int.to_python(x))(None, 'x')
-            assert(False)
-        except twc.ValidationError:
-            pass
-        finally:
-            formencode.api.set_stdtranslation(languages=['en'])
 
     def test_unflatten(self):
         assert(twc.validation.unflatten_params({'a':1, 'b:c':2}) ==
@@ -142,9 +152,6 @@ class TestValidation(TestCase):
     def test_compound_validation_formencode(self):
         " Test that compound widgets validate with formencode. """
 
-        if self.formencode_skip():
-            return
-
         class MatchyWidget(twc.CompoundWidget):
             validator = formencode.validators.FieldsMatch('one', 'two')
             one = twc.Widget
@@ -163,9 +170,6 @@ class TestValidation(TestCase):
 
     def test_compound_validation_error_msgs(self):
         " Test that compound widgets error_msgs show up in the right place. "
-
-        if self.formencode_skip():
-            return
 
         class MatchyWidget(twc.CompoundWidget):
             validator = formencode.validators.FieldsMatch('one', 'two')
@@ -290,9 +294,6 @@ class TestValidation(TestCase):
         pass # TBD
 
     def test_compound_keyed_children(self):
-        if self.formencode_skip():
-            return
-
         compound_keyed_widget = twc.CompoundWidget(id='a', children=[
             twc.Widget(id='b', key='x', validator=twc.Validator(required=True)),
             twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()),

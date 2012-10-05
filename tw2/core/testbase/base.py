@@ -27,12 +27,7 @@ from xml.parsers.expat import ExpatError
 import tw2.core as twc
 import tw2.core.middleware as tmw
 import tw2.core.templating as templating
-
-try:
-    import formencode as fe
-    VALIDATION_ERRORS = (twc.ValidationError, fe.Invalid)
-except ImportError:
-    VALIDATION_ERRORS = (twc.ValidationError)
+from tw2.core.validation import VALIDATION_ERRORS
 
 
 rm = pk.ResourceManager()

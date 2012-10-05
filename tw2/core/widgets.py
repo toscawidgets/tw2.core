@@ -11,11 +11,7 @@ import core
 import util
 import validation as vd
 import params as pm
-
-try:
-    import formencode
-except ImportError:
-    formencode = None
+from validation import VALIDATION_ERRORS, SUPPORTED_VALIDATORS
 
 reserved_names = (
     'parent',
@@ -223,19 +219,10 @@ class Widget(pm.Parametered):
                         vd.Validator(required=True)
 
             if isinstance(cls.validator, type) and \
-               issubclass(cls.validator, vd.Validator):
+                    issubclass(cls.validator, SUPPORTED_VALIDATORS):
                 cls.validator = cls.validator()
 
-            if formencode and isinstance(cls.validator, type) and \
-               issubclass(cls.validator, formencode.Validator):
-                cls.validator = cls.validator()
-
-            if not isinstance(cls.validator, vd.Validator) and \
-               not (formencode and
-                    isinstance(cls.validator, formencode.Validator)):
-                raise pm.ParameterError(
-                    "Validator must be either a tw2 or FormEncode validator"
-                )
+            cls._enforce_validator_type()
 
         cls.resources = [r(parent=cls) for r in cls.resources]
         cls._deferred = [k for k, v in inspect.getmembers(cls)
@@ -249,6 +236,13 @@ class Widget(pm.Parametered):
                    p.default is not pm.Required:
 
                     setattr(cls, p.name, p.default)
+
+    @classmethod
+    def _enforce_validator_type(cls):
+        if not isinstance(cls.validator, SUPPORTED_VALIDATORS):
+            raise pm.ParameterError(
+                "Validator must be either a tw2 or FormEncode validator"
+            )
 
     @classmethod
     def _gen_compound_id(cls, for_url):
@@ -320,30 +314,18 @@ class Widget(pm.Parametered):
                 setattr(self, a, dfr.fn())
 
         if self.validator and not hasattr(self, '_validated'):
-            value = self.value
-
             # Handles the case where FE expects dict-like object, but
             # you have None at your disposal.
-            if formencode and \
-               isinstance(self.validator, formencode.Validator) and \
-               self.value is None:
-                value = {}
-
-            if formencode:
-                INVALID_ERRORS = (vd.Invalid, formencode.api.Invalid)
-            else:
-                INVALID_ERRORS = vd.Invalid
+            value = self.value or {}
 
             try:
                 value = self.validator.from_python(value)
-            except INVALID_ERRORS, e:
+            except VALIDATION_ERRORS as e:
                 value = str(value)
                 self.error_msg = e.msg
 
-            if formencode and value == {} and self.value is None:
-                value = None
-
-            self.value = value
+            if value:
+                self.value = value
 
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
@@ -645,15 +627,11 @@ class CompoundWidget(Widget):
         any_errors = False
         data = {}
 
-        catch = vd.ValidationError
-        if formencode:
-            catch = (catch, formencode.Invalid)
-
         #Validate compound children
         for c in (child for child in self.children if child._sub_compound):
             try:
                 data.update(c._validate(value, data))
-            except catch, e:
+            except VALIDATION_ERRORS as e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
                 any_errors = True
@@ -665,7 +643,7 @@ class CompoundWidget(Widget):
                 val = c._validate(d, data)
                 if val is not vd.EmptyField:
                     data[c.key] = val
-            except catch, e:
+            except VALIDATION_ERRORS as e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
                 data[c.key] = vd.Invalid
@@ -678,7 +656,7 @@ class CompoundWidget(Widget):
             try:
                 data = self.validator.to_python(data)
                 self.validator.validate_python(data, state)
-            except catch, e:
+            except VALIDATION_ERRORS as e:
                 # If it failed to validate, check if the error_dict has any
                 # messages pertaining specifically to this widget's children.
                 error_dict = getattr(e, 'error_dict', {})

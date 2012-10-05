@@ -14,10 +14,9 @@ from i18n import _
 if not hasattr(webob, 'MultiDict'):
     webob.MultiDict = webob.multidict.MultiDict
 
-try:
-    import formencode
-except ImportError:
-    formencode = None
+
+SUPPORTED_VALIDATORS = ()
+VALIDATION_ERRORS = ()
 
 
 class Invalid(object):
@@ -28,24 +27,7 @@ class EmptyField(object):
     pass
 
 
-if formencode:
-    class BaseValidationError(core.WidgetError, formencode.Invalid):
-        def __init__(self, msg):
-            formencode.Invalid.__init__(self, msg, None, None)
-else:
-    class BaseValidationError(core.WidgetError):
-        def __init__(self, msg):
-            self.msg = msg
-            super(BaseValidationError, self).__init__(self, msg)
-
-        def __str__(self):
-            return self.msg
-
-        def __unicode__(self):
-            return unicode(str(self))
-
-
-class ValidationError(BaseValidationError):
+class ValidationError(core.WidgetError):
     """Invalid data was encountered during validation.
 
     The constructor can be passed a short message name, which is looked up in
@@ -73,12 +55,21 @@ class ValidationError(BaseValidationError):
 
         msg = re.sub('\$(\w+)',
                 lambda m: str(getattr(validator, m.group(1))), unicode(msg))
-        super(ValidationError, self).__init__(msg)
+
+        self.msg = msg
+        super(ValidationError, self).__init__(self, msg)
 
     @property
     def message(self):
         """ Added for backwards compatibility.  Synonymous with `msg` """
         return self.msg
+
+    def __str__(self):
+        return self.msg
+
+    def __unicode__(self):
+        return unicode(str(self))
+
 
 
 def safe_validate(validator, value, state=None):
@@ -90,23 +81,22 @@ def safe_validate(validator, value, state=None):
         return Invalid
 
 
-catch = ValidationError
-if formencode:
-    catch = formencode.Invalid
-
-
 def catch_errors(fn):
+    """Catches any validation erros in ``VALIDATION_ERRORS`` tuple.
+    Error is wrapped in ``ValidationError`` instance and buble up."""
+
     @functools.wraps(fn)
-    def wrapper(self, *args, **kw):
+    def normalize_validation_errors(self, *args, **kw):
         try:
             d = fn(self, *args, **kw)
             return d
-        except catch, e:
+        except VALIDATION_ERRORS as e:
             e_msg = unicode(e)
             if self:
                 self.error_msg = e_msg
             raise ValidationError(e_msg, widget=self)
-    return wrapper
+
+    return normalize_validation_errors
 
 
 def unflatten_params(params):
@@ -610,3 +600,15 @@ class Any(CompoundValidator):
 
         if len(msg) == len(self.validators):
             raise ValidationError(' or '.join(set(msg)), self)
+
+
+SUPPORTED_VALIDATORS = (Validator,)
+VALIDATION_ERRORS = (ValidationError,)
+
+try:
+    import formencode
+
+    VALIDATION_ERRORS = VALIDATION_ERRORS + (formencode.Invalid,)
+    SUPPORTED_VALIDATORS = SUPPORTED_VALIDATORS + (formencode.Validator,)
+except ImportError:
+    pass
