@@ -13,11 +13,6 @@ import validation as vd
 import params as pm
 from validation import VALIDATION_ERRORS, SUPPORTED_VALIDATORS
 
-try:
-    import formencode
-except ImportError:
-    formencode = None
-
 reserved_names = (
     'parent',
     'demo_for',

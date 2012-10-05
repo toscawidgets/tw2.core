@@ -193,13 +193,9 @@ class TestWidget(tb.WidgetTest):
     validate_params = [[None, {'w':''}, None, vd.ValidationError],[None, {}, None, vd.ValidationError]]
 
     def test_fe_validator(self):
-        try:
-            import formencode as fe
-        except ImportError, e:
-            self.skipTest(str(e))
-
         class FEWidget(wd.Widget):
-            validator = fe.validators.Int()
+            validator = formencode.validators.Int()
+
         FEWidget(id="s").validate({'s':'3'})
 
     @raises(twc.WidgetError)

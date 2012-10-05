@@ -13,12 +13,9 @@ from webob.multidict import MultiDict
 from unittest import TestCase
 import sys
 
-try:
-    import formencode
-    # This is required to make tests pass on non english systems
-    formencode.api.set_stdtranslation(languages=['en'])
-except ImportError:
-    formencode = None
+import formencode
+# This is required to make tests pass on non english systems
+formencode.api.set_stdtranslation(languages=['en'])
 
 compound_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', validator=twc.Validator(required=True)),
@@ -60,22 +57,6 @@ class TestValidationErrorMessages(object):
 
         assert_equal_unicode(validation_error.__str__(), unicode(ascii_message))
 
-
-def _test_stupid_fe_import_requirement():
-    "i tried, but seriously, sometimes 100% coverage aint worth it"
-    import sys
-    removed_items = []
-    pre = sys.path[:]
-    pre_mod = copy.copy(sys.modules)
-    del sys.modules['formencode']
-    del sys.modules['tw2']
-    for item in pre:
-        if 'formencode' in item.lower():
-            sys.path.remove(item)
-            removed_items = item
-    import tw2.core.validation
-    sys.path = pre
-    sys.modules = pre_mod
 
 def test_safe_validate():
     v = Validator(required="true")
@@ -130,15 +111,6 @@ class TestValidation(TestCase):
     def setUp(self):
         testapi.setup()
 
-    def formencode_skip(self):
-        if not formencode:
-            if sys.version_info[0] == 2 and sys.version_info[1] == 7:
-                self.skipTest("No formencode.")
-            else:
-                return True  # Just pretend like we passed.
-
-        return False
-
     def test_unflatten(self):
         assert(twc.validation.unflatten_params({'a':1, 'b:c':2}) ==
             {'a':1, 'b':{'c':2}})
@@ -180,9 +152,6 @@ class TestValidation(TestCase):
     def test_compound_validation_formencode(self):
         " Test that compound widgets validate with formencode. """
 
-        if self.formencode_skip():
-            return
-
         class MatchyWidget(twc.CompoundWidget):
             validator = formencode.validators.FieldsMatch('one', 'two')
             one = twc.Widget
@@ -201,9 +170,6 @@ class TestValidation(TestCase):
 
     def test_compound_validation_error_msgs(self):
         " Test that compound widgets error_msgs show up in the right place. "
-
-        if self.formencode_skip():
-            return
 
         class MatchyWidget(twc.CompoundWidget):
             validator = formencode.validators.FieldsMatch('one', 'two')
@@ -328,9 +294,6 @@ class TestValidation(TestCase):
         pass # TBD
 
     def test_compound_keyed_children(self):
-        if self.formencode_skip():
-            return
-
         compound_keyed_widget = twc.CompoundWidget(id='a', children=[
             twc.Widget(id='b', key='x', validator=twc.Validator(required=True)),
             twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()),
