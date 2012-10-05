@@ -2,6 +2,7 @@ import tw2.core as twc, testapi, tw2.core.testbase as tb
 import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
 from webob import Request, Response
 from nose.tools import raises, eq_, assert_raises, assert_is_instance
+from mock import Mock
 from sieve.operators import eq_xml
 from unittest import TestCase
 
@@ -227,31 +228,28 @@ class TestWidget(tb.WidgetTest):
         MWidget()
 
 
-class TestWidgetPostDefile(object):
+class TestWidgetPostDefine(object):
 
-    def test_creates_validator_formencode_instance_if_not_created(self):
+    def test_instantiates_formencode_validator(self):
         def some_formencode_validator():
             return formencode.validators.Bool
 
         class SomeWidget(wd.Widget):
             validator = some_formencode_validator()
 
-        assert_is_instance(SomeWidget.validator, formencode.validators.Validator)
+        assert_is_instance(SomeWidget.validator, formencode.Validator)
 
-    def test_creates_validator_instance_if_not_already_created(self):
-        import tw2.core.validation
-
+    def test_instantiates_tw2_validator(self):
         def some_validator():
-            return tw2.core.validation.BlankValidator
+            return vd.BlankValidator
 
         class SomeWidget(wd.Widget):
             validator = some_validator()
 
-        assert_is_instance(SomeWidget.validator, tw2.core.validation.Validator)
+        assert_is_instance(SomeWidget.validator, vd.Validator)
 
-    def test_raises_parameter_error_for_unsupported_validator(self):
+    def test_raises_parameter_error_for_unsupported_validator_type(self):
         def create_unsuported_validator():
-            from mock import Mock
             return Mock()
 
         with assert_raises(pm.ParameterError):
