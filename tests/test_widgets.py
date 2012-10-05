@@ -1,8 +1,8 @@
 import tw2.core as twc, testapi, tw2.core.testbase as tb
 import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
 from webob import Request, Response
-from nose.tools import raises, eq_, assert_raises, assert_equals
-from tw2.core.testbase import assert_is_instance
+from nose.tools import raises, eq_, assert_equals
+from tw2.core.testbase import assert_is_instance, assert_raises
 from mock import Mock
 from sieve.operators import eq_xml
 from unittest import TestCase
