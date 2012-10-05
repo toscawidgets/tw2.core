@@ -602,8 +602,8 @@ class Any(CompoundValidator):
             raise ValidationError(' or '.join(set(msg)), self)
 
 
-SUPPORTED_VALIDATORS = (Validator, )
-VALIDATION_ERRORS = (ValidationError, )
+SUPPORTED_VALIDATORS = (Validator,)
+VALIDATION_ERRORS = (ValidationError,)
 
 try:
     import formencode

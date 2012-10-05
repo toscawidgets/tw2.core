@@ -1,7 +1,8 @@
 import tw2.core as twc, testapi, tw2.core.testbase as tb
 import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
 from webob import Request, Response
-from nose.tools import raises, eq_, assert_raises, assert_is_instance
+from nose.tools import (
+    raises, eq_, assert_raises, assert_is_instance, assert_equals)
 from mock import Mock
 from sieve.operators import eq_xml
 from unittest import TestCase
@@ -169,9 +170,12 @@ class TestRepeatingWidgetBunch():
     def test_bad_getitem(self):
         self.bunch['asdf']
 
+
 class AlwaysValidateFalseValidator(vd.Validator):
     def validate_python(self, params, state=None):
         raise vd.ValidationError('I always throw up on roller coasters.')
+
+
 class AlwaysValidateFalseWidget(wd.Widget):
     validator = AlwaysValidateFalseValidator()
     template = "mako:tw2.core.test_templates.always_validate_false_widget"
@@ -231,30 +235,85 @@ class TestWidget(tb.WidgetTest):
 class TestWidgetPostDefine(object):
 
     def test_instantiates_formencode_validator(self):
-        def some_formencode_validator():
-            return formencode.validators.Bool
-
         class SomeWidget(wd.Widget):
             validator = some_formencode_validator()
 
         assert_is_instance(SomeWidget.validator, formencode.Validator)
 
     def test_instantiates_tw2_validator(self):
-        def some_validator():
-            return vd.BlankValidator
-
         class SomeWidget(wd.Widget):
-            validator = some_validator()
+            validator = some_tw2_validator()
 
         assert_is_instance(SomeWidget.validator, vd.Validator)
 
     def test_raises_parameter_error_for_unsupported_validator_type(self):
-        def create_unsuported_validator():
-            return Mock()
-
         with assert_raises(pm.ParameterError):
             class WidgetWithUnsupportedValidator(wd.Widget):
                 validator = create_unsuported_validator()
+
+
+def create_unsuported_validator():
+    return Mock()
+
+
+def some_formencode_validator():
+    return formencode.validators.Bool
+
+
+def some_tw2_validator():
+    return vd.BlankValidator
+
+
+class TestWidgetPrepare(object):
+
+    def test_handles_formencode_invalid_errors(self):
+        widget = create_widget(formencode.Validator,
+                               formencode.Invalid('Some message', None, None))
+
+        widget.prepare()
+
+    def test_handles_tw2_invalid_errors(self):
+        widget = create_widget(vd.Validator,
+                               vd.ValidationError('Some message'))
+
+        widget.prepare()
+
+    def test_uses_validation_result_as_error_message(self):
+        validation_message = 'Validation message'
+        widget = create_widget(vd.Validator,
+                               vd.ValidationError(validation_message))
+
+        widget.prepare()
+
+        assert_equals(widget.error_msg, validation_message)
+
+    def test_allways_uses_emtpy_dictionary_as_value(self):
+        widget = create_widget(return_value={})
+
+        widget.prepare()
+
+        widget.validator.from_python.assert_called_with({})
+
+    def test_empty_dictionary_is_converted_back_to_none(self):
+        widget = create_widget(return_value={})
+
+        widget.prepare()
+
+        assert_equals(widget.value, None)
+
+
+def create_widget(validator_type=vd.Validator, validation_error=None,
+                  return_value=None):
+    a_validator = Mock(spec=vd.Validator)
+    if validation_error:
+        a_validator.from_python.side_effect = validation_error
+    else:
+        a_validator.from_python.return_value = return_value
+
+    class SomeWidget(wd.Widget):
+        validator = a_validator
+
+    return SomeWidget().req()
 
 
 class SubCompoundTestWidget(wd.CompoundWidget):
@@ -462,32 +521,6 @@ class TestWidgetMisc(TestCase):
                 pass
 
         self.assert_(CWidget.get_link())
-
-    def testValidationError(self):
-
-        originalInvalid = vd.Invalid
-
-        class MockInvalid(Exception):
-            def __init__(self, msg):
-                self.msg = msg
-                super(MockInvalid, self).__init__(msg)
-
-        vd.Invalid = MockInvalid  # patch Invalid for this test
-        try:
-            err_msg = "NO"
-
-            class MockValidator(vd.Validator):
-                def from_python(self, value, state=None):
-                    raise vd.Invalid(err_msg)
-
-            class T(wd.Widget):
-                validator = MockValidator()
-
-            i = T.req()
-            i.prepare()
-            self.assert_(err_msg in i.error_msg)
-        finally:
-            vd.Invalid = originalInvalid  # reverse patch
 
     def testIterParams(self):
         class T(wd.Widget):

@@ -227,10 +227,7 @@ class Widget(pm.Parametered):
                     issubclass(cls.validator, SUPPORTED_VALIDATORS):
                 cls.validator = cls.validator()
 
-            if not isinstance(cls.validator, SUPPORTED_VALIDATORS):
-                raise pm.ParameterError(
-                    "Validator must be either a tw2 or FormEncode validator"
-                )
+            cls._enforce_validator_type()
 
         cls.resources = [r(parent=cls) for r in cls.resources]
         cls._deferred = [k for k, v in inspect.getmembers(cls)
@@ -244,6 +241,13 @@ class Widget(pm.Parametered):
                    p.default is not pm.Required:
 
                     setattr(cls, p.name, p.default)
+
+    @classmethod
+    def _enforce_validator_type(cls):
+        if not isinstance(cls.validator, SUPPORTED_VALIDATORS):
+            raise pm.ParameterError(
+                "Validator must be either a tw2 or FormEncode validator"
+            )
 
     @classmethod
     def _gen_compound_id(cls, for_url):
@@ -315,30 +319,18 @@ class Widget(pm.Parametered):
                 setattr(self, a, dfr.fn())
 
         if self.validator and not hasattr(self, '_validated'):
-            value = self.value
-
             # Handles the case where FE expects dict-like object, but
             # you have None at your disposal.
-            if formencode and \
-               isinstance(self.validator, formencode.Validator) and \
-               self.value is None:
-                value = {}
-
-            if formencode:
-                INVALID_ERRORS = (vd.Invalid, formencode.api.Invalid)
-            else:
-                INVALID_ERRORS = vd.Invalid
+            value = self.value or {}
 
             try:
                 value = self.validator.from_python(value)
-            except INVALID_ERRORS, e:
+            except VALIDATION_ERRORS as e:
                 value = str(value)
                 self.error_msg = e.msg
 
-            if formencode and value == {} and self.value is None:
-                value = None
-
-            self.value = value
+            if value:
+                self.value = value
 
         if self._attr or 'attrs' in self.__dict__:
             self.attrs = self.attrs.copy()
