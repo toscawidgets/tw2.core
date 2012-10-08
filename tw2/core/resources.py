@@ -176,11 +176,9 @@ class Link(Resource):
         )
 
     def __eq__(self, other):
-        attrs = ['link', 'modname', 'filename']
-        return all([
-            getattr(self, attr, None) == getattr(other, attr, None)
-            for attr in attrs
-        ])
+        return (isinstance(other, Link) and self.link == other.link
+            and self.modname == other.modname
+            and self.filename == other.filename)
 
     def __repr__(self):
         return "%s('%s')" % (
@@ -227,6 +225,9 @@ class JSSource(Resource):
     location = 'bodybottom'
     template = 'tw2.core.templates.jssource'
 
+    def __eq__(self, other):
+        return isinstance(other, JSSource) and self.src == other.src
+
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
 
@@ -236,6 +237,7 @@ class JSSource(Resource):
             raise ValueError("%r must be provided a 'src' attr" % self)
         self.src = Markup(self.src)
 
+
 class CSSSource(Resource):
     """
     Inline Cascading Style-Sheet code.
@@ -243,6 +245,9 @@ class CSSSource(Resource):
     src = pm.Param('CSS code', default=None)
     location = 'head'
     template = 'tw2.core.templates.csssource'
+
+    def __eq__(self, other):
+        return isinstance(other, CSSSource) and self.src == other.src
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.src)
@@ -252,6 +257,7 @@ class CSSSource(Resource):
         if not self.src:
             raise ValueError("%r must be provided a 'src' attr" % self)
         self.src = Markup(self.src)
+
 
 class _JSFuncCall(JSSource):
     """
@@ -445,7 +451,7 @@ class _ResourceInjector(util.MultipleReplacer):
     cannot be injected again (in the same request). This is useful in case
     :class:`injector_middleware` is stacked so it doesn't inject them again.
 
-    Injecting them explicitly is neccesary if the response's body is being
+    Injecting them explicitly is necessary if the response's body is being
     cached before the middleware has a chance to inject them because when the
     cached version is served no widgets are being rendered so they will not
     have a chance to register their resources.
