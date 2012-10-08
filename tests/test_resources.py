@@ -32,13 +32,13 @@ class TestResources(object):
     def test_res_collection(self):
         rl = testapi.request(1, mw)
         wa = TestWidget(id='a')
-        wb = TestWidget(id='b', resources=[js,css])
+        wb = TestWidget(id='b', resources=[js, css])
         wa.display()
         rl = twc.core.request_local()
         assert(len(rl.get('resources', [])) == 0)
         wb.display()
         for r in rl['resources']:
-            assert(any(isinstance(r, b) for b in [js,css]))
+            assert(any(isinstance(r, b) for b in [js, css]))
         rl = testapi.request(2)
         r = rl.get('resources', [])
         assert len(r) == 0, r
@@ -187,6 +187,34 @@ class TestResources(object):
             <title>a</title></head><body>hello<script type="text/javascript">bob</script>\
             </body></html>')
 
+    def test_inject_js_twice(self):
+        rl = testapi.request(1, mw)
+        js.inject()
+        js.inject()
+        out = twc.inject_resources(html)
+        print out
+        assert eq_xhtml(out, '<html><head>\
+            <script type="text/javascript" src="paj"></script>\
+            <title>a</title></head><body>hello</body></html>')
+
+    def test_inject_jssrc_twice(self):
+        rl = testapi.request(1, mw)
+        jssrc.inject()
+        jssrc.inject()
+        out = twc.inject_resources(html)
+        assert eq_xhtml(out, '<html><head>\
+            <title>a</title></head><body>hello<script type="text/javascript">bob</script>\
+            </body></html>')
+
+    def test_inject_csssrc_twice(self):
+        rl = testapi.request(1, mw)
+        csssrc.inject()
+        csssrc.inject()
+        out = twc.inject_resources(html)
+        assert eq_xhtml(out, '<html><head>\
+            <style type="text/css">.bob { font-weight: bold; }</style>\
+            <title>a</title></head><body>hello</body></html>')
+
     def test_detect_clear(self):
         widget = twc.Widget(id='a', template='genshi:tw2.core.test_templates.inner_genshi', test='test', resources=[js])
         rl = testapi.request(1, mw)
@@ -286,7 +314,7 @@ function test(a, b) {
             displays.append(r.display(template='%s:%s' % (e, twr.JSSource.template)))
 
         compare_to = str(displays[0]).strip()
-        equal_displays = filter(lambda x:str(x).strip()==compare_to, displays)
+        equal_displays = filter(lambda x: str(x).strip() == compare_to, displays)
         assert len(displays) == len(equal_displays), equal_displays
 
 class TestCSSSourceEscaping(tb.WidgetTest):
@@ -310,7 +338,7 @@ p > strong:after {
             displays.append(r.display(template='%s:%s' % (e, twr.CSSSource.template)))
 
         compare_to = str(displays[0]).strip()
-        equal_displays = filter(lambda x:str(x).strip()==compare_to, displays)
+        equal_displays = filter(lambda x: str(x).strip() == compare_to, displays)
         assert len(displays) == len(equal_displays), equal_displays
 
 from pkg_resources import Requirement
@@ -338,7 +366,7 @@ class TestResourcesMisc(TestCase):
         should set the src attribute
         """
         s = twr.JSSymbol("source")
-        self.assert_(s.src=="source")
+        self.assert_(s.src == "source")
 
     def testEncoderDefault(self):
         enc = twc.encoder
