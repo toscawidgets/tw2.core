@@ -500,9 +500,13 @@ class TestValidatorMisc(TestCase):
         except ValidationError, ve:
             self.assert_(ve.message == v.msgs["required"], ve.message)
 
-    def testBlankValidator(self):
+    def testBlankValidatorNone(self):
         v = BlankValidator()
         self.assert_(v.to_python(None) == EmptyField)
+
+    def testBlankValidatorEmptyString(self):
+        v = BlankValidator()
+        self.assert_(v.to_python('') == EmptyField)
 
     def testRangeValidator(self):
         v = RangeValidator(min=0, max=2)

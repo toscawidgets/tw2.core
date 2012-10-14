@@ -4,6 +4,8 @@ glob:Thumbs.db
 glob:docs/.output/
 glob:.coverage
 glob:.noseids
+glob:.project
+glob:.pydevproject
 glob:html
 glob:dist
 glob:build

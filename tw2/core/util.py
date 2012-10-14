@@ -47,7 +47,7 @@ class MultipleReplacer(object):
     """Performs several regexp substitutions on a string with a single pass.
 
     ``dct`` is a dictionary keyed by a regular expression string and with a
-    callable as value that will get called to produce a subsituted value.
+    callable as value that will get called to produce a substituted value.
 
     The callable takes the matched text as first argument and may take any
     number of positional and keyword arguments. These arguments are any extra
@@ -79,7 +79,7 @@ class MultipleReplacer(object):
         return "<%s at %d (%r)>" % (self.__class__.__name__, id(self),
                                     self._raw_regexp)
 
-    def _subsitutor(self, *args, **kw):
+    def _substitutor(self, *args, **kw):
         def substitutor(match):
             tuples = itertools.izip(self._substitutors, match.groups())
             for substitutor, group in tuples:
@@ -88,7 +88,7 @@ class MultipleReplacer(object):
         return substitutor
 
     def __call__(self, string, *args, **kw):
-        return self._regexp.sub(self._subsitutor(*args, **kw), string)
+        return self._regexp.sub(self._substitutor(*args, **kw), string)
 
 
 def abort(req, status):
