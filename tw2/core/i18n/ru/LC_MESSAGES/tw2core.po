@@ -33,7 +33,7 @@ msgstr "Прошла неисправная передача формы; пож�
 
 #: tw2/core/validation.py:240
 msgid "Value is too short"
-msgstr "Слишком короткое значение "
+msgstr "Слишком короткое значение"
 
 #: tw2/core/validation.py:241
 msgid "Value is too long"
