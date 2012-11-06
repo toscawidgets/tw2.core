@@ -166,7 +166,6 @@ To define a resource, just add a :class:`tw2.core.Resource` subclass to the widg
 .. autoclass:: tw2.core.CSSSource
 .. autoclass:: tw2.core.JSLink
 .. autoclass:: tw2.core.JSSource
-.. autoclass:: tw2.core.JSFuncCall
 
 Resources are widgets, but follow a slightly different lifecycle. Resource subclasses are passed into the :attr:`resources` parameter. An instance is created for each request, but this is only done at the time of the parent Widget's :meth:`display` method. This gives widgets a chance to add dynamic resources in their :meth:`prepare` method.
 
@@ -202,14 +201,17 @@ Toscawidgets2 provides an ``archive_tw2_resources`` distutils command::
 
 
 Constructing Javascript from Python
------------------------------------
+===================================
 
 .. https://github.com/toscawidgets/tw2.core/issues/58
 
-If you like, you can invoke Widgets' :meth:`add_call` method inside
-:meth:`prepare` to construct dynamic javascript calls at display time.
+.. autoclass:: tw2.core.js_function
+.. autoclass:: tw2.core.js_callback
+.. autoclass:: tw2.core.js_symbol
 
-For instance::
+**All together now**
+
+Consider the following prepare method::
 
     def prepare(self):
         super(MyWidget, self).prepare()
