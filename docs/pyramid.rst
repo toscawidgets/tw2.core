@@ -113,9 +113,10 @@ contents::
     </html>
 
 Fourthly, modify the class responsible for producing your resource tree,
-the ``MyApp`` class in ``myapp/models.py``.  At the top of the file add::
+the ``MyApp`` class in ``myapp/models.py``.
 
-Add the following hook into the ``def __getitem__(self, key):`` method of the ``MyApp`` class just above the ``session= DBSession()`` line::
+Add the following hook into the ``def __getitem__(self, key):`` method of
+the ``MyApp`` class just above the ``session= DBSession()`` line::
 
     if key == 'movie':
         import myapp.widgets
