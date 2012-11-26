@@ -281,7 +281,7 @@ class Widget(pm.Parametered):
     @classmethod
     def _gen_compound_key(cls):
         if not cls.key:
-            return None
+            return cls.compound_id
 
         parent_key = getattr(cls.parent, 'compound_key', None)
         if parent_key:

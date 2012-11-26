@@ -3,11 +3,11 @@ Pyramid Tutorial
 
 .. note::
     The files created in this tutorial can be downloaded as a `.zip file
-    <https://github.com/ralphbean/tw2.core-docs-pyramid/zipball/master>`_,
+    <https://github.com/toscawidgets/tw2.core-docs-pyramid/zipball/master>`_,
     a `.tar file
-    <https://github.com/ralphbean/tw2.core-docs-pyramid/tarball/master>`_,
+    <https://github.com/toscawidgets/tw2.core-docs-pyramid/tarball/master>`_,
     or can be cloned from a `github repository
-    <http://github.com/ralphbean/tw2.core-docs-pyramid>`_.
+    <https://github.com/toscawidgets/tw2.core-docs-pyramid>`_.
 
 
 Getting Set Up
@@ -113,9 +113,10 @@ contents::
     </html>
 
 Fourthly, modify the class responsible for producing your resource tree,
-the ``MyApp`` class in ``myapp/models.py``.  At the top of the file add::
+the ``MyApp`` class in ``myapp/models.py``.
 
-Add the following hook into the ``def __getitem__(self, key):`` method of the ``MyApp`` class just above the ``session= DBSession()`` line::
+Add the following hook into the ``def __getitem__(self, key):`` method of
+the ``MyApp`` class just above the ``session= DBSession()`` line::
 
     if key == 'movie':
         import myapp.widgets
