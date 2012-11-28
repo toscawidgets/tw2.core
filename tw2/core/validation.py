@@ -75,8 +75,8 @@ class ValidationError(BaseValidationError):
 
 def safe_validate(validator, value, state=None):
     try:
-        value = validator.to_python(value, state=None)
-        validator.validate_python(value, state=None)
+        value = validator.to_python(value, state=state)
+        validator.validate_python(value, state=state)
         return value
     except ValidationError:
         return Invalid
