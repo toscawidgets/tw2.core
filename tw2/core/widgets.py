@@ -418,6 +418,7 @@ class Widget(pm.Parametered):
             self.prepare()
 
         if self._js_calls:
+            self.safe_modify('resources')
             #avoids circular reference
             import resources as rs
             for item in self._js_calls:
