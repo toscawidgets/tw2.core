@@ -45,8 +45,8 @@ class TWEncoder(simplejson.encoder.JSONEncoder):
     """
 
     def __init__(self, *args, **kw):
-        # This makes encoded objects be prettily formatted.  It is very nice for
-        # debugging and should be made configurable at some point.
+        # This makes encoded objects be prettily formatted.  It is very nice
+        # for debugging and should be made configurable at some point.
         # TODO -- make json encoding pretty-printing configurable
         #kw['indent'] = '  '
 
@@ -97,6 +97,8 @@ encoder = None  # This gets reset at the bottom of the file.
 
 
 class js_symbol(object):
+    """ An unquoted js symbol like ``document`` or ``window`` """
+
     def __init__(self, name=None, src=None):
         if name == None and src == None:
             raise ValueError("js_symbol must be given name or src")
@@ -162,7 +164,7 @@ class js_callback(object):
 
 
 class js_function(object):
-    """A JS function that can be "called" from python and and added to
+    """A JS function that can be "called" from python and added to
     a widget by widget.add_call() so it get's called every time the widget
     is rendered.
 

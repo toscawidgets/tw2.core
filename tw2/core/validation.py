@@ -75,8 +75,8 @@ class ValidationError(BaseValidationError):
 
 def safe_validate(validator, value, state=None):
     try:
-        value = validator.to_python(value, state=None)
-        validator.validate_python(value)
+        value = validator.to_python(value, state=state)
+        validator.validate_python(value, state=state)
         return value
     except ValidationError:
         return Invalid
@@ -181,7 +181,7 @@ class Validator(object):
         'required': _('Enter a value'),
         'decode': _('Received in wrong character set; should be $encoding'),
         'corrupt': _('Form submission received corrupted; please try again'),
-        'childerror': _(''),  # Children of this widget have errors
+        'childerror': '',  # Children of this widget have errors
     }
     required = False
     strip = True

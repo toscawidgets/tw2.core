@@ -3,11 +3,11 @@ TurboGears 2 Tutorial
 
 .. note::
     The files created in this tutorial can be downloaded as a `.zip file
-    <https://github.com/ralphbean/tw2.core-docs-turbogears/zipball/master>`_,
+    <https://github.com/toscawidgets/tw2.core-docs-turbogears/zipball/master>`_,
     a `.tar file
-    <https://github.com/ralphbean/tw2.core-docs-turbogears/tarball/master>`_,
+    <https://github.com/toscawidgets/tw2.core-docs-turbogears/tarball/master>`_,
     or can be cloned from a `github repository
-    <http://github.com/ralphbean/tw2.core-docs-turbogears>`_.
+    <https://github.com/toscawidgets/tw2.core-docs-turbogears>`_.
 
 
 

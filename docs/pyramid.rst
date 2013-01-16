@@ -3,11 +3,11 @@ Pyramid Tutorial
 
 .. note::
     The files created in this tutorial can be downloaded as a `.zip file
-    <https://github.com/ralphbean/tw2.core-docs-pyramid/zipball/master>`_,
+    <https://github.com/toscawidgets/tw2.core-docs-pyramid/zipball/master>`_,
     a `.tar file
-    <https://github.com/ralphbean/tw2.core-docs-pyramid/tarball/master>`_,
+    <https://github.com/toscawidgets/tw2.core-docs-pyramid/tarball/master>`_,
     or can be cloned from a `github repository
-    <http://github.com/ralphbean/tw2.core-docs-pyramid>`_.
+    <https://github.com/toscawidgets/tw2.core-docs-pyramid>`_.
 
 
 Getting Set Up
@@ -15,14 +15,14 @@ Getting Set Up
 
 First, we'll create a python ``virtualenv`` and install ``pyramid`` into it::
 
-    $ mkvirtualenv --no-site-packages tw2-and-pyramid
-    $ pip install pyramid PasteScript
-    $ paster create -t pyramid_alchemy myapp
+    $ mkvirtualenv tw2-and-pyramid
+    $ pip install pyramid
+    $ pcreate -t alchemy myapp
     $ cd myapp
 
-Open ``setup.py`` and add the following to the ``requires=[...]`` entry::
+Open ``setup.py`` and add the following to the ``requires = [...]`` entry::
 
-    requires=[
+    requires = [
 
         ...
 
@@ -33,34 +33,39 @@ Open ``setup.py`` and add the following to the ``requires=[...]`` entry::
         "tw2.jqplugins.jqgrid",
         ],
 
-Once that's done.  Install your dependencies by running::
+Once that's done.  Install your dependencies and initialize your
+database by running::
 
     $ python setup.py develop
+    $ initialize_myapp_db development.ini
 
 Enabling ToscaWidgets2
 ----------------------
 
-Easy!  Just edit ``development.ini`` and add ``tw2.core`` to the
-pipline so that it looks like::
+Easy!  Make a couple edits to ``development.ini``.
+
+If you look at the top, there should be a section heading labeled
+``[app:main]``.  Change that to ``[app:myapp]``.
+
+Next, just above the ``[server:main]`` section, add a new section that looks
+like::
 
     [pipeline:main]
     pipeline =
-        egg:WebError#evalerror
-        tm
-        tw2.core
+        tw2
         myapp
 
 We'll add another section where pyramid will take configuration values for the
-tw2.core middleware itself.  Add it just belo the ``[pipeline:main]`` section::
+tw2.core middleware itself.  Add it just below the ``[pipeline:main]`` section::
 
-    [filter:tw2.core]
+    [filter:tw2]
     use = egg:tw2.core#middleware
 
 We'll add more configuration values later.  For now,
 check that this worked by running the following and visiting
 http://localhost:6543::
 
-    $ paster serve development.ini
+    $ pserve --reload development.ini
 
 Building a Form
 ---------------
@@ -72,13 +77,17 @@ First, create a new file ``myapp/widgets.py`` with the contents::
     import tw2.core
     import tw2.forms
 
+
     class MovieForm(tw2.forms.FormPage):
         title = 'Movie'
+
         class child(tw2.forms.TableForm):
             id = tw2.forms.HiddenField()
             title = tw2.forms.TextField(validator=tw2.core.Required)
             director = tw2.forms.TextField()
-            genres = tw2.forms.CheckBoxList(options=['Action', 'Comedy', 'Romance', 'Sci-fi'])
+            genres = tw2.forms.CheckBoxList(options=[
+                'Action', 'Comedy', 'Romance', 'Sci-fi'])
+
             class cast(tw2.forms.GridLayout):
                 extra_reps = 5
                 character = tw2.forms.TextField()
@@ -86,8 +95,10 @@ First, create a new file ``myapp/widgets.py`` with the contents::
 
 Second, modify ``myapp/views.py`` and add a new view callable like so::
 
-    def view_widget(context, request):
-        return {'widget': context}
+    import myapp.widgets
+    @view_config(route_name='movie', renderer='templates/widget.pt')
+    def view_widget(request):
+        return {'widget': myapp.widgets.MovieForm}
 
 Thirdly, add a new template ``myapp/templates/widget.pt`` (which is a `chameleon
 <http://pypi.python.org/pypi/Chameleon>`_ template) with the following
@@ -112,31 +123,17 @@ contents::
     </body>
     </html>
 
-Fourthly, modify the class responsible for producing your resource tree,
-the ``MyApp`` class in ``myapp/models.py``.  At the top of the file add::
-
-Add the following hook into the ``def __getitem__(self, key):`` method of the ``MyApp`` class just above the ``session= DBSession()`` line::
-
-    if key == 'movie':
-        import myapp.widgets
-        w = myapp.widgets.MovieForm.req()
-        w.__parent__ = self
-        w.__name__ = key
-        return w
-
-Having modified the resource tree in ``myapp/models.py``, added a new view
+Having added a new view
 callable to ``myapp/views.py``, added the new template
 ``myapp/templates/widget.pt``, and having added the widget definition
 itself to ``myapp/widgets.py``, all that's left is to wire it all together.
 Edit your applications configuration in ``myapp/__init__.py`` and add the
 view to the application registry with the following call::
 
-    config.add_view('myapp.views.view_widget',
-                    context='myapp.widgets.MovieForm',
-                    renderer="templates/widget.pt")
+    config.add_route('movie', '/movie')
 
-With those five file edits in place, you should be able to restart the
-application with ``paster serve development.ini`` (there is a ``--reload``
+With those four file edits in place, you should be able to restart the
+application with ``pserve development.ini`` (there is a ``--reload``
 option for convenience) and point your browser
 at http://localhost:6543/movie.
 
@@ -168,7 +165,7 @@ class definition in ``myapp/widgets.py`` just above the line
 
     resources = [tw2.core.CSSLink(link='static/myapp.css')]
 
-Restart ``paster`` and browse to http://localhost:6543/1
+Restart ``pserve`` and browse to http://localhost:6543/movie
 to see the new css in action.
 
 Connecting to a Database
@@ -178,7 +175,7 @@ The next step is to save movies to a database.  To do this, we'll use only
 `SQLAlchemy <http://www.sqlalchemy.org/>`_ just like in the :doc:`turbogears`
 tutorial (and not `elixir <http://elixir.ematia.de/trac/wiki>`_ as in
 the :doc:`standalone` tutorial).  SQLAlchemy is built into our pyramid app
-from the get-go by way of us using the pyramid_alchemy paster template.
+from the get-go by way of us using the alchemy paster template.
 Edit ``development.ini`` and modify the ``[filter:tw2.core]`` section like
 so::
 
@@ -190,7 +187,7 @@ so::
 Next, edit ``myapp/models.py`` with the following changes.  Add this set of
 imports to the top::
 
-    from sqlalchemy import Table
+    from sqlalchemy import Table, Unicode
     from sqlalchemy import ForeignKey
     from sqlalchemy.orm import relation
     from sqlalchemy.orm import backref
@@ -228,18 +225,26 @@ Just above the definition of ``class MyModel(Base):`` add::
         character = Column(Unicode(255))
         actor = Column(Unicode(255))
 
-And finally inside the ``def populate()`` method of the same file add::
+Go off now to ``myapp/scripts/initializedb.py`` where we have to make a couple
+edits.  First, add ``Genre`` to the list of things you're importing from
+``..models``.  Second, modify the call to ``get_appsettings(config_uri)`` to
+look like ``get_appsettings(config_uri, name="myapp")``.  Thirdly, inside the
+``with transaction.manager:`` line, add the following::
 
     for name in ['Action', 'Comedy', 'Romance', 'Sci-fi']:
-        session.add(Genre(name=name))
+        DBSession.add(Genre(name=name))
 
-Now done with ``myapp/models.py``, edit ``myapp/views.py`` and replace the definition of ``def view_widget(context, request):`` with::
+Now done with ``myapp/models.py`` and ``myapp/scripts/initializedb.py``, edit
+``myapp/views.py`` and replace the definition of ``def view_widget(request):`` with::
 
     import tw2.core
-    def view_widget(context, request):
-        context.fetch_data(request)
-        tw2.core.register_controller(context, 'movie_submit')
-        return {'widget': context}
+    import myapp.widgets
+    @view_config(route_name='movie', renderer='templates/widget.pt')
+    def view_widget(request):
+        widget = myapp.widgets.MovieForm.req()
+        widget.fetch_data(request)
+        tw2.core.register_controller(widget, 'movie_submit')
+        return {'widget': widget}
 
 Lastly, edit ``myapp/widgets.py`` and add::
 
@@ -261,13 +266,14 @@ And the last for the `MovieForm`, change ``genres = tw2.forms.CheckBoxList( ... 
 
 Now, in your command prompt run::
 
-    rm myapp.db
-    paster serve development.ini
+    rm myapp.sqlite
+    initialize_myapp_db development.ini
+    pserve development.ini
 
 This will recreate and initialize your database in a sqlite DB.
 
 We're almost done, but not quite.  Nonetheless, this is a good point to restart
-your app and test to see if any mistakes have cropped up.  Restart `paster`
+your app and test to see if any mistakes have cropped up.  Restart `pserve`
 and visit http://localhost:6543/movie.  Submit your first entry.  It
 should give you an `Error 404`, but don't worry.  Point your browser now to
 http://localhost:6543/movie?id=1 and you should see the same
@@ -282,6 +288,7 @@ Add a whole new class to ``myapp/widgets.py``::
         entity = myapp.models.Movie
         title = 'Movies'
         newlink = tw2.forms.LinkField(link='/movie', text='New', value=1)
+
         class child(tw2.forms.GridLayout):
             title = tw2.forms.LabelField()
             id = tw2.forms.LinkField(link='/movie?id=$', text='Edit', label=None)
@@ -291,21 +298,18 @@ of ``MovieForm``::
 
     redirect = '/list'
 
-Add another hook into the ``MyApp`` ``__getitem__(...)`` method in ``myapp/models.py``::
+Add another route to your top level Pyramid configuration by editing
+``myapp/__init__.py``::
 
-    if key == 'list':
-        import myapp.widgets
-        w = myapp.widgets.MovieList.req()
-        w.__parent__ = self
-        w.__name__ = key
-        return w
+    config.add_route('list', '/list')
 
+And add the corresponding view to ``myapp/views.py``::
 
-And add the following view configuration in ``myapp/__init__.py``::
-
-    config.add_view('myapp.views.view_widget',
-                    context='myapp.widgets.MovieList',
-                    renderer="templates/widget.pt")
+    @view_config(route_name='list', renderer='templates/widget.pt')
+    def view_list(request):
+        widget = myapp.widgets.MovieList.req()
+        widget.fetch_data(request)
+        return {'widget': widget}
 
 Now restart `paster` and browse to http://localhost:6543/list
 
@@ -349,6 +353,7 @@ Add the following class definition to the same file::
         pager_options = { "search" : True, "refresh" : True, "add" : False, }
         options = {
             'url': '/tw2_controllers/db_jqgrid/',
+            'caption': 'A grid!',
             'rowNum':15,
             'rowList':[15,30,50],
             'viewrecords':True,
@@ -359,26 +364,16 @@ Add the following class definition to the same file::
 
 Add the following to your view configuration in ``myapp/__init__.py``::
 
-    config.add_view('myapp.views.view_grid_widget',
-                    context='myapp.widgets.GridWidget',
-                    renderer="templates/widget.pt")
+    config.add_route('grid', '/grid')
 
 
 Add that view to ``myapp/views.py`` itself::
 
-    def view_grid_widget(context, request):
-        tw2.core.register_controller(context, 'db_jqgrid')
-        return {'widget': context}
-
-Finally add another hook into ``MyApp.__getitem__(...)``::
-
-    if key == 'grid':
-        import myapp.widgets
-        w = myapp.widgets.GridWidget.req()
-        w.__parent__ = self
-        w.__name__ = key
-        return w
-
+    @view_config(route_name='grid', renderer='templates/widget.pt')
+    def view_grid(request):
+        widget = myapp.widgets.GridWidget.req()
+        tw2.core.register_controller(widget, 'db_jqgrid')
+        return {'widget': widget}
 
 Redirect your browser to http://localhost:6543/grid and you should
 see the sortable, searchable jQuery grid.

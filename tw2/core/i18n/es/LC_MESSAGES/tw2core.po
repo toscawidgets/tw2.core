@@ -1,0 +1,111 @@
+# Spanish translations for tw2.core.
+# Copyright (C) 2012 ORGANIZATION
+# This file is distributed under the same license as the tw2.core project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+# Christoph Zwerschke <cito@online.de>, 2012.
+msgid ""
+msgstr ""
+"Project-Id-Version: tw2.core 2.1.2\n"
+"Report-Msgid-Bugs-To: toscawidgets-discuss@googlegroups.com\n"
+"POT-Creation-Date: 2012-10-02 00:21+0200\n"
+"PO-Revision-Date: 2012-10-15 21:27+0200\n"
+"Last-Translator: Christoph Zwerschke <cito@online.de>\n"
+"Language-Team: Spanish <toscawidgets-discuss@googlegroups.com>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: Babel 0.9.6\n"
+
+#: tw2/core/validation.py:181
+msgid "Enter a value"
+msgstr "Introducir un valor"
+
+#: tw2/core/validation.py:182
+msgid "Received in wrong character set; should be $encoding"
+msgstr "Recibido en juego de caracteres incorrecto, debería ser $encoding"
+
+#: tw2/core/validation.py:183
+msgid "Form submission received corrupted; please try again"
+msgstr "Los datos del formulario recibido dañado, por favor inténtelo de nuevo"
+
+#: tw2/core/validation.py:240
+msgid "Value is too short"
+msgstr "El valor es demasiado corto"
+
+#: tw2/core/validation.py:241
+msgid "Value is too long"
+msgstr "El valor es demasiado largo"
+
+#: tw2/core/validation.py:262
+msgid "Must be at least $min characters"
+msgstr "Debe tener al menos $min caracteres"
+
+#: tw2/core/validation.py:264
+msgid "Cannot be longer than $max characters"
+msgstr "No pueden tener más de $max caracteres"
+
+#: tw2/core/validation.py:275
+msgid "Select at least $min"
+msgstr "Seleccione por lo menos $min"
+
+#: tw2/core/validation.py:276
+msgid "Select no more than $max"
+msgstr "Seleccione no más de $max"
+
+#: tw2/core/validation.py:292
+msgid "Must be at least $min"
+msgstr "Debe tener al menos $min"
+
+#: tw2/core/validation.py:293
+msgid "Cannot be more than $max"
+msgstr "No puede ser más de $max"
+
+#: tw2/core/validation.py:312
+msgid "Must be an integer"
+msgstr "Debe ser un entero"
+
+#: tw2/core/validation.py:347
+msgid "You must select this"
+msgstr "Debe seleccionar esta"
+
+#: tw2/core/validation.py:364 tw2/core/validation.py:462
+msgid "Invalid value"
+msgstr "Valor no válido"
+
+#: tw2/core/validation.py:384
+msgid "Must follow date format $format_str"
+msgstr "Debe seguir el formato de fecha $format_str"
+
+#: tw2/core/validation.py:385
+msgid "Cannot be earlier than $min_str"
+msgstr "No puede ser antes de $min_str"
+
+#: tw2/core/validation.py:386
+msgid "Cannot be later than $max_str"
+msgstr "No puede ser después de $max_str"
+
+#: tw2/core/validation.py:440
+msgid "Must follow date/time format $format_str"
+msgstr "Debe seguir el formato de fecha/hora $format_str"
+
+#: tw2/core/validation.py:477
+msgid "Must be a valid email address"
+msgstr "Debe ser una dirección válida de email"
+
+#: tw2/core/validation.py:487
+msgid "Must be a valid URL"
+msgstr "Debe ser una URL válida"
+
+#: tw2/core/validation.py:506
+msgid "Must be a valid IP address"
+msgstr "Debe ser una dirección IP válida"
+
+#: tw2/core/validation.py:507
+msgid "Must be a valid IP network block"
+msgstr "Debe ser un bloque de direcciones IP de red válida"
+
+#: tw2/core/validation.py:532
+msgid "Must match $other_field_str"
+msgstr "Debe coincidir con $other_field_str"

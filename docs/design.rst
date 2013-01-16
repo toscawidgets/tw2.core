@@ -143,7 +143,6 @@ Non-template Output
 
 Instead of using a template, a widget can also override the ``generate_output`` method. This function generates the HTML output for a widget; by default, it renders the widget's template as described in the previous section, but can be overridden by any function that returns a string of HTML.
 
-
 Resources
 =========
 
@@ -167,7 +166,6 @@ To define a resource, just add a :class:`tw2.core.Resource` subclass to the widg
 .. autoclass:: tw2.core.CSSSource
 .. autoclass:: tw2.core.JSLink
 .. autoclass:: tw2.core.JSSource
-.. autoclass:: tw2.core.JSFuncCall
 
 Resources are widgets, but follow a slightly different lifecycle. Resource subclasses are passed into the :attr:`resources` parameter. An instance is created for each request, but this is only done at the time of the parent Widget's :meth:`display` method. This gives widgets a chance to add dynamic resources in their :meth:`prepare` method.
 
@@ -200,6 +198,46 @@ Toscawidgets2 provides an ``archive_tw2_resources`` distutils command::
         --output=/var/www/myapplication
 
 .. _middleware:
+
+
+Constructing Javascript from Python
+===================================
+
+.. https://github.com/toscawidgets/tw2.core/issues/58
+
+.. autoclass:: tw2.core.js_function
+.. autoclass:: tw2.core.js_callback
+.. autoclass:: tw2.core.js_symbol
+
+**All together now**
+
+Consider the following prepare method::
+
+    def prepare(self):
+        super(MyWidget, self).prepare()
+
+        # Create a js object for "$(document).ready(.."
+        when_ready = lambda f: twc.js_function('jQuery')(
+            twc.js_symbol('document')
+        ).ready(twc.js_callback(f))
+
+        # Dicts and other primitives get translated to js properly.
+        my_js_object = dict(foo="bar", hello="world")
+
+        # This is the main function we want to execute
+        payload = twc.js_function('console.log')(my_js_object)
+
+        # Register it all with tw2's middleware for later injection
+        self.add_call(when_ready(payload))
+
+The above will add the following output to the bottom of the response::
+
+    <script type="text/javascript">
+        jQuery(document).ready(function(){
+            console.log({"foo": "bar", "hello": "world"})
+        })
+    </script>
+
 
 Middleware
 ==========

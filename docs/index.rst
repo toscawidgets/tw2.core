@@ -53,8 +53,8 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
  * Email list:  `toscawidgets-discuss
    <http://groups.google.com/group/toscawidgets-discuss/>`_.
  * IRC channel: ``#toscawidgets`` on ``irc.freenode.net``
- * Bug tracker:  `Paj's bitbucket account
-   <http://bitbucket.org/paj/tw2core/issues?status=new&status=open>`_.
+ * Bug tracker:  `The toscawidgets github account
+   <https://github.com/toscawidgets/tw2.core/issues>`_.
 
    * (All ToscaWidgets 2 issues should go here, regardless of which
      component the issue exists in. However, ToscaWidgets 0.9 bugs
