@@ -429,7 +429,7 @@ If a field has no value, if defaults to ``None``. It is down to that field's val
 
 **Security Consideration**
 
-When a widget is redisplayed after a validation failure, it's value is derived from unvalidated user input. This means widgets must be "safe" for all input values. In practice, this is almost always the case without great care, so widgets are assumed to be safe. 
+When a widget is redisplayed after a validation failure, it's value is derived from unvalidated user input. This means widgets must be "safe" for all input values. In practice, this is almost always the case without great care, so widgets are assumed to be safe.
 
 .. warning::
     If a particular widget is not safe in this way, it must override :meth:`_validate` and set :attr:`value` to *None* in case of error.
@@ -460,7 +460,7 @@ Earlier versions of ToscaWidgets used FormEncode for validation and there are go
 
 However, there are challenges making FormEncode and ToscaWidgets work together. For example, both libraries store the widget hierarchy internally. This makes implementing some features (e.g. ``strip_name`` and :class:`tw2.dynforms.HidingSingleSelectField`) difficult. There are different needs for the handling of unicode, leading ToscaWidgets to override some behaviour. Also, FormEncode just does not support client-side validation, a planned feature of ToscaWidgets 2.
 
-ToscaWidgets 2 does not rely on FormEncode. However, developers can use FormEncode validators for individual fields. The API is compatible in that :meth:`to_python` and :meth:`from_python` are called for conversion, and :class:`formencode.Invalid` is caught. Also, if FormEncode is installed, the :class:`ValidationError` class is a subclass of :class:`formencode.Invalid`.
+ToscaWidgets 2 does not rely on FormEncode. However, developers can use FormEncode validators for individual fields. The API is compatible in that :meth:`to_python` and :meth:`from_python` are called for conversion and validation, and :class:`formencode.Invalid` is caught. Also, if FormEncode is installed, the :class:`ValidationError` class is a subclass of :class:`formencode.Invalid`.
 
 
 Using Validators
@@ -495,7 +495,7 @@ A two-pass approach is used internally, although this is generally hidden from t
 
 .. autofunction:: tw2.core.validation.unflatten_params
 
-If this fails, there is no attempt to determine which parameter failed; the whole submission is considered corrupt. If the root widget has an ``id``, this is stripped from the dictionary, e.g. ``{'myid': {'param':'value', ...}}`` is converted to ``{'param':'value', ...}``. A widget instance is created, and stored in request local storage. This allows compatibility with existing frameworks, e.g. the ``@validate`` decorator in TurboGears. There is a hook in :meth:`display` that detects the request local instance. After creating the instance, validate works recursively, using the :meth:`_validate`. 
+If this fails, there is no attempt to determine which parameter failed; the whole submission is considered corrupt. If the root widget has an ``id``, this is stripped from the dictionary, e.g. ``{'myid': {'param':'value', ...}}`` is converted to ``{'param':'value', ...}``. A widget instance is created, and stored in request local storage. This allows compatibility with existing frameworks, e.g. the ``@validate`` decorator in TurboGears. There is a hook in :meth:`display` that detects the request local instance. After creating the instance, validate works recursively, using the :meth:`_validate`.
 
 .. automethod:: tw2.core.Widget._validate
 
@@ -503,7 +503,7 @@ If this fails, there is no attempt to determine which parameter failed; the whol
 
 .. automethod:: tw2.core.CompoundWidget._validate
 
-Both :meth:`_validate` and :meth:`validate_python` take an optional state argument. :class:`CompoundWidget` and :class:`RepeatingWidget` pass the partially built dict/list to their child widgets as state. This is useful for creating validators like :class:`MatchValidator` that reference sibling values. If one of the child widgets fails validation, the slot is filled with an :class:`Invalid` instance.
+Both :meth:`_validate` and :meth:`to_python` take an optional state argument. :class:`CompoundWidget` and :class:`RepeatingWidget` pass the partially built dict/list to their child widgets as state. This is useful for creating validators like :class:`MatchValidator` that reference sibling values. If one of the child widgets fails validation, the slot is filled with an :class:`Invalid` instance.
 
 
 General Considerations

@@ -1,11 +1,12 @@
+
+from unittest import TestCase
+from nose.tools import eq_, raises
+from webob import Request
+from strainer.operators import eq_xhtml
+
 import tw2.core as twc, testapi, tw2.core.testbase as tb
 import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
-from nose.tools import eq_
-from webob import Request, Response
-from nose.tools import raises, eq_
-import formencode as fe
-from strainer.operators import eq_xhtml
-from unittest import TestCase
+
 
 class Test6(twc.Widget):
     test = twc.Param(attribute=True)
@@ -169,7 +170,7 @@ class TestRepeatingWidgetBunch():
         self.bunch['asdf']
 
 class AlwaysValidateFalseValidator(vd.Validator):
-    def validate_python(self, params, state=None):
+    def _validate_python(self, params, state=None):
         raise vd.ValidationError('I always throw up on roller coasters.')
 class AlwaysValidateFalseWidget(wd.Widget):
     validator = AlwaysValidateFalseValidator()
@@ -189,7 +190,10 @@ class TestWidget(tb.WidgetTest):
 
     def test_fe_validator(self):
         class FEWidget(wd.Widget):
-            validator = fe.validators.Int()
+            if vd.formencode:
+                validator = vd.formencode.validators.Int()
+            else:
+                validator = vd.IntValidator()
         FEWidget(id="s").validate({'s':'3'})
 
     @raises(twc.WidgetError)
@@ -436,13 +440,13 @@ class TestWidgetMisc(TestCase):
                 self.msg = msg
                 super(MockInvalid, self).__init__(msg)
 
-        vd.Invalid = MockInvalid  # patch Invalid for this test
+        vd.catch = MockInvalid  # patch Invalid for this test
         try:
             err_msg = "NO"
 
             class MockValidator(vd.Validator):
                 def from_python(self, value, state=None):
-                    raise vd.Invalid(err_msg)
+                    raise MockInvalid(err_msg)
 
             class T(wd.Widget):
                 validator = MockValidator()
@@ -451,7 +455,7 @@ class TestWidgetMisc(TestCase):
             i.prepare()
             self.assert_(err_msg in i.error_msg)
         finally:
-            vd.Invalid = originalInvalid  # reverse patch
+            vd.catch = originalInvalid  # reverse patch
 
     def testIterParams(self):
         class T(wd.Widget):
@@ -533,7 +537,7 @@ class TestWidgetMisc(TestCase):
         expected = dict(c1="foo", c2="bar")
 
         class V(vd.Validator):
-            def validate_python(self, value, state):
+            def _validate_python(self, value, state):
                 err = vd.ValidationError("fail")
                 err.error_dict = expected
                 raise err
@@ -637,7 +641,7 @@ class TestDisplayOnlyWidget(TestCase):
 
             self.assert_(False)
         except pm.ParameterError, pe:
-            self.assert_("must be" in pe.message)
+            self.assert_("must be" in str(pe))
     def testChildNoID(self):
         try:
             class T(wd.DisplayOnlyWidget):
@@ -646,7 +650,7 @@ class TestDisplayOnlyWidget(TestCase):
 
             self.assert_(False)
         except pm.ParameterError, pe:
-            self.assert_(" id" in pe.message)
+            self.assert_(" id" in str(pe))
 
 
     def testCompoundIDElem(self):

@@ -1,6 +1,8 @@
 >>> import tw2.core as twc
->>> twc.Validator().validate_python('')
->>> twc.Validator(required=True).validate_python('')
+
+>>> twc.Validator().to_python('')
+
+>>> twc.Validator(required=True).to_python('')
 Traceback (most recent call last):
     ...
 ValidationError: Enter a value
@@ -10,89 +12,142 @@ ValidationError: Enter a value
 >>> twc.Validator(strip=False).to_python(' a ')
 ' a '
 
->>> twc.LengthValidator(min=1).validate_python([])
+>>> twc.LengthValidator(min=1).to_python([])
+Traceback (most recent call last):
+    ...
+ValidationError: Enter a value
+
+>>> twc.LengthValidator(min=1).to_python([1])
+[1]
+
+>>> twc.LengthValidator(min=2).to_python([1])
 Traceback (most recent call last):
     ...
 ValidationError: Value is too short
->>> twc.LengthValidator(min=1).validate_python([1])
->>> twc.LengthValidator(max=2).validate_python([1,2])
->>> twc.LengthValidator(max=2).validate_python([1,2,3])
+
+>>> twc.LengthValidator(max=2).to_python([1, 2])
+[1, 2]
+
+>>> twc.LengthValidator(max=2).to_python([1, 2, 3])
 Traceback (most recent call last):
     ...
 ValidationError: Value is too long
 
->>> twc.StringLengthValidator(min=1).validate_python('')
-Traceback (most recent call last):
-    ...
-ValidationError: Must be at least 1 characters
->>> twc.StringLengthValidator(required=True).validate_python('')
+>>> twc.StringLengthValidator(min=1).to_python('')
 Traceback (most recent call last):
     ...
 ValidationError: Enter a value
->>> twc.StringLengthValidator(min=1).validate_python('a')
->>> twc.StringLengthValidator(max=2).validate_python('aa')
->>> twc.StringLengthValidator(max=2).validate_python('aaa')
+
+>>> twc.StringLengthValidator(required=False, min=1).to_python('')
+Traceback (most recent call last):
+    ...
+ValidationError: Enter a value
+
+>>> twc.StringLengthValidator(min=1).to_python('a')
+'a'
+>>> twc.StringLengthValidator(min=2).to_python('a')
+Traceback (most recent call last):
+    ...
+ValidationError: Must be at least 2 characters
+
+>>> twc.StringLengthValidator(max=2).to_python('aa')
+'aa'
+>>> twc.StringLengthValidator(max=2).to_python('aaa')
 Traceback (most recent call last):
     ...
 ValidationError: Cannot be longer than 2 characters
 
->>> twc.ListLengthValidator(min=1).validate_python([])
+>>> twc.ListLengthValidator(min=1).to_python([])
 Traceback (most recent call last):
     ...
-ValidationError: Select at least 1
->>> twc.ListLengthValidator(min=1).validate_python([1])
->>> twc.ListLengthValidator(max=2).validate_python([1,2])
->>> twc.ListLengthValidator(max=2).validate_python([1,2,3])
+ValidationError: Enter a value
+
+>>> twc.ListLengthValidator(min=1).to_python([1])
+[1]
+
+>>> twc.ListLengthValidator(min=2).to_python([1])
+Traceback (most recent call last):
+    ...
+ValidationError: Select at least 2
+
+>>> twc.ListLengthValidator(max=2).to_python([1, 2])
+[1, 2]
+
+>>> twc.ListLengthValidator(max=2).to_python([1, 2, 3])
 Traceback (most recent call last):
     ...
 ValidationError: Select no more than 2
 
 >>> twc.IntValidator().to_python('123')
 123
+
 >>> twc.IntValidator().to_python(' 123 ')
 123
+
 >>> twc.IntValidator().to_python('x')
 Traceback (most recent call last):
     ...
 ValidationError: Must be an integer
+
 >>> twc.IntValidator().to_python('') is None
 True
+
 >>> twc.IntValidator().to_python(None) is None
 True
+
 >>> twc.IntValidator().to_python(0)
 0
->>> twc.IntValidator(required=True).validate_python(None)
+
+>>> twc.IntValidator(required=True).to_python(None)
 Traceback (most recent call last):
     ...
 ValidationError: Enter a value
->>> twc.IntValidator(required=True).validate_python(0)
 
->>> twc.IntValidator(min=5).validate_python(4)
+>>> twc.IntValidator(required=True).to_python(0)
+0
+
+>>> twc.IntValidator(min=5).to_python(4)
 Traceback (most recent call last):
     ...
 ValidationError: Must be at least 5
->>> twc.IntValidator(min=5).validate_python(5)
->>> twc.IntValidator(max=5).validate_python(5)
->>> twc.IntValidator(max=5).validate_python(6)
+
+>>> twc.IntValidator(min=5).to_python(5)
+5
+
+>>> twc.IntValidator(max=5).to_python(5)
+5
+
+>>> twc.IntValidator(max=5).to_python(6)
 Traceback (most recent call last):
     ...
 ValidationError: Cannot be more than 5
+
 >>> twc.IntValidator().from_python(0)
 '0'
->>> twc.IntValidator().from_python(None) is None
-True
+
+>>> twc.IntValidator().from_python(None)
+''
 
 >>> twc.BoolValidator().to_python('')
-False
+
 >>> twc.BoolValidator().to_python('on')
 True
->>> twc.BoolValidator(required=True).validate_python(False)
+
+>>> twc.BoolValidator().to_python('off')
+False
+
+>>> twc.BoolValidator(required=True).to_python(None)
 Traceback (most recent call last):
     ...
 ValidationError: You must select this
 
->>> twc.EmailValidator().validate_python('paj@pajhome.org.uk')
->>> twc.EmailValidator().validate_python('paj')
+>>> twc.BoolValidator(required=True).to_python(False)
+False
+
+>>> twc.EmailValidator().to_python('paj@pajhome.org.uk')
+'paj@pajhome.org.uk'
+
+>>> twc.EmailValidator().to_python('paj')
 Traceback (most recent call last):
     ...
 ValidationError: Must be a valid email address
@@ -101,32 +156,49 @@ ValidationError: Must be a valid email address
 ...   pw = twc.Widget()
 ...   pw_conf = twc.Widget(validator=twc.MatchValidator('pw'))
 ...
->>> Test.validate({'pw':'fred'})
+
+>>> Test.validate({'pw': 'fred'})
 Traceback (most recent call last):
     ...
 ValidationError
->>> Test.validate({'pw':'fred', 'pw_conf':'fred'})
+
+>>> Test.validate({'pw_conf': 'fred'})
+Traceback (most recent call last):
+    ...
+ValidationError
+
+>>> Test.validate({'pw': 'fred', 'pw_conf': 'derf'})
+Traceback (most recent call last):
+    ...
+ValidationError
+
+>>> Test.validate({'pw': 'fred', 'pw_conf': 'fred'})
 {'pw_conf': u'fred', 'pw': u'fred'}
 
 >>> class Test(twc.CompoundWidget):
 ...   id = twc.Widget()
 ...   report = twc.Widget(key='id')
 ...
+
 >>> ins = Test.req()
+
 >>> ins._validate({'id':'test'})
-{'report': None, 'id': 'test'}
+{'id': 'test'}
+
 >>> ins.c.report.value
 'test'
 
 >>> class MyVal(twc.Validator):
-...   def validate_python(self, value, state):
+...   def _valid_python(self, value, state):
 ...     assert(state['a'] is twc.Invalid)
 ...
+
 >>> class Test(twc.CompoundWidget):
 ...    a = twc.Widget(validator=twc.IntValidator)
 ...    b = twc.Widget(validator=MyVal)
 ...
->>> Test.validate({'a':'x'})
+
+>>> Test.validate({'a': 'x'})
 Traceback (most recent call last):
     ...
 ValidationError
