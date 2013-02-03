@@ -1,4 +1,5 @@
 *.pyc
+*.pyo
 *.egg*
 Thumbs.db
 docs/.output/
@@ -6,6 +7,7 @@ docs/.output/
 .noseids
 .project
 .pydevproject
+.settings
 html
 dist
 build

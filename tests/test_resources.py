@@ -158,7 +158,6 @@ class TestResources(object):
         js.inject()
         csssrc.inject()
         out = twc.inject_resources(html)
-        print out
         assert eq_xhtml(out, '<html><head><script type="text/javascript" src="paj"></script>\
             <style type="text/css">.bob { font-weight: bold; }</style>\
             <title>a</title></head><body>hello</body></html>')
@@ -192,7 +191,6 @@ class TestResources(object):
         js.inject()
         js.inject()
         out = twc.inject_resources(html)
-        print out
         assert eq_xhtml(out, '<html><head>\
             <script type="text/javascript" src="paj"></script>\
             <title>a</title></head><body>hello</body></html>')
@@ -223,8 +221,6 @@ class TestResources(object):
         rl = twc.core.request_local()
         assert(len(rl.get('resources', [])) == 1)
         out = twc.inject_resources(html)
-        print 'after inject_res'
-        print rl
         eq_(rl.get('resources', []), [])
 
     #--
@@ -234,7 +230,6 @@ class TestResources(object):
         testapi.request(1)
         mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
         fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html')).read()
-#        print tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body
         assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
 
     def test_mw_clear_rl(self):
@@ -309,13 +304,14 @@ function test(a, b) {
 }
 ''')
         r = s.req()
-        displays = []
+        compare_to = None
         for e in self._get_all_possible_engines():
-            displays.append(r.display(template='%s:%s' % (e, twr.JSSource.template)))
-
-        compare_to = str(displays[0]).strip()
-        equal_displays = filter(lambda x: str(x).strip() == compare_to, displays)
-        assert len(displays) == len(equal_displays), equal_displays
+            display = r.display(
+                template='%s:%s' % (e, twr.JSSource.template)).strip()
+            if compare_to is None:
+                compare_to = display
+            else:
+                assert display == compare_to, e
 
 class TestCSSSourceEscaping(tb.WidgetTest):
     widget = twr.CSSSource
@@ -330,16 +326,17 @@ p > strong:after {
 ''')
 
         r = s.req()
-        displays = []
+        compare_to = None
         for e in self._get_all_possible_engines():
-            #CSSource misses pt template.
+            # CSSource misses pt template.
             if e in ['chameleon']:
                 continue
-            displays.append(r.display(template='%s:%s' % (e, twr.CSSSource.template)))
-
-        compare_to = str(displays[0]).strip()
-        equal_displays = filter(lambda x: str(x).strip() == compare_to, displays)
-        assert len(displays) == len(equal_displays), equal_displays
+            display = r.display(
+                template='%s:%s' % (e, twr.CSSSource.template)).strip()
+            if compare_to is None:
+                compare_to = display
+            else:
+                assert display == compare_to, e
 
 from pkg_resources import Requirement
 class TestResourcesApp:
@@ -378,7 +375,7 @@ class TestResourcesMisc(TestCase):
             res = enc.default(None)
             self.assert_(False)
         except TypeError, te:
-            self.assert_(te.message.endswith("is not JSON serializable"))
+            self.assert_(str(te).endswith("is not JSON serializable"))
 
     def testUnEscapeMarked(self):
         enc = twc.encoder

@@ -2,9 +2,9 @@ Check that display classmethod picks up validated_widget in request local
 
 >>> import tw2.core as twc
 >>> w = twc.Widget(id='w', template='genshi:tw2.core.test_templates.field_genshi', validator=twc.EmailValidator())
->>> w.validate({'w':'fred'})
+>>> w.validate({'w': 'fred'})
 Traceback (most recent call last):
     ...
 ValidationError: Must be a valid email address
->>> w.display()
-u'<p>fred Must be a valid email address</p>'
+>>> str(w.display())
+'<p>fred Must be a valid email address</p>'
