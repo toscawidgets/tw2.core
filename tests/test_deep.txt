@@ -8,7 +8,7 @@
 ...
 >>> A.children[1]._sub_compound
 True
->>> a = A.req(value={'a':'1','b':'2','c':'3'})
+>>> a = A.req(value={'a':'1', 'b':'2', 'c':'3'})
 >>> a.prepare()
 >>> a.c.a.value
 '1'
@@ -42,7 +42,7 @@ True
 True
 >>> B.children[1].child._sub_compound
 True
->>> b = B.req(value={'a':'1','b':'2','c':'3'})
+>>> b = B.req(value={'a':'1', 'b':'2', 'c':'3'})
 >>> b.prepare()
 >>> b.c.a.child.value
 '1'
