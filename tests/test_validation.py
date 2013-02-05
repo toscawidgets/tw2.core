@@ -1,13 +1,13 @@
+from __future__ import with_statement
+
+import sys
+from unittest import TestCase
+from nose.tools import eq_, raises
+from webob.multidict import MultiDict
+
 import tw2.core as twc, testapi
 import tw2.core.testbase as tb
 from tw2.core.validation import *
-import re
-import datetime
-import formencode
-from nose.tools import eq_, raises
-from webob.multidict import MultiDict
-from unittest import TestCase
-import sys
 
 HAS_SKIP = sys.version_info[0] == 2 and sys.version_info[1] == 7
 
@@ -22,11 +22,13 @@ repeating_widget = twc.RepeatingWidget(id='a', child=
 
 compound_keyed_widget = twc.CompoundWidget(id='a', children=[
     twc.Widget(id='b', key='x', validator=twc.Validator(required=True)),
-    twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()),
+    twc.Widget(id='c', key='y', validator=formencode.validators.OpenId()
+        if formencode else EmailValidator()),
 ])
 
-#This is required to make tests pass on non english systems
-formencode.api.set_stdtranslation(languages=['en'])
+# This is required to make tests pass on non english systems
+if formencode:
+    formencode.api.set_stdtranslation(languages=['en'])
 
 class TestValidationError(tb.WidgetTest):
     def test_validator_msg(self):
@@ -43,7 +45,8 @@ def _test_stupid_fe_import_requirement():
     removed_items = []
     pre = sys.path[:]
     pre_mod = copy.copy(sys.modules)
-    del sys.modules['formencode']
+    if 'formencode' in sys.modules:
+        del sys.modules['formencode']
     del sys.modules['tw2']
     for item in pre:
         if 'formencode' in item.lower():
@@ -72,21 +75,25 @@ class TestValidation(TestCase):
         testapi.setup()
 
     def test_catch_errors(self):
+        v = formencode.validators.Int if formencode else IntValidator()
         try:
-            twc.validation.catch_errors(lambda s, x: formencode.validators.Int.to_python(x))(None, 'x')
+            twc.validation.catch_errors(lambda s, x: v.to_python(x))(None, 'x')
             assert(False)
         except twc.ValidationError:
             pass
 
     def test_unicode_catch_errors(self):
+        v = formencode.validators.Int if formencode else IntValidator()
         try:
-            formencode.api.set_stdtranslation(languages=['tr'])
-            twc.validation.catch_errors(lambda s, x: formencode.validators.Int.to_python(x))(None, 'x')
+            if formencode:
+                formencode.api.set_stdtranslation(languages=['tr'])
+            twc.validation.catch_errors(lambda s, x: v.to_python(x))(None, 'x')
             assert(False)
         except twc.ValidationError:
             pass
         finally:
-            formencode.api.set_stdtranslation(languages=['en'])
+            if formencode:
+                formencode.api.set_stdtranslation(languages=['en'])
 
     def test_unflatten(self):
         assert(twc.validation.unflatten_params({'a':1, 'b:c':2}) ==
@@ -127,11 +134,11 @@ class TestValidation(TestCase):
             assert(ve.widget.error_msg == NeverValid.msgs['never'])
 
     def test_compound_validation_formencode(self):
-        " Test that compound widgets validate with formencode. """
+        """Test that compound widgets validate with formencode."""
 
         if not formencode:
             if HAS_SKIP:
-                self.skipTest()
+                self.skipTest('formencode is not available')
             else:
                 return  # Just pretend like we passed.
 
@@ -152,11 +159,11 @@ class TestValidation(TestCase):
             pass
 
     def test_compound_validation_error_msgs(self):
-        " Test that compound widgets error_msgs show up in the right place. "
+        """Test that compound widgets error_msgs show up in the right place."""
 
         if not formencode:
             if HAS_SKIP:
-                self.skipTest()
+                self.skipTest('formencode is not available')
             else:
                 return  # Just pretend like we passed
 
@@ -191,7 +198,7 @@ class TestValidation(TestCase):
 
     def test_unflatten_decode(self):
         assert(twc.validation.unflatten_params({'a': u'\u1234'.encode('utf-8')}) == {'a':u'\u1234'})
-        
+
     def test_unflatten_error(self):
         try:
             twc.validation.unflatten_params({'a': chr(128)})
@@ -292,7 +299,9 @@ class TestValidation(TestCase):
             pass
 
         cw = twc.core.request_local()['validated_widget']
-        assert "is not a valid OpenId" in cw.children.c.error_msg
+        error_msg = ("is not a valid OpenId"
+            if formencode else "Must be a valid email address")
+        assert error_msg in cw.children.c.error_msg
 
     def test_rw_pass(self):
         testapi.request(1)
@@ -393,7 +402,7 @@ class TestLengthValidator(tb.ValidatorTest):
     validator = LengthValidator
     attrs =    [{}, {}, {'max':3}, {'max':3}, {'max':3}, {'min':3}, {'min':3}, {'min':3}]
     params =   ['', 'asdf', 'as', 'asd', 'asdf', 'as', 'asd', 'asdf']
-    expected = [None, None, None, None, ValidationError, ValidationError, None, None]
+    expected = [None, 'asdf', 'as', 'asd', ValidationError, ValidationError, 'asd', 'asdf']
 
 class TestIntValidator(tb.ValidatorTest):
     validator = IntValidator
@@ -405,15 +414,14 @@ class TestIntValidator(tb.ValidatorTest):
     from_python_params =   [1, '1', '1.5']
     from_python_expected = ['1', '1', ValidationError]
 
-    attrs =    [{}, {}, {}, {}, {'max':12}, {'max':12},{'min':12}, {'min':12}, ]
-    params =   [1,    '1', '1.5',           'asdf', '11', '13', '11', '13']
-    expected = [None, None, ValidationError, ValidationError, None, ValidationError, ValidationError, None]
+    attrs =    [{}, {}, {}, {}, {'max':12}, {'max':12},{'min':12}, {'min':12}]
+    params =   [1, '1', '1.5', 'asdf', '11', '13', '11', '13']
+    expected = [1, 1, ValidationError, ValidationError, 11, ValidationError, ValidationError, 13]
 
     @raises(ValidationError)
     def test_required(self):
         v = IntValidator(required=True)
-        v.validate_python(v.to_python(''))
-
+        v.to_python(v.to_python(''))
 
 class TestBoolValidator(tb.ValidatorTest):
     validator = BoolValidator
@@ -425,7 +433,7 @@ class TestOneOfValidator(tb.ValidatorTest):
     validator = OneOfValidator
     attrs =    [{'values':['a', 'b', 'c']}, {'values':['a', 'b', 'c']}]
     params =   ['a', 'd']
-    expected = [None, ValidationError]
+    expected = ['a', ValidationError]
 
 class TestDateValidator(tb.ValidatorTest):
     validator = DateValidator
@@ -467,27 +475,27 @@ class TestDatetimeValidator(tb.ValidatorTest):
 
 class TestRegexValidator(tb.ValidatorTest):
     validator = RegexValidator
-    attrs =    [{'regex':re.compile("asdf")}, {'regex':re.compile("qwer")}]
-    params =   ['asdf', 'asdf']
-    expected = [None, ValidationError]
+    attrs =    [{'regex':re.compile("asdf")}, {'regex':re.compile("asdf")}, {'regex':re.compile("[asdf]{4}")}]
+    params =   ['asdf', 'fdsa', 'fdsa']
+    expected = ['asdf', ValidationError, 'fdsa']
 
 class TestEmailValidator(tb.ValidatorTest):
     validator = EmailValidator
     attrs =    [{}, {}]
     params =   ['someone@somewhere.com', 'asdf']
-    expected = [None, ValidationError]
+    expected = ['someone@somewhere.com', ValidationError]
 
 class TestUrlValidator(tb.ValidatorTest):
     validator = UrlValidator
     attrs =    [{}, {}]
     params =   ['http://www.google.com', 'asdf']
-    expected = [None, ValidationError]
+    expected = ['http://www.google.com', ValidationError]
 
 class TestIPAddressValidator(tb.ValidatorTest):
     validator = IpAddressValidator
     attrs =    [{}, {}]
     params =   ['123.123.123.123', 'asdf']
-    expected = [None, ValidationError]
+    expected = ['123.123.123.123', ValidationError]
 
 
 class TestValidatorMisc(TestCase):
@@ -495,7 +503,7 @@ class TestValidatorMisc(TestCase):
         v = Validator(required=True)
         self.assert_(v.required)
         try:
-            v.validate_python(None)
+            v.to_python(None)
             assert False
         except ValidationError, ve:
             self.assert_(ve.message == v.msgs["required"], ve.message)
@@ -513,21 +521,21 @@ class TestValidatorMisc(TestCase):
         self.assert_(v.min is not None)
         self.assert_(v.max is not None)
         try:
-            v.validate_python(v.min - 1)
+            v.to_python(v.min - 1)
             assert False
         except ValidationError, ve:
             self.assert_(ve.message.startswith(v.msgs["toosmall"][:5]),
                          (ve.message, v.msgs))
 
         try:
-            v.validate_python(v.max + 1)
+            v.to_python(v.max + 1)
             assert False
         except ValidationError, ve:
             self.assert_(ve.message.startswith(v.msgs["toobig"][:5]),
                          (ve.message, v.msgs))
 
-        v.validate_python(v.min)
-        v.validate_python(v.max)
+        assert v.to_python(v.min) == v.min
+        assert v.to_python(v.max) == v.max
 
     def testIPAddressValidator(self):
         ip_block = "192.168.0.0/24"
@@ -536,7 +544,7 @@ class TestValidatorMisc(TestCase):
         v = IpAddressValidator(allow_netblock=False)
 
         try:
-            v.validate_python(ip_block)
+            v.to_python(ip_block)
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(ve.message.startswith(v.msgs["badipaddress"][:5]))
@@ -544,7 +552,7 @@ class TestValidatorMisc(TestCase):
         v.allow_netblock = True
 
         try:
-            v.validate_python(bad_ip_block)
+            v.to_python(bad_ip_block)
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(ve.message.startswith(v.msgs["badnetblock"][:5]))
@@ -552,7 +560,7 @@ class TestValidatorMisc(TestCase):
         v.require_netblock = True
 
         try:
-            v.validate_python(ip)
+            v.to_python(ip)
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(ve.message.startswith(v.msgs["badnetblock"][:5]))
@@ -561,7 +569,7 @@ class TestValidatorMisc(TestCase):
         v = MatchValidator(other_field="foo")
 
         try:
-            v.validate_python("bar", {v.other_field: "foo"})
+            v.to_python("bar", {v.other_field: "foo"})
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(ve.message.startswith(v.msgs["mismatch"][:5]))
@@ -570,7 +578,7 @@ class TestValidatorMisc(TestCase):
         v = IntValidator(required=True)
         self.assert_(v.required)
         try:
-            v.validate_python(None)
+            v.to_python(None)
             self.assert_(False)
         except ValidationError, ve:
             self.assert_("Enter a value" in ve.message, ve.message)
@@ -584,7 +592,7 @@ class TestValidatorMisc(TestCase):
 
         self.assert_(v.required)
         try:
-            v.validate_python("20")
+            v.to_python("20")
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(
@@ -593,7 +601,7 @@ class TestValidatorMisc(TestCase):
             )
 
         try:
-            v.validate_python("xxxxxxxxxx")
+            v.to_python("xxxxxxxxxx")
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(
@@ -602,13 +610,13 @@ class TestValidatorMisc(TestCase):
             )
 
         try:
-            v.validate_python("xxxxx")
+            v.to_python("xxxxx")
             self.assert_(True)
         except ValidationError, ve:
             self.assert_(False)
 
         try:
-            v.validate_python("127.0.0.1")
+            v.to_python("127.0.0.1")
             self.assert_(True)
         except ValidationError, ve:
             self.assert_(False)
@@ -622,7 +630,7 @@ class TestValidatorMisc(TestCase):
 
         self.assert_(v.required)
         try:
-            v.validate_python("127.0.0.10")
+            v.to_python("127.0.0.10")
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(
@@ -631,7 +639,7 @@ class TestValidatorMisc(TestCase):
             )
 
         try:
-            v.validate_python("0.0.0.0")
+            v.to_python("0.0.0.0")
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(
@@ -640,7 +648,7 @@ class TestValidatorMisc(TestCase):
             )
 
         try:
-            v.validate_python("12345678")
+            v.to_python("12345678")
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(
@@ -649,7 +657,7 @@ class TestValidatorMisc(TestCase):
             )
 
         try:
-            v.validate_python("123456789")
+            v.to_python("123456789")
             self.assert_(False)
         except ValidationError, ve:
             self.assert_(
@@ -658,7 +666,67 @@ class TestValidatorMisc(TestCase):
             )
 
         try:
-            v.validate_python("127.0.0.1")
+            v.to_python("127.0.0.1")
             self.assert_(True)
         except ValidationError, ve:
             self.assert_(False, ve.message)
+
+
+def test_deprecation_of_validate_python():
+
+    try:
+        catch = warnings.catch_warnings
+    except AttributeError:  # Python < 2.6
+        return
+
+    msg = 'validate_python() is deprecated; use _validate_python() instead'
+
+    with catch(record=True) as msgs:
+        warnings.simplefilter('default')
+
+        class RequireEggValidator(twc.Validator):
+
+            def _validate_python(self, value, state=None):
+                if 'egg' not in value:
+                    raise ValidationError('required', self)
+
+        assert not msgs
+
+    with catch(record=True) as msgs:
+        warnings.simplefilter('default')
+
+        v = RequireEggValidator()
+        v.validate_python('spam and eggs')
+        try:
+            v.validate_python('just spam')
+            assert False
+        except ValidationError, ve:
+            assert 'Enter a value' in ve.message
+
+        msgs = '\n'.join(map(str, msgs))
+        assert msg in msgs
+
+    with catch(record=True) as msgs:
+        warnings.simplefilter('default')
+
+        class RequireSpamValidator(twc.Validator):
+
+            def validate_python(self, value, state=None):
+                if 'spam' not in value:
+                    raise ValidationError('required', self)
+
+        msgs = '\n'.join(map(str, msgs))
+        assert msg in msgs
+
+    with catch(record=True) as msgs:
+        warnings.simplefilter('default')
+
+        v = RequireSpamValidator()
+        eq_(v.to_python('spam and eggs'), 'spam and eggs')
+        try:
+            v.to_python('egg, sausage and bacon')
+            assert False
+        except ValidationError, ve:
+            assert 'Enter a value' in ve.message
+
+        assert not msgs

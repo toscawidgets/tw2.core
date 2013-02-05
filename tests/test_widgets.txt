@@ -14,15 +14,15 @@ AttributeError: type object 'Myclass' has no attribute 'id'
 >>> twc.Widget(id='10')
 Traceback (most recent call last):
     ...
-ParameterError: Not a valid identifier: '10'
+ParameterError: Not a valid W3C id: '10'
 >>> twc.Widget(id=':')
 Traceback (most recent call last):
     ...
-ParameterError: Not a valid identifier: ':'
+ParameterError: Not a valid W3C id: ':'
 >>> twc.Widget(id=' ')
 Traceback (most recent call last):
     ...
-ParameterError: Not a valid identifier: ' '
+ParameterError: Not a valid W3C id: ' '
 >>> twc.Widget(id='test10')
 <class 'tw2.core.params.Widget_s'>
 >>> print twc.Page.compound_id

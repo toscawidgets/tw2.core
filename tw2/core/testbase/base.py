@@ -343,19 +343,19 @@ class ValidatorTest(object):
         return self.request(1)
 
     def _check_validation(self, attrs, params, expected,
-                          method='validate_python'):
+                          method='to_python'):
         vld = self.validator(**attrs)
         if isinstance(expected, type) and \
            issubclass(expected, (twc.ValidationError, fe.Invalid)):
             try:
-                if method == 'validate_python':
+                if method == 'to_python':
                     params = vld.to_python(params)
                 r = getattr(vld, method)(params)
             except expected:
                 # XXX: figure out test way to test validation message match
                 pass
             return
-        if method == 'validate_python':
+        if method == 'to_python':
             params = vld.to_python(params)
         r = getattr(vld, method)(params)
         eq_(r, expected)

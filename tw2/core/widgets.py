@@ -3,7 +3,6 @@ import weakref
 import re
 import itertools
 import inspect
-import warnings
 import webob
 
 import templating
@@ -331,7 +330,7 @@ class Widget(pm.Parametered):
 
             try:
                 value = self.validator.from_python(value)
-            except (vd.Invalid, formencode.api.Invalid), e:
+            except vd.catch, e:
                 value = str(value)
                 self.error_msg = e.msg
 
@@ -499,7 +498,7 @@ class Widget(pm.Parametered):
 
         # Key the validated widget by class id
         core.request_local()['validated_widget'] = ins
-        return ins._validate(value)
+        return ins._validate(value, state)
 
     @vd.catch_errors
     def _validate(self, value, state=None):
@@ -512,8 +511,7 @@ class Widget(pm.Parametered):
         self._validated = True
         self.value = value
         if self.validator:
-            value = self.validator.to_python(value)
-            self.validator.validate_python(value, state)
+            value = self.validator.to_python(value, state)
         return value
 
     def safe_modify(self, attr):
@@ -641,27 +639,23 @@ class CompoundWidget(Widget):
         any_errors = False
         data = {}
 
-        catch = vd.ValidationError
-        if formencode:
-            catch = (catch, formencode.Invalid)
-
-        #Validate compound children
+        # Validate compound children
         for c in (child for child in self.children if child._sub_compound):
             try:
                 data.update(c._validate(value, data))
-            except catch, e:
+            except vd.catch, e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
                 any_errors = True
 
-        #Validate non compound children
+        # Validate non compound children
         for c in (child for child in self.children if not child._sub_compound):
             d = value.get(c.key, '')
             try:
                 val = c._validate(d, data)
                 if val is not vd.EmptyField:
                     data[c.key] = val
-            except catch, e:
+            except vd.catch, e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
                 data[c.key] = vd.Invalid
@@ -673,8 +667,7 @@ class CompoundWidget(Widget):
         if self.validator:
             try:
                 data = self.validator.to_python(data)
-                self.validator.validate_python(data, state)
-            except catch, e:
+            except vd.catch, e:
                 # If it failed to validate, check if the error_dict has any
                 # messages pertaining specifically to this widget's children.
                 error_dict = getattr(e, 'error_dict', {})
@@ -843,12 +836,11 @@ class RepeatingWidget(Widget):
         for i, v in enumerate(value):
             try:
                 data.append(self.children[i]._validate(v, data))
-            except vd.ValidationError:
+            except vd.catch:
                 data.append(vd.Invalid)
                 any_errors = True
         if self.validator:
-            data = self.validator.to_python(data)
-            self.validator.validate_python(data, state)
+            data = self.validator.to_python(data, state)
         if any_errors:
             raise vd.ValidationError('childerror', self.validator, self)
         return data
@@ -968,7 +960,7 @@ class DisplayOnlyWidget(Widget):
         self._validated = True
         try:
             return self.child._validate(value, state)
-        except vd.ValidationError, e:
+        except vd.ValidationError:
             raise vd.ValidationError('childerror', self.validator, self)
 
     @classmethod

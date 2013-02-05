@@ -2,11 +2,11 @@ import core
 import re
 import util
 import string
-import time
 import datetime
 import copy
 import functools
 import webob
+import warnings
 
 from i18n import _
 
@@ -34,7 +34,9 @@ if formencode:
             formencode.Invalid.__init__(self, msg, None, None)
 else:
     class BaseValidationError(core.WidgetError):
-        pass
+        def __init__(self, msg):
+            core.WidgetError.__init__(self, msg)
+            self.msg = msg
 
 
 class ValidationError(BaseValidationError):
@@ -69,22 +71,20 @@ class ValidationError(BaseValidationError):
 
     @property
     def message(self):
-        """ Added for backwards compatibility.  Synonymous with `msg` """
+        """Added for backwards compatibility.  Synonymous with `msg`."""
         return self.msg
 
 
 def safe_validate(validator, value, state=None):
     try:
-        value = validator.to_python(value, state=state)
-        validator.validate_python(value, state=state)
-        return value
+        return validator.to_python(value, state=state)
     except ValidationError:
         return Invalid
 
 
 catch = ValidationError
 if formencode:
-    catch = formencode.Invalid
+    catch = (catch, formencode.Invalid)
 
 
 def catch_errors(fn):
@@ -149,8 +149,11 @@ class ValidatorMeta(type):
             msgs = {}
             rewrites = {}
             for b in bases:
-                if hasattr(b, 'msgs'):
+                try:
                     msgs.update(b.msgs)
+                    rewrites.update(b.msgs_rewrites)
+                except AttributeError:
+                    pass
             msgs.update(dct['msgs'])
             for m, d in msgs.items():
                 if isinstance(d, tuple):
@@ -159,6 +162,11 @@ class ValidatorMeta(type):
                     del msgs[m]
             dct['msgs'] = msgs
             dct['msg_rewrites'] = rewrites
+        if 'validate_python' in dct and '_validate_python' not in dct:
+            dct['_validate_python'] = dct.pop('validate_python')
+            warnings.warn('validate_python() is deprecated;'
+                ' use _validate_python() instead',
+                DeprecationWarning, stacklevel=2)
         return type.__new__(meta, name, bases, dct)
 
 
@@ -172,8 +180,14 @@ class Validator(object):
         Whether to strip leading and trailing space from the input, before
         any other validation. (default: True)
 
-    To create your own validators, sublass this class, and override any of:
-    :meth:`to_python`, :meth:`validate_python`, or :meth:`from_python`.
+    To convert and validate a value to Python, use the :meth:`to_python`
+    method, to convert back from Python, use :meth:`from_python`.
+
+    To create your own validators, sublass this class, and override any of
+    :meth:`_validate_python`, :meth:`_convert_to_python`,
+     or :meth:`_convert_from_python`. Note that these methods are not
+     meant to be used externally. All of them may raise ValidationErrors.
+
     """
     __metaclass__ = ValidatorMeta
 
@@ -191,23 +205,61 @@ class Validator(object):
             setattr(self, k, kw[k])
 
     def to_python(self, value, state=None):
-        if self.required and value is None:
-            raise ValidationError('required', self)
-        if isinstance(value, basestring) and self.strip:
+        """Convert an external value to Python and validate it."""
+        if self._is_empty(value):
+            if self.required:
+                raise ValidationError('required', self)
+            return None
+        if self.strip and isinstance(value, basestring):
             value = value.strip()
+        value = self._convert_to_python(value, state)
+        self._validate_python(value, state)
         return value
 
-    def validate_python(self, value, state=None):
-        if self.required and not value:
-            raise ValidationError('required', self)
-
     def from_python(self, value, state=None):
+        """Convert from a Python object to an external value."""
+        if self._is_empty(value):
+            return ''
+        if isinstance(value, basestring) and self.strip:
+            value = value.strip()
+        value = self._convert_from_python(value, state)
         return value
 
     def __repr__(self):
         _bool = ['False', 'True']
         return ("Validator(required=%s, strip=%s)" %
             (_bool[int(self.required)], _bool[int(self.strip)]))
+
+    def _validate_python(self, value, state=None):
+        """"Overridable internal method for validation of Python values."""
+        pass
+
+    def _convert_to_python(self, value, state=None):
+        """"Overridable internal method for conversion to Python values."""
+        return value
+
+    def _convert_from_python(self, value, state=None):
+        """"Overridable internal method for conversion from Python values."""
+        return value
+
+    @staticmethod
+    def _is_empty(value):
+        """Check whether the given value should be considered "empty"."""
+        return value is None or value == '' or (
+            isinstance(value, (list, tuple, dict)) and not value)
+
+    def validate_python(self, value, state=None):
+        """"Deprecated, use :meth:`_validate_python` instead.
+
+        This method has been renamed in FormEncode 1.3 and ToscaWidgets 2.2
+        in order to clarify that is an internal method that is meant to be
+        overridden only; you must call meth:`to_python` to validate values.
+
+        """
+        warnings.warn('validate_python() is deprecated;'
+            ' use _validate_python() instead',
+            DeprecationWarning, stacklevel=2)
+        return self._validate_python(value, state)
 
     def clone(self, **kw):
         nself = copy.copy(self)
@@ -243,8 +295,12 @@ class LengthValidator(Validator):
     min = None
     max = None
 
-    def validate_python(self, value, state=None):
-        super(LengthValidator, self).validate_python(value, state)
+    def __init__(self, **kw):
+        super(LengthValidator, self).__init__(**kw)
+        if self.min:
+            self.required = True
+
+    def _validate_python(self, value, state=None):
         if self.min and len(value) < self.min:
             raise ValidationError('tooshort', self)
         if self.max and len(value) > self.max:
@@ -295,8 +351,7 @@ class RangeValidator(Validator):
     min = None
     max = None
 
-    def validate_python(self, value, state=None):
-        super(RangeValidator, self).validate_python(value, state)
+    def _validate_python(self, value, state=None):
         if self.min is not None and value < self.min:
             raise ValidationError('toosmall', self)
         if self.max is not None and value > self.max:
@@ -312,30 +367,14 @@ class IntValidator(RangeValidator):
         'notint': _('Must be an integer'),
     }
 
-    def to_python(self, value, state=None):
-        value = super(IntValidator, self).to_python(value, state)
+    def _convert_to_python(self, value, state=None):
         try:
-            if value is None or str(value) == '':
-                return None
-            else:
-                return int(value)
+            return int(value)
         except ValueError:
             raise ValidationError('notint', self)
 
-    def validate_python(self, value, state=None):
-        if self.required and value is None:
-            raise ValidationError('required', self)
-        if value is not None:
-            if self.min and value < self.min:
-                raise ValidationError('toosmall', self)
-            if self.max and value > self.max:
-                raise ValidationError('toobig', self)
-
-    def from_python(self, value, state=None):
-        if value is None:
-            return None
-        else:
-            return str(value)
+    def _convert_from_python(self, value, state=None):
+        return str(value)
 
 
 class BoolValidator(RangeValidator):
@@ -347,9 +386,11 @@ class BoolValidator(RangeValidator):
         'required': ('bool_required', _('You must select this'))
     }
 
-    def to_python(self, value, state=None):
-        value = super(BoolValidator, self).to_python(value, state)
-        return str(value).lower() in ('on', 'yes', 'true', '1')
+    def _convert_to_python(self, value, state=None):
+        return str(value).lower() in ('on', 'yes', 'true', '1', 'y', 't')
+
+    def _convert_from_python(self, value, state=None):
+        return value and 'true' or 'false'
 
 
 class OneOfValidator(Validator):
@@ -365,27 +406,26 @@ class OneOfValidator(Validator):
     }
     values = []
 
-    def validate_python(self, value, state=None):
-        super(OneOfValidator, self).validate_python(value, state)
+    def _validate_python(self, value, state=None):
         if value not in self.values:
             raise ValidationError('notinlist', self)
 
 
-class DateValidator(RangeValidator):
+class DateTimeValidator(RangeValidator):
     """
-    Confirm the value is a valid date. This is derived from
+    Confirm the value is a valid date and time. This is derived from
     :class:`RangeValidator` so `min` and `max` can be specified.
 
     `format`
-        The expected date format. The format must be specified using the same
-        syntax as the Python strftime function.
+        The expected date/time format. The format must be specified using
+        the same syntax as the Python strftime function.
     """
     msgs = {
-        'baddate': _('Must follow date format $format_str'),
+        'baddatetime': _('Must follow date/time format $format_str'),
         'toosmall': ('date_toosmall', _('Cannot be earlier than $min_str')),
         'toobig': ('date_toobig', _('Cannot be later than $max_str')),
     }
-    format = '%d/%m/%Y'
+    format = '%d/%m/%Y %H:%M'
 
     format_tbl = {
         'd': 'day',
@@ -411,43 +451,38 @@ class DateValidator(RangeValidator):
     def max_str(self):
         return self.max.strftime(self.format)
 
-    def to_python(self, value, state=None):
-        value = super(DateValidator, self).to_python(value, state)
-        if not value:
-            return None
-        try:
-            date = time.strptime(value, self.format)
-            return datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
-        except ValueError:
-            raise ValidationError('baddate', self)
-
-    def validate_python(self, value, state=None):
-        super(DateValidator, self).validate_python(value, state)
-        if self.required and not value:
-            raise ValidationError('required', self)
-
-    def from_python(self, value, state=None):
-        return value and value.strftime(self.format) or ''
-
-
-class DateTimeValidator(DateValidator):
-    """
-    Confirm the value is a valid date and time; otherwise just like
-    :class:`DateValidator`.
-    """
-    msgs = {
-        'baddate': (
-            'baddatetime', _('Must follow date/time format $format_str')),
-    }
-    format = '%d/%m/%Y %H:%M'
-
-    def to_python(self, value, state=None):
-        if not value:
-            return None
+    def _convert_to_python(self, value, state=None):
+        if isinstance(value, datetime.datetime):
+            return value
+        if isinstance(value, datetime.date):
+            return datetime.datetime(value.year, value.month, value.day)
         try:
             return datetime.datetime.strptime(value, self.format)
         except ValueError:
-            raise ValidationError('baddate', self)
+            raise ValidationError('baddatetime', self)
+
+    def _validate_python(self, value, state=None):
+        super(DateTimeValidator, self)._validate_python(value, state)
+
+    def _convert_from_python(self, value, state=None):
+        return value.strftime(self.format)
+
+
+class DateValidator(DateTimeValidator):
+    """
+    Confirm the value is a valid date.
+
+    Just like :class:`DateTimeValidator`, but without the time component.
+    """
+    msgs = {
+        'baddatetime': (
+            'baddate', _('Must follow date format $format_str')),
+    }
+    format = '%d/%m/%Y'
+
+    def _convert_to_python(self, value, state=None):
+        value = super(DateValidator, self)._convert_to_python(value)
+        return value.date()
 
 
 class RegexValidator(Validator):
@@ -463,9 +498,8 @@ class RegexValidator(Validator):
     }
     regex = None
 
-    def validate_python(self, value, state=None):
-        super(RegexValidator, self).validate_python(value, state)
-        if value and not self.regex.search(value):
+    def _validate_python(self, value, state=None):
+        if not self.regex.search(value):
             raise ValidationError('badregex', self)
 
 
@@ -508,18 +542,17 @@ class IpAddressValidator(Validator):
     }
     regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)(/(\d+))?$')
 
-    def validate_python(self, value, state=None):
-        if value:
-            m = self.regex.search(value)
-            if not m or any(not(0 <= int(g) <= 255) for g in m.groups()[:4]):
+    def _validate_python(self, value, state=None):
+        m = self.regex.search(value)
+        if not m or any(not(0 <= int(g) <= 255) for g in m.groups()[:4]):
+            raise ValidationError('badipaddress', self)
+        if m.group(6):
+            if not self.allow_netblock:
                 raise ValidationError('badipaddress', self)
-            if m.group(6):
-                if not self.allow_netblock:
-                    raise ValidationError('badipaddress', self)
-                if not (0 <= int(m.group(6)) <= 32):
-                    raise ValidationError('badnetblock', self)
-            elif self.require_netblock:
+            if not (0 <= int(m.group(6)) <= 32):
                 raise ValidationError('badnetblock', self)
+        elif self.require_netblock:
+            raise ValidationError('badnetblock', self)
 
 
 class MatchValidator(Validator):
@@ -540,10 +573,12 @@ class MatchValidator(Validator):
     def other_field_str(self):
         return string.capitalize(util.name2label(self.other_field).lower())
 
-    def validate_python(self, value, state):
-        super(MatchValidator, self).validate_python(value, state)
-        if value != state[self.other_field]:
+    def _validate_python(self, value, state):
+        if self.other_field not in state or value != state[self.other_field]:
             raise ValidationError('mismatch', self)
+
+    def _is_empty(self, value):
+        return self.required and super(MatchValidator, self)._is_empty
 
 
 class CompoundValidator(Validator):
@@ -573,17 +608,18 @@ class All(CompoundValidator):
     Confirm all validators passed as arguments are valid.
     """
 
-    def validate_python(self, value, state=None):
-        super(All, self).validate_python(value)
+    def _validate_python(self, value, state=None):
         msg = []
         for validator in self.validators:
             try:
-                validator.validate_python(value, state)
+                validator._validate_python(value, state)
             except ValidationError, e:
-                msg.append(str(e))
-
+                msg.append((str(e)))
         if msg:
-            raise ValidationError(' and '.join(set(msg)), self)
+            msgset = set()
+            msg = ', '.join(m for m in msg
+                if m not in msgset and not msgset.add(m))
+            raise ValidationError(msg, self)
 
 
 class Any(CompoundValidator):
@@ -591,14 +627,15 @@ class Any(CompoundValidator):
     Confirm at least one of the validators passed as arguments is valid.
     """
 
-    def validate_python(self, value, state=None):
-        super(Any, self).validate_python(value)
+    def _validate_python(self, value, state=None):
         msg = []
         for validator in self.validators:
             try:
-                validator.validate_python(value, state)
+                validator._validate_python(value, state)
             except ValidationError, e:
                 msg.append(str(e))
-
         if len(msg) == len(self.validators):
-            raise ValidationError(' or '.join(set(msg)), self)
+            msgset = set()
+            msg = ', '.join(m for m in msg
+                if m not in msgset and not msgset.add(m))
+            raise ValidationError(msg, self)
