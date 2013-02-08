@@ -176,6 +176,10 @@ class TwMiddleware(object):
 
         rl['queued_resources'] = []
 
+        # Future resource registrations should know to just plug themselves into
+        # me right away (instead of being queued).
+        rl['middleware'] = self
+
     def __call__(self, environ, start_response):
         rl = core.request_local()
         rl.clear()
