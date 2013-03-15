@@ -12,7 +12,11 @@ from i18n import _
 
 # This hack helps work with different versions of WebOb
 if not hasattr(webob, 'MultiDict'):
-    webob.MultiDict = webob.multidict.MultiDict
+    # Check for webob versions with UnicodeMultiDict
+    if hasattr(webob.multidict, 'UnicodeMultiDict'):
+        webob.MultiDict = webob.multidict.UnicodeMultiDict
+    else:
+        webob.MultiDict = webob.multidict.MultiDict
 
 try:
     import formencode
