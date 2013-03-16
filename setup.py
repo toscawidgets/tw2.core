@@ -49,26 +49,32 @@ requires = [
 if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
     requires.append('WebOb<=1.1.1')
 
+tests_require = [
+    'nose',
+    'coverage',
+    'BeautifulSoup',
+    'FormEncode',
+    'strainer',
+] + \
+    _extra_genshi + \
+    _extra_mako + \
+    _extra_jinja + \
+    _extra_kajiki + \
+    _extra_chameleon
+
+if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
+    tests_require.append('WebTest<2.0.0')
+else:
+    tests_require.append('WebTest')
+
+
 setup(
     name='tw2.core',
     version='2.1.5',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=requires,
-    tests_require = [
-        'nose',
-        'coverage',
-        'BeautifulSoup',
-        'FormEncode',
-        'WebTest',
-        'strainer',
-    ] + \
-    _extra_genshi + \
-    _extra_mako + \
-    _extra_jinja + \
-    _extra_kajiki + \
-    _extra_chameleon,
-
+    tests_require=tests_require,
     test_suite = 'nose.collector',
     extras_require = {
         'genshi': _extra_genshi,
