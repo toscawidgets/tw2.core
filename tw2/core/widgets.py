@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import copy
 import weakref
 import re
@@ -5,11 +7,13 @@ import itertools
 import inspect
 import webob
 
-import templating
-import core
-import util
-import validation as vd
-import params as pm
+from . import templating
+from . import core
+from . import util
+from . import validation as vd
+from . import params as pm
+import six
+from six.moves import filter
 
 try:
     import formencode
@@ -51,7 +55,7 @@ class WidgetMeta(pm.ParamMeta):
     def __new__(meta, name, bases, dct):
         if name != 'Widget' and 'children' not in dct:
             new_children = []
-            for d, v in dct.items():
+            for d, v in list(dct.items()):
                 if isinstance(v, type) and \
                    issubclass(v, Widget) and \
                    d not in reserved_names:
@@ -66,19 +70,20 @@ class WidgetMeta(pm.ParamMeta):
             )
             if children:
                 dct['children'] = children
+
         widget = super(WidgetMeta, meta).__new__(meta, name, bases, dct)
-        widget._seq = _widget_seq.next()
+
+        widget._seq = six.advance_iterator(_widget_seq)
         for w in reversed(widget.__mro__):
             if 'post_define' in w.__dict__:
-                w.post_define.im_func(widget)
+                w.post_define.__func__(widget)
         return widget
 
 
-class Widget(pm.Parametered):
+class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
     """
     Base class for all widgets.
     """
-    __metaclass__ = WidgetMeta
 
     id = pm.Param('Widget identifier', request_local=False)
     key = pm.Param('Widget data key; None just uses id',
@@ -172,7 +177,7 @@ class Widget(pm.Parametered):
         return type(cls.__name__ + '_s', (cls, ), kw)
 
     def __init__(self, **kw):
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             setattr(self, k, v)
         self._js_calls = []
 
@@ -211,7 +216,7 @@ class Widget(pm.Parametered):
         cls.compound_key = cls._gen_compound_key()
 
         if hasattr(cls, 'request') and getattr(cls, 'id', None):
-            import middleware
+            from . import middleware
             path = cls._gen_compound_id(for_url=True)
             middleware.register_controller(cls, path)
 
@@ -258,9 +263,9 @@ class Widget(pm.Parametered):
                 raise core.WidgetError('Parent loop')
             ancestors.append(cur)
             cur = cur.parent
-        elems = reversed(filter(None, [
+        elems = reversed(list(filter(None, [
             a._compound_id_elem(for_url) for a in ancestors
-        ]))
+        ])))
         if getattr(cls, 'id', None) or \
            (cls.parent and issubclass(cls.parent, RepeatingWidget)):
             return ':'.join(elems)
@@ -330,7 +335,7 @@ class Widget(pm.Parametered):
 
             try:
                 value = self.validator.from_python(value)
-            except vd.catch, e:
+            except vd.catch as e:
                 value = str(value)
                 self.error_msg = e.msg
 
@@ -419,7 +424,7 @@ class Widget(pm.Parametered):
         if self._js_calls:
             self.safe_modify('resources')
             #avoids circular reference
-            import resources as rs
+            from . import resources as rs
             for item in self._js_calls:
                 if 'JSFuncCall' in repr(item[0]):
                     self.resources.append(item[0])
@@ -615,7 +620,7 @@ class CompoundWidget(Widget):
             c.prepare()
 
     def get_child_error_message(self, name):
-        if isinstance(self.error_msg, basestring):
+        if isinstance(self.error_msg, six.string_types):
             if self.error_msg.startswith(name + ':'):
                 return self.error_msg.split(':')[1]
 
@@ -643,7 +648,7 @@ class CompoundWidget(Widget):
         for c in (child for child in self.children if child._sub_compound):
             try:
                 data.update(c._validate(value, data))
-            except vd.catch, e:
+            except vd.catch as e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
                 any_errors = True
@@ -655,7 +660,7 @@ class CompoundWidget(Widget):
                 val = c._validate(d, data)
                 if val is not vd.EmptyField:
                     data[c.key] = val
-            except vd.catch, e:
+            except vd.catch as e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
                 data[c.key] = vd.Invalid
@@ -667,7 +672,7 @@ class CompoundWidget(Widget):
         if self.validator:
             try:
                 data = self.validator.to_python(data)
-            except vd.catch, e:
+            except vd.catch as e:
                 # If it failed to validate, check if the error_dict has any
                 # messages pertaining specifically to this widget's children.
                 error_dict = getattr(e, 'error_dict', {})
@@ -728,7 +733,7 @@ class RepeatingWidgetBunch(object):
         return self.parent.repetitions
 
     def __iter__(self):
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             yield self[i]
 
     def __getitem__(self, item):
@@ -868,7 +873,7 @@ def calc_name(cls, kw, char='s'):
     return newname
 
 
-class DisplayOnlyWidget(Widget):
+class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
     """
     A widget that has a single child. The parent widget is only used for
     display purposes; it does not affect value propagation or validation.
@@ -880,8 +885,6 @@ class DisplayOnlyWidget(Widget):
         default=[],
     )
     id_suffix = pm.Param('Suffix to append to compound IDs')
-
-    __metaclass__ = DisplayOnlyWidgetMeta
 
     def __new__(cls, **kw):
         newname = calc_name(cls, kw, 'd')
@@ -915,8 +918,8 @@ class DisplayOnlyWidget(Widget):
             )
         if not cls_id and child_id:
             cls.id = child_id
-            DisplayOnlyWidget.post_define.im_func(cls)
-            Widget.post_define.im_func(cls)
+            DisplayOnlyWidget.post_define.__func__(cls)
+            Widget.post_define.__func__(cls)
             cls.child = cls.child(parent=cls, key=cls.key)
         else:
             cls.child = cls.child(id=cls_id, key=cls.key, parent=cls)
@@ -924,10 +927,10 @@ class DisplayOnlyWidget(Widget):
     @classmethod
     def _gen_compound_id(cls, for_url):
         elems = [
-            Widget._gen_compound_id.im_func(cls, for_url),
+            Widget._gen_compound_id.__func__(cls, for_url),
             getattr(cls, 'id', None)
         ]
-        elems = filter(None, elems)
+        elems = list(filter(None, elems))
         if not elems:
             return None
         if not for_url and getattr(cls, 'id_suffix', None):
@@ -937,7 +940,7 @@ class DisplayOnlyWidget(Widget):
     @classmethod
     def _compound_id_elem(cls, for_url):
         if cls.parent and issubclass(cls.parent, RepeatingWidget):
-            Widget._compound_id_elem.im_func(cls, for_url)
+            Widget._compound_id_elem.__func__(cls, for_url)
         else:
             return None
 
@@ -995,8 +998,8 @@ class Page(DisplayOnlyWidget):
     def post_define(cls):
         if not getattr(cls, 'id', None) and '_no_autoid' not in cls.__dict__:
             cls.id = cls.__name__.lower()
-            DisplayOnlyWidget.post_define.im_func(cls)
-            Widget.post_define.im_func(cls)
+            DisplayOnlyWidget.post_define.__func__(cls)
+            Widget.post_define.__func__(cls)
 
     @classmethod
     def request(cls, req):

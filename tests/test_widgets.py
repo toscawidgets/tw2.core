@@ -2,10 +2,11 @@
 from unittest import TestCase
 from nose.tools import eq_, raises
 from webob import Request
-from strainer.operators import eq_xhtml
+from sieve.operators import eq_xml as eq_xhtml
 
 import tw2.core as twc, testapi, tw2.core.testbase as tb
 import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
+import six
 
 
 class Test6(twc.Widget):
@@ -30,7 +31,7 @@ class TestWidgets(object):
             template="genshi:tw2.core.test_templates.field_genshi"
         )
         output = test.display("foo")
-        eq_(output, u'<p>foo </p>')
+        eq_(output, six.u('<p>foo </p>'))
 
     def test_inline_template(self):
         """ Ticket #69 """
@@ -40,7 +41,7 @@ class TestWidgets(object):
             inline_engine_name="mako",
         )
         output = test.display("foo")
-        eq_(output, u'<p>foo </p>')
+        eq_(output, six.u('<p>foo </p>'))
 
     def test_inline_template_with_no_markup(self):
         """ Ticket #69 """
@@ -50,14 +51,14 @@ class TestWidgets(object):
             inline_engine_name="mako",
         )
         output = test.display("foo")
-        eq_(output, u'foo')
+        eq_(output, six.u('foo'))
 
     def xxtest_required(self):
         test = twc.Widget(id='test')
         try:
             test.req()
             assert(False)
-        except twc.ParameterError, e:
+        except twc.ParameterError as e:
             assert(str(e) == 'Widget is missing required parameter template')
 
     def test_attribute(self):
@@ -394,7 +395,7 @@ class TestWidgetMisc(TestCase):
         Parent.child.parent = Parent
         try:
             Parent(id="loopy").compound_id
-        except twc.WidgetError, we:
+        except twc.WidgetError as we:
             self.assert_("loop" in str(we).lower(), str(we))
         else:
             self.assert_(False)
@@ -478,9 +479,8 @@ class TestWidgetMisc(TestCase):
         jscall = ["somefunc", "bodybottom"]
         i.add_call(jscall[0], jscall[1])
         self.assert_(jscall in i._js_calls)
-        testapi.request(1)
-        twc.core.request_local()['middleware'] = twc.make_middleware(None,
-                                                                     params_as_vars=True)
+        mw = twc.make_middleware(None, params_as_vars=True)
+        testapi.request(1, mw)
         res = i.display(displays_on="string")
         self.assert_(res)
         self.assert_(i.resources)
@@ -551,7 +551,7 @@ class TestWidgetMisc(TestCase):
         try:
             i.validate({})
             self.assert_(False)
-        except vd.ValidationError, ve:
+        except vd.ValidationError as ve:
             for c in ve.widget.children:
                 self.assert_(expected[c.id] == c.error_msg, (expected,
                                                                   c.id,
@@ -640,7 +640,7 @@ class TestDisplayOnlyWidget(TestCase):
                 child=NotAWidget()
 
             self.assert_(False)
-        except pm.ParameterError, pe:
+        except pm.ParameterError as pe:
             self.assert_("must be" in str(pe))
     def testChildNoID(self):
         try:
@@ -649,7 +649,7 @@ class TestDisplayOnlyWidget(TestCase):
                 child=wd.Widget(id="foo")
 
             self.assert_(False)
-        except pm.ParameterError, pe:
+        except pm.ParameterError as pe:
             self.assert_(" id" in str(pe))
 
 
@@ -677,7 +677,7 @@ class TestDisplayOnlyWidget(TestCase):
         try:
             T().req().validate({})
             self.assert_(False)
-        except vd.ValidationError, ve:
+        except vd.ValidationError as ve:
             self.assert_(ve.widget.child.error_msg == err.message,
                          (ve.widget.child.error_msg))
 

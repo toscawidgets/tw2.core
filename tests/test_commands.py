@@ -1,9 +1,10 @@
 """
 filling in the missing gaps in test coverage
 """
+from __future__ import print_function
 from unittest import TestCase
 import distutils.dist
-import StringIO
+from six import StringIO
 import sys
 import os
 import shutil
@@ -19,18 +20,18 @@ OUT_DIR = tempfile.mkdtemp(suffix='tmp_test_out2')
 
 HAS_SKIP = sys.version_info[0] == 2 and sys.version_info[1] == 7
 
-class StdOut(StringIO.StringIO):
+class StdOut(StringIO):
      def __init__(self,stdout):
          self.__stdout = stdout
-         StringIO.StringIO.__init__(self)
+         StringIO.__init__(self)
 
      def write(self,s):
          self.__stdout.write(s)
-         StringIO.StringIO.write(self,s)
+         StringIO.write(self,s)
 
      def read(self):
          self.seek(0)
-         stuff = StringIO.StringIO.read(self)
+         stuff = StringIO.read(self)
          self.__stdout.write(stuff)
          return stuff
 
@@ -47,7 +48,7 @@ class TestErrors(TestCase):
         self.c = tw2.core.command.archive_tw2_resources(d)
         try:
             shutil.rmtree(OUT_DIR)
-        except Exception, e:
+        except Exception as e:
             pass
         os.mkdir(OUT_DIR)
 
@@ -81,7 +82,7 @@ class TestErrors(TestCase):
         try:
             self.c.finalize_options()
             assert(False)
-        except ValueError, e:
+        except ValueError as e:
             assert(
                 str(e) == "invalid literal for int() with base 10: 'not-an-int'"
             )
@@ -136,7 +137,7 @@ class TestArchive(TestCase):
 
         try:
             shutil.rmtree(OUT_DIR)
-        except Exception, e:
+        except Exception as e:
             pass
 
         self.c.initialize_options()
@@ -151,7 +152,7 @@ class TestArchive(TestCase):
         core.request_local()['middleware'] = middleware.make_middleware()
         try:
             core.request_local()['resources'] = []
-        except Exception, e:
+        except Exception as e:
             pass
 
     def tearDown(self):
@@ -160,12 +161,12 @@ class TestArchive(TestCase):
 
         try:
             shutil.rmtree(OUT_DIR)
-        except Exception, e:
+        except Exception as e:
             pass
 
         try:
             shutil.rmtree(TMP_DIR)
-        except Exception, e:
+        except Exception as e:
             pass
 
     def test_load_widgets(self):
@@ -214,7 +215,7 @@ class TestArchive(TestCase):
         rl_resources = core.request_local().setdefault('resources', [])
 
         import pprint
-        print pprint.pformat(rl_resources)
+        print(pprint.pformat(rl_resources))
 
     def test_copy_tree(self):
         if HAS_SKIP:

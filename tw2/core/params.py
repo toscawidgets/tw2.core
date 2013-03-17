@@ -1,6 +1,9 @@
-import core
+from __future__ import absolute_import
+
+from . import core
 import itertools
 import copy
+import six
 
 
 class ParameterError(core.WidgetError):
@@ -86,7 +89,7 @@ class Param(object):
     def __init__(self, description=Default, default=Default,
                  request_local=Default, attribute=Default,
                  view_name=Default):
-        self._seq = _param_seq.next()
+        self._seq = six.advance_iterator(_param_seq)
 
         self.description = None
         if description is not Default:
@@ -164,7 +167,7 @@ class ParamMeta(type):
             if hasattr(b, '_params'):
                 params.update(b._all_params)
 
-        for pname, prm in dct.items():
+        for pname, prm in list(dct.items()):
             if isinstance(prm, Param):
                 if pname in params:
                     newprm = prm
@@ -195,5 +198,5 @@ class ParamMeta(type):
         return ins
 
 
-class Parametered(object):
-    __metaclass__ = ParamMeta
+class Parametered(six.with_metaclass(ParamMeta, object)):
+    pass

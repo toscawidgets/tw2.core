@@ -7,8 +7,9 @@ http://www.fish.cx/pytest/wsgi/xhtmlify.py
 
 MIT Licensed
 """
+from __future__ import print_function
 import re
-import htmlentitydefs
+from six.moves import html_entities as htmlentitydefs
 
 NAME_RE = r'[_a-zA-Z\-][:_a-zA-Z0-9\-]*'
 BAD_ATTR_RE = r'''[^<>\s"'][^<>\s]*'''
@@ -219,12 +220,12 @@ def test(html=None):
     try:
         assert xhtml == xhtmlify(xhtml)
     except ValidationError:
-        print xhtml
+        print(xhtml)
         raise
     # parse it as XML with ElementTree/expat
     xml = ET.fromstring(re.sub(r'(?si)<!--.*?-->|<!doctype\b.*?>', '', xhtml))
     if len(sys.argv) == 2:
-        print xhtml
+        print(xhtml)
     return xhtml
 
 if __name__ == '__main__':

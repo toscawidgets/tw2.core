@@ -2,9 +2,16 @@
 
 import copy
 import re
-import itertools
 import functools
-import thread
+import six.moves
+
+try:
+    # py2
+    import thread
+except ImportError:
+    # py3
+    import _thread as thread
+
 import webob
 
 _thread_local = {}
@@ -81,7 +88,7 @@ class MultipleReplacer(object):
 
     def _substitutor(self, *args, **kw):
         def substitutor(match):
-            tuples = itertools.izip(self._substitutors, match.groups())
+            tuples = six.moves.zip(self._substitutors, match.groups())
             for substitutor, group in tuples:
                 if group is not None:
                     return substitutor(group, *args, **kw)

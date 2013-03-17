@@ -19,7 +19,7 @@ class TestHierarchy(object):
         try:
             a = twc.Widget(id=':')
             assert(False)
-        except twc.ParameterError, e:
+        except twc.ParameterError as e:
             eq_(str(e), "Not a valid W3C id: ':'")
 
     def test_id_none(self):
@@ -46,21 +46,21 @@ class TestHierarchy(object):
         try:
             test.c
             assert(False)
-        except AttributeError, e:
+        except AttributeError as e:
             assert(str(e) == "Widget has no child named 'c'")
 
     def xxtest_wb_nonwidget(self):
         try:
             test = twc.widgets.WidgetBunch(['hello'])
             assert(False)
-        except twc.WidgetError, e:
+        except twc.WidgetError as e:
             assert(str(e) == 'WidgetBunch may only contain Widgets')
 
     def xxtest_wb_dupe(self):
         try:
             test = twc.widgets.WidgetBunch([twc.Widget(id='a'), twc.Widget(id='a')])
             assert(False)
-        except twc.WidgetError, e:
+        except twc.WidgetError as e:
             assert(str(e) == "WidgetBunch contains a duplicate id 'a'")
 
     def test_cw_propagate(self):
@@ -107,24 +107,24 @@ class TestHierarchy(object):
     def test_rw_length(self):
         testb = twc.RepeatingWidget(child=twc.Widget)
 
-        test = testb.req(value=range(10))
+        test = testb.req(value=list(range(10)))
         test.repetitions = None
         test.prepare()
         assert(test.repetitions == 10)
 
-        test = testb.req(value=range(10))
+        test = testb.req(value=list(range(10)))
         test.extra_reps = 5
         test.repetitions = None
         test.prepare()
         assert(test.repetitions == 15)
 
-        test = testb.req(value=range(10))
+        test = testb.req(value=list(range(10)))
         test.max_reps = 10
         test.repetitions = None
         test.prepare()
         assert(test.repetitions == 10)
 
-        test = testb.req(value=range(10))
+        test = testb.req(value=list(range(10)))
         test.max_reps = 30
         test.min_reps = 20
         test.repetitions = None

@@ -1,7 +1,8 @@
+from nose.tools import eq_
 import tw2.core as twc, testapi
+import six
 
-class Test(object):
-    __metaclass__ = twc.params.ParamMeta
+class Test(six.with_metaclass(twc.params.ParamMeta, object)):
     test1 = twc.Param('test_1', default=10)
 
 class Test2(Test):
@@ -25,8 +26,7 @@ class TestParams(object):
     def test_parameter(self):
         "Check a simple parameter"
 
-        class Test(object):
-            __metaclass__ = twc.params.ParamMeta
+        class Test(six.with_metaclass(twc.params.ParamMeta, object)):
             test1 = twc.Param('test_1', default=10)
 
         assert(len(Test._params) == 1)
@@ -60,10 +60,12 @@ class TestParams(object):
 
     def test_override_default(self):
         "Check overriding a parameter default"
+
         class Test5(Test):
             test1 = 11
-        assert(Test.test1 == 10)
-        assert(Test5.test1 == 11)
+
+        eq_(Test.test1, 10)
+        eq_(Test5.test1, 11)
 
     def test_child(self):
         assert(not hasattr(TestContainer, 'test'))

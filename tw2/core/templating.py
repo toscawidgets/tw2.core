@@ -1,9 +1,12 @@
 import os
-import core
+from . import core
 
-from util import memoize, relpath
+from .util import memoize, relpath
 
 from markupsafe import Markup
+import six
+from six.moves import map
+from six.moves import zip
 
 # Just shorthand
 SEP, ALTSEP, EXTSEP = os.path.sep, os.path.altsep, os.path.extsep
@@ -16,9 +19,13 @@ _default_rendering_extension_lookup = {
     # just for backwards compatibility with tw2 2.0.0
     'genshi_abs': ['genshi', 'html'],
     'jinja': ['jinja', 'html'],
-    'kajiki': ['kajiki', 'html'],
     'chameleon': ['pt']
 }
+
+if not six.PY3:
+    _default_rendering_extension_lookup.update({
+        'kajiki': ['kajiki', 'html'],
+    })
 
 
 def get_rendering_extensions_lookup(mw):
@@ -46,7 +53,9 @@ def get_engine_name(template_name, mw=None):
             mw = rl['middleware']
         pref_rend_eng = mw.config.preferred_rendering_engines
     except (KeyError, AttributeError):
-        pref_rend_eng = ['mako', 'genshi', 'jinja', 'kajiki', 'chameleon']
+        pref_rend_eng = ['mako', 'genshi', 'jinja', 'chameleon']
+        if not six.PY3:
+            pref_rend_eng.append('kajiki')
 
     # find the first file in the preffered engines available for templating
     for engine_name in pref_rend_eng:
@@ -58,7 +67,9 @@ def get_engine_name(template_name, mw=None):
             pass
 
     if not mw.config.strict_engine_selection:
-        pref_rend_eng = ['mako', 'genshi', 'jinja', 'kajiki', 'chameleon']
+        pref_rend_eng = ['mako', 'genshi', 'jinja', 'chameleon']
+        if not six.PY3:
+            pref_rend_eng.append('kajiki')
         for engine_name in pref_rend_eng:
             try:
                 get_source(engine_name, template_name, mw=mw)
@@ -161,7 +172,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None, inline=Fal
 
     elif engine_name == 'jinja':
         import jinja2
-        from jinja_util import htmlbools
+        from .jinja_util import htmlbools
         env = jinja2.environment.Environment(autoescape=True)
         env.filters['htmlbools'] = htmlbools
         tmpl = env.from_string(src, template_class=jinja2.Template)

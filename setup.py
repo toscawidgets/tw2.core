@@ -18,7 +18,7 @@ except:
 def get_description(fname='README.rst'):
     # Adapted from PEAK-Rules' setup.py
     # Get our long description from the documentation
-    f = file(fname)
+    f = open(fname, 'r')
     lines = []
     for line in f:
         if not line.strip():
@@ -34,16 +34,20 @@ def get_description(fname='README.rst'):
 _extra_genshi = ["Genshi >= 0.3.5"]
 _extra_mako = ["Mako >= 0.1.1"]
 _extra_jinja = ["jinja2"]
-_extra_kajiki = ["kajiki"]
 _extra_chameleon = ["chameleon"]
+
+if sys.version_info[0] == 3:
+    _extra_kajiki = []
+else:
+    _extra_kajiki = ["kajiki"]  # Broken for py3.3
 
 requires = [
     'WebOb>=0.9.7',
-    'simplejson >= 2.0',
     'PasteDeploy',
     'speaklater',
     'decorator',
     'markupsafe',
+    'six',
 ]
 
 if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
@@ -51,16 +55,17 @@ if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
 
 tests_require = [
     'nose',
-    'coverage',
-    'BeautifulSoup',
-    'FormEncode',
-    'strainer',
+    'sieve',
 ] + \
     _extra_genshi + \
     _extra_mako + \
     _extra_jinja + \
     _extra_kajiki + \
     _extra_chameleon
+
+if sys.version_info[0] == 2:
+    # Broken for py3
+    tests_require.append("Formencode")
 
 if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
     tests_require.append('WebTest<2.0.0')
@@ -99,8 +104,9 @@ setup(
     [paste.filter_app_factory]
     middleware = tw2.core.middleware:make_middleware
 
-    [distutils.commands]
-    archive_tw2_resources = tw2.core.command:archive_tw2_resources
+    # Is this broken for py3?
+    #[distutils.commands]
+    #archive_tw2_resources = tw2.core.command:archive_tw2_resources
 
     """,
     zip_safe=False,
