@@ -1,6 +1,7 @@
 import os
 import re
 import copy
+import unittest
 
 import pkg_resources as pk
 
@@ -90,7 +91,7 @@ def TW2WidgetBuilder(widget, **attrs):
     return MyTestWidget
 
 
-class WidgetTest(object):
+class WidgetTest(unittest.TestCase):
     """
     This class provides a basis for testing all widget classes.  It's setup
     will automatically create a request, and a widget of the type specified.
@@ -161,21 +162,6 @@ class WidgetTest(object):
         rl['middleware'] = mw
         return request_local_tst()
 
-    def setup(self):
-        global _request_id, _request_local
-        _request_local = {}
-        _request_id = None
-        if hasattr(super(WidgetTest, self), 'setup'):
-            super(WidgetTest, self).setup()
-        self.mw = tmw.make_middleware(
-            None,
-            default_engine=self.template_engine
-        )
-        if self.declarative:
-            self.widget = TW2WidgetBuilder(self.widget, **self.attrs)
-
-        return self.request(1)
-
     def _get_all_possible_engines(self):
         for engine in templating._default_rendering_extension_lookup:
             yield engine
@@ -227,7 +213,7 @@ class WidgetTest(object):
                         params[1], params[2], params[3]
 
 
-class ValidatorTest(object):
+class ValidatorTest(unittest.TestCase):
     """
     This test provides a basis for testing all validator classes. On
     initialization, this class will make a request and a middleware
@@ -307,15 +293,6 @@ class ValidatorTest(object):
         rl['middleware'] = mw
         return request_local_tst()
 
-    def setup(self):
-        global _request_id, _request_local
-        _request_local = {}
-        _request_id = None
-        if hasattr(super(ValidatorTest, self), 'setup'):
-            super(ValidatorTest, self).setup()
-        self.mw = tmw.make_middleware(None)
-        return self.request(1)
-
     def _check_validation(self, attrs, params, expected,
                           method='to_python'):
         vld = self.validator(**attrs)
@@ -368,25 +345,11 @@ import tw2.core as twc
 import os
 
 
-class TestInPage(object):
+class TestInPage(unittest.TestCase):
     content_type = 'text/html'
     charset = 'UTF8'
 
     html = "<html><head><title>TITLE</title></head><body>%s</body></html>"
-
-    def setup(self):
-        global _request_local
-        _request_local = {}
-        self.mw = twc.make_middleware(self)
-        self.app = wt.TestApp(self.mw)
-
-        js = twc.JSLink(link='paj')
-        css = twc.CSSLink(link='joe')
-        TestWidget = twc.Widget(
-            template='genshi:tw2.core.test_templates.inner_genshi',
-            test='test',
-        )
-        self.inject_widget = TestWidget(id='a', resources=[js, css])
 
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
@@ -404,11 +367,12 @@ class TestInPage(object):
         return resp(environ, start_response)
 
 
+
 class TestInPageTest(TestInPage):
     def test_base(self):
         res = self.app.get('/')
         assert_in_xhtml(
-            '<script type="text/javascript" src="paj"></script>',
+            '<script type="text/javascript" src="paj" ></script>',
             res.body
         )
         assert_in_xhtml(

@@ -2,7 +2,10 @@
 from unittest import TestCase
 from nose.tools import eq_, raises
 from webob import Request
-from sieve.operators import eq_xml as eq_xhtml
+from sieve.operators import (
+    eq_xml as eq_xhtml,
+    assert_eq_xml as assert_eq_xhtml,
+)
 
 import tw2.core as twc, testapi, tw2.core.testbase as tb
 import tw2.core.widgets as wd, tw2.core.validation as vd, tw2.core.params as pm
@@ -269,7 +272,7 @@ class TestSubCompoundWidget(tb.WidgetTest):
         w = self.widget(**self.attrs)()
         w.value = "value"
         r = w.display("value")
-        assert eq_xhtml(r, self.expected)
+        assert_eq_xhtml(r, self.expected)
 
     @raises(twc.WidgetError)
     def test_duplicate_ids(self):
@@ -370,7 +373,7 @@ class TestPage(tb.WidgetTest):
                    }
         req=Request(environ)
         r = self.widget(_no_autoid=True, **self.attrs).request(req)
-        assert eq_xhtml(r.body, """<html>
+        assert_eq_xhtml(r.body, """<html>
 <head><title>some title</title></head>
 <body><h1>some title</h1></body>
 </html>""")

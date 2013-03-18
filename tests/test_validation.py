@@ -7,6 +7,7 @@ from webob.multidict import MultiDict
 
 import tw2.core as twc, testapi
 import tw2.core.testbase as tb
+from tw2.core.middleware import make_middleware
 from tw2.core.validation import *
 import six
 from six.moves import map
@@ -34,6 +35,9 @@ if formencode:
     formencode.api.set_stdtranslation(languages=['en'])
 
 class TestValidationError(tb.WidgetTest):
+    def setUp(self):
+        self.mw = make_middleware(None, {})
+
     def test_validator_msg(self):
         twc.core.request_local = tb.request_local_tst
         self.mw.config.validator_msgs['f1'] = 's1'
