@@ -215,7 +215,7 @@ class TestArchive(TestCase):
         rl_resources = core.request_local().setdefault('resources', [])
 
         import pprint
-        print(pprint.pformat(rl_resources))
+        pprint.pprint(rl_resources)
 
     def test_copy_tree(self):
         if HAS_SKIP:
