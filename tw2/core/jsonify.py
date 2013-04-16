@@ -57,7 +57,7 @@ SUCH DAMAGE.
 This code is a direct rip-off of the pylons jsonification decorator
 """
 from decorator import decorator
-import simplejson
+import json
 import webob
 
 import warnings
@@ -84,6 +84,6 @@ def jsonify(func, self, req):
         log.warning(msg)
     log.debug("Returning JSON wrapped action output")
     resp = webob.Response(request=req, content_type="application/json")
-    resp.body = simplejson.dumps(data)
+    resp.body = json.dumps(data)
     return resp
 jsonify = decorator(jsonify)

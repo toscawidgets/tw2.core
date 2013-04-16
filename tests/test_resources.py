@@ -1,8 +1,11 @@
 import webob as wo, webtest as wt, tw2.core as twc, os, testapi, tw2.core.resources as twr, tw2.core.testbase as tb, tw2.core.params as pm
 import tw2.core.core
 from nose.tools import eq_, raises
-from strainer.operators import eq_xhtml
-from unittest import TestCase
+from sieve.operators import eq_xml as eq_xhtml
+import unittest
+from six.moves import map
+from six.moves import zip
+import six
 
 js = twc.JSLink(link='paj')
 css = twc.CSSLink(link='joe')
@@ -19,7 +22,10 @@ def simple_app(environ, start_response):
     ct = 'text/html' if req.path == '/' else 'test/plain'
     resp = wo.Response(request=req, content_type="%s; charset=UTF8" % ct)
     inject_widget.display()
-    resp.body = html
+    if six.PY3:
+        resp.text = html
+    else:
+        resp.body = html
     return resp(environ, start_response)
 
 mw = twc.make_middleware(simple_app)
@@ -76,8 +82,8 @@ class TestResources(object):
 
         lnk = lambda r: r.link
         eq_(
-            map(lnk, rl['resources']),
-            map(lnk, [foo1, foo3, foo2, foo4])
+            list(map(lnk, rl['resources'])),
+            list(map(lnk, [foo1, foo3, foo2, foo4]))
         )
 
 
@@ -90,7 +96,7 @@ class TestResources(object):
 
     def test_serve(self):
         mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
-        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html')).read()
+        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html'), 'rb').read()
         assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
         assert(tst_mw.get('/resources/tw2.core/test_templates/notexist', expect_errors=True).status == '404 Not Found')
 
@@ -100,9 +106,9 @@ class TestResources(object):
 
     def test_whole_dir(self):
         mw.resources.register('tw2.core', 'test_templates/', whole_dir=True)
-        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html')).read()
-        assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
-        assert(tst_mw.get('/resources/tw2.core/test_templates/notexist', expect_errors=True).status == '404 Not Found')
+        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html'), 'rb').read()
+        eq_(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body, fcont)
+        eq_(tst_mw.get('/resources/tw2.core/test_templates/notexist', expect_errors=True).status, '404 Not Found')
 
     def test_dir_traversal(self): # check for potential security flaw
         mw.resources.register('tw2.core', 'test_templates/')
@@ -119,7 +125,7 @@ class TestResources(object):
     def test_zipped(self):
         # assumes webtest is installed as a zipped egg
         mw.resources.register('webtest', '__init__.py')
-        assert(tst_mw.get('/resources/webtest/__init__.py').body.startswith('# (c) 2005 Ian'))
+        assert(tst_mw.get('/resources/webtest/__init__.py').body.startswith(six.b('# (c) 2005 Ian')))
 
     def test_cache_header(self):
         mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
@@ -229,7 +235,7 @@ class TestResources(object):
     def test_mw_resourcesapp(self):
         testapi.request(1)
         mw.resources.register('tw2.core', 'test_templates/simple_genshi.html')
-        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html')).read()
+        fcont = open(os.path.join(os.path.dirname(twc.__file__), 'test_templates/simple_genshi.html'), 'rb').read()
         assert(tst_mw.get('/resources/tw2.core/test_templates/simple_genshi.html').body == fcont)
 
     def test_mw_clear_rl(self):
@@ -245,7 +251,7 @@ class TestResources(object):
 
     def test_mw_inject_html_only(self):
         testapi.request(1, mw)
-        assert(tst_mw.get('/plain').body == html)
+        eq_(tst_mw.get('/plain').body, six.b(html))
 
 class __TestDirLink(tb.WidgetTest):
     """seems like dirlink is not implemented yet"""
@@ -265,7 +271,7 @@ class TestJSLink(tb.WidgetTest):
 class TestCssLink(tb.WidgetTest):
     widget = twr.CSSLink
     attrs = {'link':'something'}
-    expected = '<link rel="stylesheet" type="text/css" href="something" media="all">'
+    expected = '<link rel="stylesheet" type="text/css" href="something" media="all"/>'
 
 
 class TestJsSource(tb.WidgetTest):
@@ -356,7 +362,7 @@ def test_find_charset():
     eq_(twc.resources.find_charset('charset=iso-8859-1'), 'iso-8859-1')
 
 
-class TestResourcesMisc(TestCase):
+class TestResourcesMisc(unittest.TestCase):
 
     def testJSSymbol(self):
         """
@@ -374,7 +380,7 @@ class TestResourcesMisc(TestCase):
         try:
             res = enc.default(None)
             self.assert_(False)
-        except TypeError, te:
+        except TypeError as te:
             self.assert_(str(te).endswith("is not JSON serializable"))
 
     def testUnEscapeMarked(self):
@@ -476,3 +482,7 @@ class TestResourcesMisc(TestCase):
         s.args = None
         self.assert_(hash(s))
         self.assert_(s == s)
+
+
+if __name__ == '__main__':
+    unittest.main()

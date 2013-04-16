@@ -1,5 +1,5 @@
 <%
-attr_keys = w.attrs.keys()
+attr_keys = list(w.attrs.keys())
 if 'id' in attr_keys:
     attr_keys.remove('id')
 if 'class' in attr_keys:

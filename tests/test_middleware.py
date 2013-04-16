@@ -4,6 +4,7 @@ filling in the missing gaps in test coverage
 from unittest import TestCase
 from webob import Request, Response
 import testapi
+import six
 
 
 class TestMiddlewareConfig(TestCase):
@@ -55,7 +56,7 @@ class TestMiddleware(TestCase):
         the unicode body if the result of the resource injection is
         unicode, so trying to figure out how to fake that
         """
-        fake_app = Response(unicode_body=u"\xea",
+        fake_app = Response(unicode_body=six.u("\xea"),
                             charset="utf8",
                             content_type="text/html")
 

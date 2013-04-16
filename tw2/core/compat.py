@@ -1,6 +1,6 @@
 """ Collections of extra pieces to help smooth over community divergence. """
 
-from widgets import Widget
+from .widgets import Widget
 
 
 class TGStyleController(Widget):

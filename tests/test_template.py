@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 from __future__ import with_statement
 import tw2.core as twc
 import testapi
@@ -6,10 +9,15 @@ import os
 import webob as wo
 import contextlib
 from nose.tools import raises, eq_
-from strainer.operators import assert_eq_xhtml
+from sieve.operators import assert_eq_xml as assert_eq_xhtml
+import six
+import unittest
 
 # TBD: only test engines that are installed
-engines = ['genshi', 'mako', 'jinja', 'kajiki', 'chameleon']
+engines = ['genshi', 'mako', 'jinja', 'chameleon']
+
+if not six.PY3:
+    engines.append('kajiki')
 
 
 # Python 2.5 support shim.  TODO -- remove this in the future.
@@ -35,7 +43,7 @@ class TestWD(twc.Widget):
     test = twc.Param(default='bob')
 
 
-class TestTemplate(object):
+class TestTemplate(unittest.TestCase):
     def setUp(self):
         testapi.setup()
 
@@ -47,7 +55,7 @@ class TestTemplate(object):
             twc.util.flush_memoization()
 
         out = twc.templating.render(template, 'string', data)
-        assert(isinstance(out, unicode))
+        assert(isinstance(out, six.text_type))
         eq_(out, expected)
 
     def test_get_source_inline(self):
@@ -74,10 +82,10 @@ class TestTemplate(object):
         engine='genshi'
         args = 'tw2.core.test_templates.simple_genshi', 'string', {'test':engine}
         out = twc.templating.render(*args)
-        assert(isinstance(out, unicode))
+        assert(isinstance(out, six.text_type))
         assert out == '<p>TEST genshi</p>', out
         out = twc.templating.render(*args)
-        assert(isinstance(out, unicode))
+        assert(isinstance(out, six.text_type))
         assert out == '<p>TEST genshi</p>', out
 
     def test_auto_select_unavailable_engine_not_strict(self):
@@ -96,19 +104,19 @@ class TestTemplate(object):
 
     def test_engines(self):
         for engine in engines:
-            print "Testing %s..." % engine
+            print("Testing %s..." % engine)
             args = [
                 '%s:tw2.core.test_templates.simple_%s' % (engine, engine),
                 'string',
                 {'test':'test1'},
             ]
             out = twc.templating.render(*args)
-            assert(isinstance(out, unicode))
+            assert(isinstance(out, six.text_type))
             assert(out == '<p>TEST test1</p>')
 
     def test_engines_unicode(self):
         for engine in engines:
-            print "Testing %s..." % engine
+            print("Testing %s..." % engine)
             out = twc.templating.render(
                 '%s:tw2.core.test_templates.simple_%s' % (engine, engine),
                 'string', {'test':'test\u1234'}
@@ -118,7 +126,7 @@ class TestTemplate(object):
     def test_nesting(self):
         "Check that templates can be correctly nested, in any combination"
         for outer, inner in itertools.product(engines, engines):
-            print 'Testing %s on %s' % (inner, outer)
+            print('Testing %s on %s' % (inner, outer))
             test = twc.templating.render(
                 '%s:tw2.core.test_templates.simple_%s' % (inner, inner),
                 outer,
@@ -199,3 +207,6 @@ class TestTemplate(object):
                                        rendering_extension_lookup={'genshi':['genshi'],
                                                                    'jinja':['jinja', 'html']})
         assert twc.templating.get_engine_name('tw2.core.test_templates.parent_genshi', mw) == 'jinja'
+
+if __name__ == '__main__':
+    unittest.main()
