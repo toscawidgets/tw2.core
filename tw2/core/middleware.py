@@ -323,13 +323,5 @@ def make_middleware(app=None, config=None, **kw):
     return app
 
 
-def dev_server(*args, **kwargs):
-    """
-    Deprecated; use tw2.devtools.dev_server insteads.
-    """
-    import tw2.devtools
-    warnings.warn(
-        'tw2.core.dev_server is deprecated; ' +
-        'Use tw2.devtools.dev_server instead.'
-    )
-    tw2.devtools.dev_server(*args, **kwargs)
+def make_app(config=None, **kw):
+    return make_middleware(app=None, config=config, **kw)

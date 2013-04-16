@@ -101,6 +101,9 @@ setup(
     [tw2.widgets]
     widgets = tw2.core
 
+    [paste.app_factory]
+    dev_server = tw2.core.middleware:make_app
+
     [paste.filter_app_factory]
     middleware = tw2.core.middleware:make_middleware
 
