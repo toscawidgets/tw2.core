@@ -191,6 +191,15 @@ class Link(Resource):
 
 
 class DirLink(Link):
+    ''' A whole directory as a resource.
+
+    Unlike :class:`JSLink` and :class:`CSSLink`, this resource doesn't inject
+    anything on the page.. but it does register all resources under the
+    marked directory to be served by the middleware.
+
+    This is useful if you have a css file that pulls in a number of other
+    static resources like icons and images.
+    '''
     link = Variable()
     filename = Required
     whole_dir = True
