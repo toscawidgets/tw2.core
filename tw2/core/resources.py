@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import re
 import logging
 import itertools
@@ -5,18 +7,19 @@ import os
 import webob as wo
 import pkg_resources as pr
 import mimetypes
-import simplejson
 import inspect
 import warnings
+import wsgiref.util
 
-import widgets as wd
-import util
-import core
-import params as pm
-import middleware as md
-from js import encoder, js_symbol
+from .widgets import Widget
+from .util import MultipleReplacer
+import tw2.core.core
+from .params import Param, Variable, ParameterError, Required
+from .middleware import register_resource
+from .js import encoder, js_symbol
 
 from markupsafe import Markup
+import six
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +50,7 @@ class JSSymbol(js_symbol):
         self.src = self._name
 
 
-class ResourceBundle(wd.Widget):
+class ResourceBundle(Widget):
     """ Just a list of resources.
 
     Use it as follows:
@@ -64,7 +67,7 @@ class ResourceBundle(wd.Widget):
     def prepare(self):
         super(ResourceBundle, self).prepare()
 
-        rl = core.request_local()
+        rl = tw2.core.core.request_local()
         rl_resources = rl.setdefault('resources', [])
         rl_location = rl['middleware'].config.inject_resources_location
 
@@ -74,7 +77,7 @@ class ResourceBundle(wd.Widget):
 
 
 class Resource(ResourceBundle):
-    location = pm.Param(
+    location = Param(
         'Location on the page where the resource should be placed.' \
         'This can be one of: head, headbottom, bodytop or bodybottom. '\
         'None means the resource will not be injected, which is still '\
@@ -84,7 +87,7 @@ class Resource(ResourceBundle):
     def prepare(self):
         super(Resource, self).prepare()
 
-        rl = core.request_local()
+        rl = tw2.core.core.request_local()
         rl_resources = rl.setdefault('resources', [])
         rl_location = rl['middleware'].config.inject_resources_location
 
@@ -100,24 +103,24 @@ class Link(Resource):
     A link to a file.
     '''
     id = None
-    link = pm.Param(
+    link = Param(
         'Direct web link to file. If this is not specified, it is ' +
         'automatically generated, based on :attr:`modname` and ' +
         ':attr:`filename`.',
     )
-    modname = pm.Param(
+    modname = Param(
         'Name of Python module that contains the file.',
         default=None,
     )
-    filename = pm.Param(
+    filename = Param(
         'Path to file, relative to module base.',
         default=None,
     )
-    no_inject = pm.Param(
+    no_inject = Param(
         "Don't inject this link. (Default: False)",
         default=False,
     )
-    whole_dir = pm.Param(
+    whole_dir = Param(
         "Make the whole directory available.  (Default: False)",
         default=False,
     )
@@ -149,17 +152,17 @@ class Link(Resource):
                 if not cls.modname:
                     cls.modname = cls.guess_modname()
 
-                md.register_resource(
+                register_resource(
                     cls.modname or '__anon__', cls.filename, cls.whole_dir
                 )
 
     def prepare(self):
-        rl = core.request_local()
+        rl = tw2.core.core.request_local()
         if not self.no_inject:
             if not hasattr(self, 'link'):
                 # TBD shouldn't we test for this in __new__ ?
                 if not self.filename:
-                    raise pm.ParameterError(
+                    raise ParameterError(
                         "Either 'link' or 'filename' must be specified"
                     )
                 resources = rl['middleware'].resources
@@ -188,12 +191,12 @@ class Link(Resource):
 
 
 class DirLink(Link):
-    link = pm.Variable()
-    filename = pm.Required
+    link = Variable()
+    filename = Required
     whole_dir = True
 
     def prepare(self):
-        resources = core.request_local()['middleware'].resources
+        resources = tw2.core.core.request_local()['middleware'].resources
         self.link = resources.resource_path(
             self.modname,
             self.filename,
@@ -212,7 +215,7 @@ class CSSLink(Link):
     '''
     A CSS style sheet.
     '''
-    media = pm.Param('Media tag', default='all')
+    media = Param('Media tag', default='all')
     location = 'head'
     template = 'tw2.core.templates.csslink'
 
@@ -221,7 +224,7 @@ class JSSource(Resource):
     """
     Inline JavaScript source code.
     """
-    src = pm.Param('Source code', default=None)
+    src = Param('Source code', default=None)
     location = 'bodybottom'
     template = 'tw2.core.templates.jssource'
 
@@ -242,7 +245,7 @@ class CSSSource(Resource):
     """
     Inline Cascading Style-Sheet code.
     """
-    src = pm.Param('CSS code', default=None)
+    src = Param('CSS code', default=None)
     location = 'head'
     template = 'tw2.core.templates.csssource'
 
@@ -266,8 +269,8 @@ class _JSFuncCall(JSSource):
     Please use tw2.core.js_function(...) externally.
     """
     src = None
-    function = pm.Param('Function name')
-    args = pm.Param('Function arguments', default=None)
+    function = Param('Function name')
+    args = Param('Function arguments', default=None)
     location = 'bodybottom'  # TBD: afterwidget?
 
     def __str__(self):
@@ -391,7 +394,7 @@ class ResourcesApp(object):
         except IOError:
             resp = wo.Response(status="404 Not Found")
         else:
-            stream = _FileIter(stream, self.config.bufsize)
+            stream = wsgiref.util.FileWrapper(stream, self.config.bufsize)
             resp = wo.Response(app_iter=stream, content_type=ct)
             if enc:
                 resp.content_type_params['charset'] = enc
@@ -399,26 +402,7 @@ class ResourcesApp(object):
         return resp(environ, start_response)
 
 
-# Could use wsgiref, but this is python 2.4 compatible
-class _FileIter(object):
-    def __init__(self, fileobj, bufsize):
-        self.fileobj = fileobj
-        self.bufsize = bufsize
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        buf = self.fileobj.read(self.bufsize)
-        if not buf:
-            raise StopIteration
-        return buf
-
-    def close(self):
-        self.fileobj.close()
-
-
-class _ResourceInjector(util.MultipleReplacer):
+class _ResourceInjector(MultipleReplacer):
     """
     ToscaWidgets can inject resources that have been registered for injection
     in the current request.
@@ -458,7 +442,7 @@ class _ResourceInjector(util.MultipleReplacer):
     """
 
     def __init__(self):
-        return util.MultipleReplacer.__init__(self, {
+        return MultipleReplacer.__init__(self, {
             r'<head(?!er).*?>': self._injector_for_location('head'),
             r'</head(?!er).*?>': self._injector_for_location(
                 'headbottom', False
@@ -469,12 +453,11 @@ class _ResourceInjector(util.MultipleReplacer):
 
     def _injector_for_location(self, key, after=True):
         def inject(group, resources, encoding):
-            inj = u'\n'.join([
+            inj = six.u('\n').join([
                 r.display(displays_on='string')
                 for r in resources
                 if r.location == key
             ])
-            inj = inj.encode(encoding)
             if after:
                 return group + inj
             return  inj + group
@@ -493,13 +476,13 @@ class _ResourceInjector(util.MultipleReplacer):
 
         """
         if resources is None:
-            resources = core.request_local().get('resources', None)
+            resources = tw2.core.core.request_local().get('resources', None)
         if resources:
             encoding = encoding or find_charset(html) or 'utf-8'
-            html = util.MultipleReplacer.__call__(
+            html = MultipleReplacer.__call__(
                 self, html, resources, encoding
             )
-            core.request_local().pop('resources', None)
+            tw2.core.core.request_local().pop('resources', None)
         return html
 
 

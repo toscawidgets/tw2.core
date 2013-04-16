@@ -9,7 +9,7 @@ except ImportError:
 
 from speaklater import make_lazy_string
 
-import core
+from . import core
 
 import logging
 log = logging.getLogger(__name__)
