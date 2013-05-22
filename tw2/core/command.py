@@ -186,10 +186,8 @@ class archive_tw2_resources(Command):
 
     def _load_widget_entry_points(self, distribution):
         try:
-            requires = [
-                r.project_name for r in
-                pkg_resources.get_distribution(distribution).requires()
-            ]
+            dist = pkg_resources.get_distribution(distribution)
+            requires = [r.project_name for r in dist.requires()]
 
             map(self._load_widget_entry_points, requires)
 
@@ -209,7 +207,7 @@ class archive_tw2_resources(Command):
             #TODO -- this should be resolved and standardized in the future.
 
             for ep in pkg_resources.iter_entry_points('tw2.widgets'):
-                if ep.module_name.startswith(distribution):
+                if ep.dist == dist:
                     mod = ep.load()
                     self._load_widgets(mod)
                     self.announce("Loaded %s" % mod.__name__)
