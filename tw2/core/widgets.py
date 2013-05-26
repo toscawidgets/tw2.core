@@ -324,6 +324,11 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         if not hasattr(self, 'id'):
             self.id = 'id_' + str(uuid.uuid4()).replace('-', '')
 
+        # Then, enforce any params marked with twc.Required.
+        for k, v in self._params.items():
+            if v.default is pm.Required and not hasattr(self, k):
+                raise ValueError("%r is a required Parameter" % k)
+
         for a in self._deferred:
             dfr = getattr(self, a)
             if isinstance(dfr, pm.Deferred):
