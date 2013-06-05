@@ -73,3 +73,17 @@ class TestParams(object):
         assert(not hasattr(test, 'test'))
         test2 = TestContainer(id='r', children=[test]).req()
         assert(test2.c.q.test == 10)
+
+    def test_required(self):
+        """ Ensure that twc.Required works.  For issue #25. """
+
+        class TestWidget(twc.Widget):
+            template = "whatever"
+            inline_engine_name="mako"
+            some_param = twc.Param(default=twc.Required)
+
+        try:
+            TestWidget.display()
+            assert False, "Should have raised an exception."
+        except ValueError as e:
+            eq_(str(e), "'some_param' is a required Parameter")

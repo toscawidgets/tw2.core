@@ -454,6 +454,7 @@ class TestWidgetMisc(TestCase):
 
             class T(wd.Widget):
                 validator = MockValidator()
+                template = ""
 
             i = T.req()
             i.prepare()
@@ -597,7 +598,8 @@ class TestRepeatingWidget(TestCase):
         truncate reps based on max_reps??
         """
         class T(wd.RepeatingWidget):
-            child = wd.Widget()
+            template = ""
+            child = wd.Widget(template="")
             max_reps = 1
             extra_reps = 2
 
