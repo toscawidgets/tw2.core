@@ -6,6 +6,7 @@ import re
 import itertools
 import inspect
 import webob
+import uuid
 
 from . import templating
 from . import core
@@ -318,6 +319,16 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
                     super(MyWidget, self).prepare()
                     self.value = 'My: ' + str(self.value)
         """
+
+        # First, if we don't already have an id, then pick a random one.
+        if not hasattr(self, 'id'):
+            self.id = 'id_' + str(uuid.uuid4()).replace('-', '')
+
+        # Then, enforce any params marked with twc.Required.
+        for k, v in self._params.items():
+            if v.default is pm.Required and not hasattr(self, k):
+                raise ValueError("%r is a required Parameter" % k)
+
         for a in self._deferred:
             dfr = getattr(self, a)
             if isinstance(dfr, pm.Deferred):
