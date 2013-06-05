@@ -83,6 +83,7 @@ class Resource(ResourceBundle):
         'None means the resource will not be injected, which is still '\
         'useful, e.g. static images.', default=None)
     id = None
+    template = None
 
     def prepare(self):
         super(Resource, self).prepare()
@@ -278,7 +279,7 @@ class _JSFuncCall(JSSource):
     Please use tw2.core.js_function(...) externally.
     """
     src = None
-    function = Param('Function name')
+    function = Param('Function name', default=None)
     args = Param('Function arguments', default=None)
     location = 'bodybottom'  # TBD: afterwidget?
 

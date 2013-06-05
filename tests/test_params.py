@@ -77,7 +77,7 @@ class TestParams(object):
     def test_required(self):
         """ Ensure that twc.Required works.  For issue #25. """
 
-        class TestWidget(Test7):
+        class TestWidget(twc.Widget):
             template = "whatever"
             inline_engine_name="mako"
             some_param = twc.Param(default=twc.Required)
