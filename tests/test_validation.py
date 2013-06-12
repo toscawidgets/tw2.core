@@ -438,9 +438,9 @@ class TestIntValidator(tb.ValidatorTest):
 
 class TestBoolValidator(tb.ValidatorTest):
     validator = BoolValidator
-    to_python_attrs =    [{}, {}, {}, {}, {}, {}, {}, {}, {},]
-    to_python_params =   ['on', 'yes', 'true', '1', 1, True, 'Yes', 'True', 'off']
-    to_python_expected = [True, True, True, True, True, True, True, True, False]
+    to_python_attrs =    [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
+    to_python_params =   ['on', 'yes', 'true', '1', 1, True, 'Yes', 'True', 'off', '', None]
+    to_python_expected = [True, True, True, True, True, True, True, True, False, False, False]
 
 class TestOneOfValidator(tb.ValidatorTest):
     validator = OneOfValidator
