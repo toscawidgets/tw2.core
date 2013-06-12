@@ -189,8 +189,8 @@ class WidgetTest(unittest.TestCase):
             return
 
         for engine in self._get_all_possible_engines():
-            yield self._check_rendering_vs_expected, engine, \
-                    self.attrs, self.params, self.expected
+            self._check_rendering_vs_expected(engine,
+                    self.attrs, self.params, self.expected)
 
     def _check_validation(self, attrs, params, expected, raises=None):
         if raises is not None:
@@ -209,8 +209,8 @@ class WidgetTest(unittest.TestCase):
                     params[0] = self.attrs
                 if len(params) < 4:
                     params.append(None)
-                yield self._check_validation, params[0], \
-                        params[1], params[2], params[3]
+                self._check_validation(params[0],
+                        params[1], params[2], params[3])
 
 
 class ValidatorTest(unittest.TestCase):
@@ -315,7 +315,7 @@ class ValidatorTest(unittest.TestCase):
         if self.expected:
             triples = six.moves.zip(self.attrs, self.params, self.expected)
             for attrs, params, expected in triples:
-                yield self._check_validation, attrs, params, expected
+                self._check_validation(attrs, params, expected)
 
     def test_from_python(self):
         if self.from_python_expected:
@@ -325,10 +325,12 @@ class ValidatorTest(unittest.TestCase):
                 self.from_python_expected,
             )
             for attrs, params, expected in triples:
-                yield self._check_validation, attrs, params, \
-                        expected, 'from_python'
+                self._check_validation(attrs, params,
+                        expected, 'from_python')
 
     def test_to_python(self):
+        name = self.__class__.__name__
+        tbv =  name == 'TestBoolValidator'
         if self.to_python_expected:
             triples = six.moves.zip(
                 self.to_python_attrs,
@@ -336,8 +338,8 @@ class ValidatorTest(unittest.TestCase):
                 self.to_python_expected,
             )
             for attrs, params, expected in triples:
-                yield self._check_validation, attrs, params, \
-                        expected, 'to_python'
+                self._check_validation(attrs, params,
+                       expected, 'to_python')
 
 import webob as wo
 import webtest as wt
