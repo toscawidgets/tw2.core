@@ -212,6 +212,7 @@ class Validator(six.with_metaclass(ValidatorMeta, object)):
     }
     required = False
     strip = True
+    if_empty = None
 
     def __init__(self, **kw):
         for k in kw:
@@ -222,7 +223,7 @@ class Validator(six.with_metaclass(ValidatorMeta, object)):
         if self._is_empty(value):
             if self.required:
                 raise ValidationError('required', self)
-            return None
+            return self.if_empty
         if self.strip and isinstance(value, six.string_types):
             value = value.strip()
         value = self._convert_to_python(value, state)
@@ -398,6 +399,7 @@ class BoolValidator(RangeValidator):
     msgs = {
         'required': ('bool_required', _('You must select this'))
     }
+    if_empty = False
 
     def _convert_to_python(self, value, state=None):
         return str(value).lower() in ('on', 'yes', 'true', '1', 'y', 't')
