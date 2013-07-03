@@ -27,7 +27,7 @@ from validation import (
     RegexValidator, IntValidator, OneOfValidator, DateValidator,
     DateTimeValidator, ValidationError, Invalid, EmailValidator,
     UrlValidator, IpAddressValidator, StringLengthValidator,
-    ListLengthValidator, RangeValidator, MatchValidator,
+    ListLengthValidator, RangeValidator, MatchValidator, UUIDValidator,
     BoolValidator, BlankValidator, safe_validate, EmptyField,
     CompoundValidator,
     Any, All,
