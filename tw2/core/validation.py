@@ -7,6 +7,7 @@ import datetime
 import copy
 import functools
 import webob
+import uuid
 
 from i18n import _
 
@@ -505,6 +506,35 @@ class IpAddressValidator(Validator):
                     raise ValidationError('badnetblock', self)
             elif self.require_netblock:
                 raise ValidationError('badnetblock', self)
+
+
+class UUIDValidator(Validator):
+    """
+    Confirm the value is a valid uuid and convert to uuid.UUID.
+    """
+    msgs = {
+        'badregex': ('baduuid', _('Value not recognised as a UUID')),
+    }
+
+    regex = re.compile(\
+               '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+
+
+    def _validate_python(self, value, state=None):
+        if not self.regex.search(str(value)):
+            raise ValidationError('badregex', self)
+
+
+    def _convert_to_python(self, value, state=None):
+        try:
+            return uuid.UUID( "{%s}" % value )
+            
+        except ValueError:
+            raise ValidationError('baduuid', self)
+
+        
+    def _convert_from_python(self, value, state=None):
+        return str(value)
 
 
 class MatchValidator(Validator):
