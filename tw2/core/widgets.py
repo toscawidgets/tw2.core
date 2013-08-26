@@ -896,7 +896,7 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
         'Children specified for this widget will be passed to the child',
         default=[],
     )
-    id_suffix = pm.Param('Suffix to append to compound IDs')
+    id_suffix = pm.Variable('Suffix to append to compound IDs')
 
     def __new__(cls, **kw):
         newname = calc_name(cls, kw, 'd')
