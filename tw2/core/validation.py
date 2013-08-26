@@ -1,6 +1,6 @@
-import core
+from . import core
 import re
-import util
+from . import util
 import string
 import datetime
 import copy
@@ -8,11 +8,22 @@ import functools
 import webob
 import warnings
 
-from i18n import _
+from .i18n import _
+import six
+
+# Compat
+if six.PY3:
+    capitalize = str.capitalize
+else:
+    capitalize = string.capitalize
 
 # This hack helps work with different versions of WebOb
 if not hasattr(webob, 'MultiDict'):
-    webob.MultiDict = webob.multidict.MultiDict
+    # Check for webob versions with UnicodeMultiDict
+    if hasattr(webob.multidict, 'UnicodeMultiDict'):
+        webob.MultiDict = webob.multidict.UnicodeMultiDict
+    else:
+        webob.MultiDict = webob.multidict.MultiDict
 
 try:
     import formencode
@@ -66,7 +77,7 @@ class ValidationError(BaseValidationError):
             msg = ''
 
         msg = re.sub('\$(\w+)',
-                lambda m: str(getattr(validator, m.group(1))), unicode(msg))
+                lambda m: str(getattr(validator, m.group(1))), six.text_type(msg))
         super(ValidationError, self).__init__(msg)
 
     @property
@@ -93,8 +104,8 @@ def catch_errors(fn):
         try:
             d = fn(self, *args, **kw)
             return d
-        except catch, e:
-            e_msg = unicode(e)
+        except catch as e:
+            e_msg = six.text_type(e)
             if self:
                 self.error_msg = e_msg
             raise ValidationError(e_msg, widget=self)
@@ -109,14 +120,17 @@ def unflatten_params(params):
     """
     if isinstance(params, webob.MultiDict):
         params = params.mixed()
+
     mw = core.request_local().get('middleware')
     enc = mw.config.encoding if mw else 'utf-8'
+
     try:
         for p in params:
-            if isinstance(params[p], str):
+            if isinstance(params[p], six.binary_type):
                 params[p] = params[p].decode(enc)
     except UnicodeDecodeError:
         raise ValidationError('decode', Validator(encoding=enc))
+
     out = {}
     for pname in params:
         dct = out
@@ -170,7 +184,7 @@ class ValidatorMeta(type):
         return type.__new__(meta, name, bases, dct)
 
 
-class Validator(object):
+class Validator(six.with_metaclass(ValidatorMeta, object)):
     """Base class for validators
 
     `required`
@@ -189,7 +203,6 @@ class Validator(object):
      meant to be used externally. All of them may raise ValidationErrors.
 
     """
-    __metaclass__ = ValidatorMeta
 
     msgs = {
         'required': _('Enter a value'),
@@ -211,7 +224,7 @@ class Validator(object):
             if self.required:
                 raise ValidationError('required', self)
             return self.if_empty
-        if self.strip and isinstance(value, basestring):
+        if self.strip and isinstance(value, six.string_types):
             value = value.strip()
         value = self._convert_to_python(value, state)
         self._validate_python(value, state)
@@ -221,7 +234,7 @@ class Validator(object):
         """Convert from a Python object to an external value."""
         if self._is_empty(value):
             return ''
-        if isinstance(value, basestring) and self.strip:
+        if isinstance(value, six.string_types) and self.strip:
             value = value.strip()
         value = self._convert_from_python(value, state)
         return value
@@ -573,7 +586,7 @@ class MatchValidator(Validator):
 
     @property
     def other_field_str(self):
-        return string.capitalize(util.name2label(self.other_field).lower())
+        return capitalize(util.name2label(self.other_field).lower())
 
     def _validate_python(self, value, state):
         if self.other_field not in state or value != state[self.other_field]:
@@ -615,7 +628,7 @@ class All(CompoundValidator):
         for validator in self.validators:
             try:
                 validator._validate_python(value, state)
-            except ValidationError, e:
+            except ValidationError as e:
                 msg.append((str(e)))
         if msg:
             msgset = set()
@@ -634,7 +647,7 @@ class Any(CompoundValidator):
         for validator in self.validators:
             try:
                 validator._validate_python(value, state)
-            except ValidationError, e:
+            except ValidationError as e:
                 msg.append(str(e))
         if len(msg) == len(self.validators):
             msgset = set()

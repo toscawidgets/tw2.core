@@ -1,4 +1,5 @@
 from copy import copy
+from six.moves import filter
 
 _BOOLEAN_ATTRS = frozenset(['selected', 'checked', 'compact', 'declare',
                             'defer', 'disabled', 'ismap', 'multiple',

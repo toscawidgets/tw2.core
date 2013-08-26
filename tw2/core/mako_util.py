@@ -4,6 +4,7 @@ from copy import copy
 
 from markupsafe import Markup
 from cgi import escape
+import six
 #from mako.filters import xml_escape
 
 __all__ = ["attrs"]
@@ -25,10 +26,10 @@ def attrs(context, args=None, attrs=None):
         args.update(attrs)
     bools = _BOOLEAN_ATTRS
 
-    new_attrs = [u'%s="%s"' % (k, escape(unicode(k in bools and k or v), True))
-                 for k, v in args.iteritems()
+    new_attrs = [six.u('%s="%s"') % (k, escape(six.text_type(k in bools and k or v), True))
+                 for k, v in six.iteritems(args)
                  if (k not in bools and v is not None) or (k in bools and v)]
-    return Markup(u" ".join(new_attrs))
+    return Markup(six.u(" ").join(new_attrs))
 
 
 def compat(context, attr):

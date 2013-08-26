@@ -1,15 +1,17 @@
 """
 tw2.core contains the base Widgets from which all others are derived.
 """
-from core import (WidgetError)
+from __future__ import absolute_import
 
-from params import (Param, ChildParam, Variable, ChildVariable, Required,
+from .core import (WidgetError)
+
+from .params import (Param, ChildParam, Variable, ChildVariable, Required,
     Deferred, ParameterError, Auto)
 
-from widgets import (Widget, CompoundWidget, RepeatingWidget,
+from .widgets import (Widget, CompoundWidget, RepeatingWidget,
     DisplayOnlyWidget, Page)
 
-from resources import (
+from .resources import (
     JSSymbol,
     Link,
     JSLink,
@@ -20,7 +22,7 @@ from resources import (
     DirLink,
 )
 
-from validation import (
+from .validation import (
     Validator, LengthValidator,
     RegexValidator, IntValidator, OneOfValidator, DateValidator,
     DateTimeValidator, ValidationError, Invalid, EmailValidator,
@@ -31,25 +33,24 @@ from validation import (
     Any, All,
 )
 
-from middleware import (
+from .middleware import (
     make_middleware,
-    dev_server,
     register_controller,
     register_resource,
 )
 
-from js import (
+from .js import (
     js_symbol,
     js_callback,
     js_function,
     encoder
 )
 
-from compat import (
+from .compat import (
     TGStyleController,
 )
 
-from i18n import _, tw2_translation_string
+from .i18n import _, tw2_translation_string
 
 # Shortcut from Deprecated TWEncoder that was in js.py
 encode = encoder.encode

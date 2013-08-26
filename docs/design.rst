@@ -166,6 +166,7 @@ To define a resource, just add a :class:`tw2.core.Resource` subclass to the widg
 .. autoclass:: tw2.core.CSSSource
 .. autoclass:: tw2.core.JSLink
 .. autoclass:: tw2.core.JSSource
+.. autoclass:: tw2.core.DirLink
 
 Resources are widgets, but follow a slightly different lifecycle. Resource subclasses are passed into the :attr:`resources` parameter. An instance is created for each request, but this is only done at the time of the parent Widget's :meth:`display` method. This gives widgets a chance to add dynamic resources in their :meth:`prepare` method.
 

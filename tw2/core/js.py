@@ -9,17 +9,18 @@ as a "bridge" or interface between Python and JavaScript so JS function
 """
 import re
 import sys
+import six
 
 import logging
-from itertools import imap
-import simplejson.encoder
+from six.moves import map
+import json.encoder
 
 __all__ = ["js_callback", "js_function", "js_symbol", "encode"]
 
 log = logging.getLogger(__name__)
 
 
-class TWEncoder(simplejson.encoder.JSONEncoder):
+class TWEncoder(json.encoder.JSONEncoder):
     """A JSON encoder that can encode Widgets, js_calls, js_symbols and
     js_callbacks.
 
@@ -147,7 +148,7 @@ class js_callback(object):
 
     """
     def __init__(self, cb, *args):
-        if isinstance(cb, basestring):
+        if isinstance(cb, six.string_types):
             self.cb = cb
         elif isinstance(cb, js_function):
             self.cb = "function(){%s}" % cb(*args)
@@ -255,7 +256,7 @@ class _js_call(object):
             args = self.__args
             rep = '%s(%s)' % (
                 self.__name,
-                ', '.join(imap(encoder.encode, args))
+                ', '.join(map(encoder.encode, args))
             )
             return rep\
                     .replace('\\"', '"')\

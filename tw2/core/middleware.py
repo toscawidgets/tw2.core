@@ -1,13 +1,15 @@
+from __future__ import absolute_import
+
 import types
 import warnings
 import webob as wo
 from pkg_resources import iter_entry_points, DistributionNotFound
 from paste.deploy.converters import asbool, asint
 
-import core
-import resources
+from . import core
 
 import logging
+import six
 log = logging.getLogger(__name__)
 
 
@@ -158,6 +160,11 @@ class TwMiddleware(object):
      * Inject resources
     """
     def __init__(self, app, controllers=None, **config):
+
+        # Here to avoid circular import
+        from . import resources
+        self._resources_module = resources
+
         self.app = app
         self.config = Config(**config)
         self.resources = resources.ResourcesApp(self.config)
@@ -208,11 +215,10 @@ class TwMiddleware(object):
                 and not isinstance(resp.app_iter, types.GeneratorType)
             )
             if should_inject:
-                body = resources.inject_resources(
-                    resp.body,
-                    encoding=resp.charset,
-                )
-                if isinstance(body, unicode):
+                body = self._resources_module.inject_resources(
+                    resp.body.decode(resp.charset),
+                ).encode(resp.charset)
+                if isinstance(body, six.text_type):
                     resp.unicode_body = body
                 else:
                     resp.body = body
@@ -238,7 +244,7 @@ class ControllersApp(object):
         it is not registered.
         """
 
-        for path, widget in self._widgets.iteritems():
+        for path, widget in six.iteritems(self._widgets):
             if target_widget == widget:
                 return path
 
@@ -317,13 +323,5 @@ def make_middleware(app=None, config=None, **kw):
     return app
 
 
-def dev_server(*args, **kwargs):
-    """
-    Deprecated; use tw2.devtools.dev_server insteads.
-    """
-    import tw2.devtools
-    warnings.warn(
-        'tw2.core.dev_server is deprecated; ' +
-        'Use tw2.devtools.dev_server instead.'
-    )
-    tw2.devtools.dev_server(*args, **kwargs)
+def make_app(config=None, **kw):
+    return make_middleware(app=None, config=config, **kw)

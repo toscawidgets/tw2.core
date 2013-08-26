@@ -1,32 +1,31 @@
 import os
 import re
 import copy
+import unittest
 
-import formencode as fe
-import itertools as it
 import pkg_resources as pk
 
 from difflib import unified_diff
-from cStringIO import StringIO
-from BeautifulSoup import BeautifulSoup as bs
+from six import StringIO
 from nose.tools import eq_
 from nose import SkipTest
 
-from xhtmlify import (
+from .xhtmlify import (
     xhtmlify,
     ValidationError,
 )
 
-from strainer.operators import (
-    remove_whitespace_nodes,
-    remove_namespace,
-    eq_xhtml,
-    in_xhtml,
-    assert_in_xhtml,
-    assert_eq_xhtml,
-    normalize_to_xhtml,
-    replace_escape_chars,
+from sieve.operators import (
+    eq_xml,
+    in_xml,
+    assert_eq_xml,
+    assert_in_xml,
 )
+
+in_xhtml = in_xml
+eq_xhtml = eq_xml
+assert_in_xhtml = assert_in_xml
+assert_eq_xhtml = assert_eq_xml
 
 import xml.etree.ElementTree as etree
 from xml.parsers.expat import ExpatError
@@ -34,6 +33,13 @@ from xml.parsers.expat import ExpatError
 import tw2.core as twc
 import tw2.core.middleware as tmw
 import tw2.core.templating as templating
+import six
+
+try:
+    import formencode as fe
+    possible_errors = (twc.ValidationError, fe.Invalid)
+except ImportError:
+    possible_errors = (twc.ValidationError,)
 
 rm = pk.ResourceManager()
 
@@ -51,37 +57,6 @@ def replace_boolean_attrs(needle):
         if eyelet in needle:
             needle = needle.replace(eyelet, '%s="%s" ' % (attr, attr))
     return needle
-
-
-def fix_xml(needle):
-    needle = replace_escape_chars(needle)
-    # first, we need to make sure the needle is valid html
-    """
-    try:
-        validate_html(needle)
-    except HTMLParser.HTMLParseError:
-        print "error with: %s"%needle
-        raise
-    """
-    # then we close all the open-ended tags to make sure it will compare
-    # properly
-    #needle = bs(needle).prettify()
-    needle = xhtmlify(needle)
-    try:
-        needle_node = etree.fromstring(needle)
-    except ExpatError, e:
-        raise ExpatError('Could not parse %s into xml. %s' % (
-            needle, e.args[0]
-        ))
-    needle_node = remove_whitespace_nodes(needle_node)
-    remove_namespace(needle_node)
-    needle_s = etree.tostring(needle_node)
-    return needle_s
-
-in_xml = in_xhtml
-eq_xml = eq_xhtml
-assert_in_xml = assert_in_xhtml
-assert_eq_xml = assert_eq_xhtml
 
 
 def request_local_tst():
@@ -111,12 +86,12 @@ def TW2WidgetBuilder(widget, **attrs):
     class MyTestWidget(widget):
         pass
 
-    for key, value in attrs.iteritems():
+    for key, value in six.iteritems(attrs):
         setattr(MyTestWidget, key, value)
     return MyTestWidget
 
 
-class WidgetTest(object):
+class WidgetTest(unittest.TestCase):
     """
     This class provides a basis for testing all widget classes.  It's setup
     will automatically create a request, and a widget of the type specified.
@@ -187,21 +162,6 @@ class WidgetTest(object):
         rl['middleware'] = mw
         return request_local_tst()
 
-    def setup(self):
-        global _request_id, _request_local
-        _request_local = {}
-        _request_id = None
-        if hasattr(super(WidgetTest, self), 'setup'):
-            super(WidgetTest, self).setup()
-        self.mw = tmw.make_middleware(
-            None,
-            default_engine=self.template_engine
-        )
-        if self.declarative:
-            self.widget = TW2WidgetBuilder(self.widget, **self.attrs)
-
-        return self.request(1)
-
     def _get_all_possible_engines(self):
         for engine in templating._default_rendering_extension_lookup:
             yield engine
@@ -215,7 +175,7 @@ class WidgetTest(object):
         self.request(1, mw)
         try:
             r = self.widget(_no_autoid=True, **attrs).display(**params)
-        except ValueError, e:
+        except ValueError as e:
             if str(e).startswith("Could not find engine name"):
                 raise SkipTest("No template for engine %r" % engine)
             else:
@@ -229,14 +189,14 @@ class WidgetTest(object):
             return
 
         for engine in self._get_all_possible_engines():
-            yield self._check_rendering_vs_expected, engine, \
-                    self.attrs, self.params, self.expected
+            self._check_rendering_vs_expected(engine,
+                    self.attrs, self.params, self.expected)
 
     def _check_validation(self, attrs, params, expected, raises=None):
         if raises is not None:
             try:
                 r = self.widget(**attrs).validate(params)
-            except raises, e:
+            except raises as e:
                 pass
             return
         r = self.widget(**attrs).validate(params)
@@ -249,11 +209,11 @@ class WidgetTest(object):
                     params[0] = self.attrs
                 if len(params) < 4:
                     params.append(None)
-                yield self._check_validation, params[0], \
-                        params[1], params[2], params[3]
+                self._check_validation(params[0],
+                        params[1], params[2], params[3])
 
 
-class ValidatorTest(object):
+class ValidatorTest(unittest.TestCase):
     """
     This test provides a basis for testing all validator classes. On
     initialization, this class will make a request and a middleware
@@ -333,20 +293,11 @@ class ValidatorTest(object):
         rl['middleware'] = mw
         return request_local_tst()
 
-    def setup(self):
-        global _request_id, _request_local
-        _request_local = {}
-        _request_id = None
-        if hasattr(super(ValidatorTest, self), 'setup'):
-            super(ValidatorTest, self).setup()
-        self.mw = tmw.make_middleware(None)
-        return self.request(1)
-
     def _check_validation(self, attrs, params, expected,
                           method='to_python'):
         vld = self.validator(**attrs)
         if isinstance(expected, type) and \
-           issubclass(expected, (twc.ValidationError, fe.Invalid)):
+            issubclass(expected, possible_errors):
             try:
                 if method == 'to_python':
                     params = vld.to_python(params)
@@ -362,31 +313,33 @@ class ValidatorTest(object):
 
     def test_validate(self):
         if self.expected:
-            triples = it.izip(self.attrs, self.params, self.expected)
+            triples = six.moves.zip(self.attrs, self.params, self.expected)
             for attrs, params, expected in triples:
-                yield self._check_validation, attrs, params, expected
+                self._check_validation(attrs, params, expected)
 
     def test_from_python(self):
         if self.from_python_expected:
-            triples = it.izip(
+            triples = six.moves.zip(
                 self.from_python_attrs,
                 self.from_python_params,
                 self.from_python_expected,
             )
             for attrs, params, expected in triples:
-                yield self._check_validation, attrs, params, \
-                        expected, 'from_python'
+                self._check_validation(attrs, params,
+                        expected, 'from_python')
 
     def test_to_python(self):
+        name = self.__class__.__name__
+        tbv =  name == 'TestBoolValidator'
         if self.to_python_expected:
-            triples = it.izip(
+            triples = six.moves.zip(
                 self.to_python_attrs,
                 self.to_python_params,
                 self.to_python_expected,
             )
             for attrs, params, expected in triples:
-                yield self._check_validation, attrs, params, \
-                        expected, 'to_python'
+                self._check_validation(attrs, params,
+                       expected, 'to_python')
 
 import webob as wo
 import webtest as wt
@@ -394,25 +347,11 @@ import tw2.core as twc
 import os
 
 
-class TestInPage(object):
+class TestInPage(unittest.TestCase):
     content_type = 'text/html'
     charset = 'UTF8'
 
     html = "<html><head><title>TITLE</title></head><body>%s</body></html>"
-
-    def setup(self):
-        global _request_local
-        _request_local = {}
-        self.mw = twc.make_middleware(self)
-        self.app = wt.TestApp(self.mw)
-
-        js = twc.JSLink(link='paj')
-        css = twc.CSSLink(link='joe')
-        TestWidget = twc.Widget(
-            template='genshi:tw2.core.test_templates.inner_genshi',
-            test='test',
-        )
-        self.inject_widget = TestWidget(id='a', resources=[js, css])
 
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
@@ -430,11 +369,12 @@ class TestInPage(object):
         return resp(environ, start_response)
 
 
+
 class TestInPageTest(TestInPage):
     def test_base(self):
         res = self.app.get('/')
         assert_in_xhtml(
-            '<script type="text/javascript" src="paj"></script>',
+            '<script type="text/javascript" src="paj" ></script>',
             res.body
         )
         assert_in_xhtml(

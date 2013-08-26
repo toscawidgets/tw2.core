@@ -1,4 +1,9 @@
-import tw2.core as twc, testapi, thread
+import tw2.core as twc, testapi
+
+try:
+    import thread
+except ImportError:
+    import _thread as thread
 
 
 class TestMisc(object):

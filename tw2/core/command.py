@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import errno
 import re
 import operator
@@ -8,6 +10,10 @@ import stat
 import tempfile
 import subprocess
 import mimetypes
+from functools import reduce
+import six
+from six.moves import map
+from six.moves import zip
 
 try:
     from hashlib import md5
@@ -17,7 +23,7 @@ except ImportError:
 try:
     from cStringIO import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from six import StringIO
 
 import pkg_resources
 from setuptools import Command
@@ -129,19 +135,19 @@ class archive_tw2_resources(Command):
 
     def run(self):
         if not self.output:
-            print >> sys.stderr, "Need to specify an output directory"
+            print("Need to specify an output directory", file=sys.stderr)
             return
         if not self.distributions:
-            print >> sys.stderr, "Need to specify at least one distribution"
+            print("Need to specify at least one distribution", file=sys.stderr)
             return
         if os.path.exists(self.output) and not self.force:
-            print >> sys.stderr, (
+            print((
                 "Destination dir %s exists. " % self.output) + \
-               "Use -f to overwrite."
+               "Use -f to overwrite.", file=sys.stderr)
             return
         if self.compresslevel > 0 and not os.path.exists(self.yuicompressor):
-            print >> sys.stderr, "Could not find YUICompressor at " + \
-                                 self.yuicompressor
+            print("Could not find YUICompressor at " + \
+                                 self.yuicompressor, file=sys.stderr)
             return
 
         self.tempdir = tempdir = tempfile.mktemp()
@@ -170,8 +176,8 @@ class archive_tw2_resources(Command):
 
     def _load_widgets(self, mod):
         """ Register the widgets' resources with the middleware. """
-        print "Doing", mod.__name__
-        for key, value in mod.__dict__.iteritems():
+        print("Doing", mod.__name__)
+        for key, value in six.iteritems(mod.__dict__):
             if isinstance(value, widgets.WidgetMeta):
                 try:
                     value(id='fake').req().prepare()
@@ -212,7 +218,7 @@ class archive_tw2_resources(Command):
                     self._load_widgets(mod)
                     self.announce("Loaded %s" % mod.__name__)
 
-        except ImportError, e:
+        except ImportError as e:
             self.announce("%s has no widgets entrypoint" % distribution)
 
     def _copy_resources(self):
@@ -234,7 +240,7 @@ class archive_tw2_resources(Command):
                 self.execute(self._copy_resource_tree, (modname, fbase),
                              "Copying %s recursively into %s" %
                              (modname, self.writer.base))
-            except AttributeError, e:
+            except AttributeError as e:
                 pass
 
     def _copy_resource_tree(self, modname, fname):
@@ -255,7 +261,7 @@ class archive_tw2_resources(Command):
                     self.execute(self.writer.write_file, (stream, filename),
                                  "Processing " + filename)
                     stream.close()
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 self.warn("Could not copy %s" % repr((modname, fname, e)))
 
@@ -279,10 +285,10 @@ class FileWriter(object):
 
     # Delegate methods to Command
     for name in "warn announce error execute".split():
-        exec """\
+        exec("""\
 def %(name)s(self, *args, **kw):
     return self.cmd.%(name)s(*args, **kw)
-""" % locals()
+""" % locals())
 
 
 class CompressingWriter(FileWriter):
@@ -364,7 +370,7 @@ class OnePassCompressingWriter(CompressingWriter):
 
     def finalize(self):
         self.announce("Compressing all defered files")
-        for typ, cache in self._caches.iteritems():
+        for typ, cache in six.iteritems(self._caches):
             cache.seek(0)
             # self.compress only wants to know the file extension to see
             # what kind of file it is, we pass a dummy one
@@ -378,6 +384,6 @@ class OnePassCompressingWriter(CompressingWriter):
         if not cache:
             self.announce("Will not consider %s for onepass" % path)
             return CompressingWriter.write_file(self, stream, path)
-        print >> cache, self._marker % locals()
+        print(self._marker % locals(), file=cache)
         self.announce("Defering %s for compression in one pass" % path)
         shutil.copyfileobj(stream, cache)
