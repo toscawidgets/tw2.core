@@ -75,7 +75,7 @@ else:
 
 setup(
     name='tw2.core',
-    version='2.2.0',
+    version='2.2.0.1',
     description="Web widget creation toolkit based on TurboGears widgets",
     long_description = get_description(),
     install_requires=requires,
