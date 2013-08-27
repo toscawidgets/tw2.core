@@ -42,7 +42,7 @@ def get_engine_name(template_name, mw=None):
     if template_name in engine_name_cache:
         return engine_name_cache[template_name]
 
-    if ':' in template_name:
+    if template_name and ':' in template_name:
         engine_name = template_name.split(':', 1)[0]
         engine_name_cache[template_name] = engine_name
         return engine_name
