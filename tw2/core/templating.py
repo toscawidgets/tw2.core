@@ -181,7 +181,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None, inline=Fal
 
     elif engine_name == 'kajiki':
         import kajiki
-        tmpl = kajiki.XMLTemplate(src, filename=filename)
+        tmpl = kajiki.XMLTemplate(six.u(src), filename=filename)
         return lambda kwargs: Markup(tmpl(kwargs).render())
 
     elif engine_name == 'chameleon':
