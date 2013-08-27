@@ -37,7 +37,7 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
  * Tutorials for doing --
 
    * Dynamic database-driven forms with :doc:`tw2 and Pyramid </pyramid>`.
-   * Dynamic database-driven forms with :doc:`tw2 and TurboGears 2.1
+   * Dynamic database-driven forms with :doc:`tw2 and TurboGears 2
      </turbogears>`.
    * Dynamic database-driven forms with :doc:`tw2 all by its standalone self
      </standalone>`.
