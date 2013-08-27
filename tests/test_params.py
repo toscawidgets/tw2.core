@@ -1,3 +1,4 @@
+from __future__ import print_function
 from nose.tools import eq_
 import tw2.core as twc, testapi
 import six
@@ -86,4 +87,5 @@ class TestParams(object):
             TestWidget.display()
             assert False, "Should have raised an exception."
         except ValueError as e:
-            eq_(str(e), "'some_param' is a required Parameter")
+            print(str(e))
+            assert(str(e).startswith("'some_param' is a required Parameter"))
