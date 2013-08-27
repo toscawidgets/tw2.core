@@ -339,13 +339,12 @@ p > strong:after {
 
     def test_display(self):
         for engine in self._get_all_possible_engines():
-            # CSSource misses pt template.
-            if engine in ['chameleon']:
-                continue
-
             yield self._check_equal, engine
 
     def _check_equal(self, engine):
+        if engine in ['chameleon']:
+            self.skipTest("CSSSource is missing a pt template.")
+
         r = self.s.req()
         display = r.display(
             template='%s:%s' % (engine, twr.CSSSource.template)).strip()
