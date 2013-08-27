@@ -22,11 +22,6 @@ _default_rendering_extension_lookup = {
     'chameleon': ['pt']
 }
 
-if not six.PY3:
-    _default_rendering_extension_lookup.update({
-        'kajiki': ['kajiki', 'html'],
-    })
-
 
 def get_rendering_extensions_lookup(mw):
     if mw is None:
@@ -54,8 +49,6 @@ def get_engine_name(template_name, mw=None):
         pref_rend_eng = mw.config.preferred_rendering_engines
     except (KeyError, AttributeError):
         pref_rend_eng = ['mako', 'genshi', 'jinja', 'chameleon']
-        if not six.PY3:
-            pref_rend_eng.append('kajiki')
 
     # find the first file in the preffered engines available for templating
     for engine_name in pref_rend_eng:
@@ -68,8 +61,6 @@ def get_engine_name(template_name, mw=None):
 
     if not mw.config.strict_engine_selection:
         pref_rend_eng = ['mako', 'genshi', 'jinja', 'chameleon']
-        if not six.PY3:
-            pref_rend_eng.append('kajiki')
         for engine_name in pref_rend_eng:
             try:
                 get_source(engine_name, template_name, mw=mw)
@@ -178,11 +169,6 @@ def get_render_callable(engine_name, displays_on, src, filename=None, inline=Fal
         tmpl = env.from_string(src, template_class=jinja2.Template)
         tmpl.filename = filename
         return lambda kwargs: Markup(tmpl.render(**kwargs))
-
-    elif engine_name == 'kajiki':
-        import kajiki
-        tmpl = kajiki.XMLTemplate(six.u(src), filename=filename)
-        return lambda kwargs: Markup(tmpl(kwargs).render())
 
     elif engine_name == 'chameleon':
         import chameleon
