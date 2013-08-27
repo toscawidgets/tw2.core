@@ -75,7 +75,7 @@ class Config(object):
 
     `preferred_rendering_engines`
         List of rendering engines in order of preference.
-        (default: ['mako','genshi','jinja','kajiki'])
+        (default: ['mako','genshi','jinja'])
 
     `strict_engine_selection`
         If set to true, TW2 will only select rendering engines from within your
@@ -89,7 +89,6 @@ class Config(object):
             'mako':['mak', 'mako'],
             'genshi':['genshi', 'html'],
             'jinja':['jinja', 'html'],
-            'kajiki':['kajiki', 'html'],
         })
 
     `script_name`
@@ -113,14 +112,13 @@ class Config(object):
     validator_msgs = {}
     encoding = 'utf-8'
     auto_reload_templates = None
-    preferred_rendering_engines = ['mako', 'genshi', 'jinja', 'kajiki']
+    preferred_rendering_engines = ['mako', 'genshi', 'jinja']
     strict_engine_selection = True
     rendering_extension_lookup = {
         'mako': ['mak', 'mako'],
         'genshi': ['genshi', 'html'],
         'genshi_abs': ['genshi', 'html'], # just for backwards compatibility with tw2 2.0.0
         'jinja':['jinja', 'html'],
-        'kajiki':['kajiki', 'html'],
         'chameleon': ['pt']
     }
     script_name = ''
