@@ -292,16 +292,15 @@ class TestJsFuncall(tb.WidgetTest):
 
     def test_display(self):
         for t in self._get_all_possible_engines():
-            r = self.widget(**self.attrs).display(template='%s:%s' % (t, twr._JSFuncCall.template))
-            assert r == """<script type="text/javascript">foo("a", "b")</script>""", r
+            r = self.widget(**self.attrs).display(
+                template='%s:%s' % (t, twr._JSFuncCall.template))
+            eq_(r, '<script type="text/javascript">foo("a", "b")</script>')
 
 class TestJSSourceEscaping(tb.WidgetTest):
     widget = twr.JSSource
     attrs = {}
     expected = None
-
-    def test_display(self):
-        s = twr.JSSource(src='''
+    s = twr.JSSource(src='''
 function test(a, b) {
     if (b < 5)
         return b;
@@ -309,40 +308,51 @@ function test(a, b) {
         return "OK";
 }
 ''')
-        r = s.req()
-        compare_to = None
-        for e in self._get_all_possible_engines():
-            display = r.display(
-                template='%s:%s' % (e, twr.JSSource.template)).strip()
-            if compare_to is None:
-                compare_to = display
-            else:
-                assert display == compare_to, e
+
+    compare_to = None
+
+    def test_display(self):
+        for engine in self._get_all_possible_engines():
+            yield self._check_equal, engine
+
+    def _check_equal(self, engine):
+        r = self.s.req()
+        display = r.display(
+            template='%s:%s' % (engine, twr.JSSource.template)).strip()
+        if self.compare_to is None:
+            self.compare_to = display
+        else:
+            eq_(display, self.compare_to)
 
 class TestCSSSourceEscaping(tb.WidgetTest):
     widget = twr.CSSSource
     attrs = {}
     expected = None
-
-    def test_display(self):
-        s = twr.CSSSource(src='''
+    s = twr.CSSSource(src='''
 p > strong:after {
     content:"WOAH, this was STRONG!";
 }
 ''')
 
-        r = s.req()
-        compare_to = None
-        for e in self._get_all_possible_engines():
+
+    compare_to = None
+
+    def test_display(self):
+        for engine in self._get_all_possible_engines():
             # CSSource misses pt template.
-            if e in ['chameleon']:
+            if engine in ['chameleon']:
                 continue
-            display = r.display(
-                template='%s:%s' % (e, twr.CSSSource.template)).strip()
-            if compare_to is None:
-                compare_to = display
-            else:
-                assert display == compare_to, e
+
+            yield self._check_equal, engine
+
+    def _check_equal(self, engine):
+        r = self.s.req()
+        display = r.display(
+            template='%s:%s' % (engine, twr.CSSSource.template)).strip()
+        if self.compare_to is None:
+            self.compare_to = display
+        else:
+            eq_(display, self.compare_to)
 
 from pkg_resources import Requirement
 class TestResourcesApp:
