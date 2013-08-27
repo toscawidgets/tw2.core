@@ -896,7 +896,7 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
         'Children specified for this widget will be passed to the child',
         default=[],
     )
-    id_suffix = pm.Variable('Suffix to append to compound IDs')
+    id_suffix = pm.Variable('Suffix to append to compound IDs', default=None)
 
     def __new__(cls, **kw):
         newname = calc_name(cls, kw, 'd')
@@ -996,7 +996,7 @@ class Page(DisplayOnlyWidget):
     An HTML page. This widget includes a :meth:`request` method that serves
     the page.
     """
-    title = pm.Param('Title for the page')
+    title = pm.Param('Title for the page', default=None)
     content_type = pm.Param(
         'Content type header',
         default=pm.Deferred(default_content_type),
