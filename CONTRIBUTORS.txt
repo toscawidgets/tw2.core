@@ -17,8 +17,18 @@ Contributors
 * Paul Johnston has contributed documentation, removed the need for 
   WidgetRepeater.max_repetitions, and provided a number of minor enhancements.
 * Ralph Bean has contributed tests, docs, patches and tw2.jquery plugins.
+* Alberto Valverde
+* Christopher Perkins
+* Greg Jurman
+* Joseph Tate
+* Alessandro Molina
+* Christoph Zwerschke
+* Christopher Brown
+* Carlos Daniel Ruvalcaba Valenzuela
+* Moritz Schlarb
+* Tom Willis
 
 ToscaWidgets is modeled after TurboGears widgets which was initially designed
 by Kevin Dangoor and Michele Cella (with a little help from Alberto). Many
-people have contributed code, bugfixes and ideas to TG widgets and ToscaWidgets
-owes much to them.
+people have contributed code, bugfixes and ideas to TurboGears widgets and
+ToscaWidgets owes much to them.

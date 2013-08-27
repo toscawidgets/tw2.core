@@ -36,11 +36,6 @@ _extra_mako = ["Mako >= 0.1.1"]
 _extra_jinja = ["jinja2"]
 _extra_chameleon = ["chameleon"]
 
-if sys.version_info[0] == 3:
-    _extra_kajiki = []
-else:
-    _extra_kajiki = ["kajiki"]  # Broken for py3.3
-
 requires = [
     'WebOb>=0.9.7',
     'PasteDeploy',
@@ -60,7 +55,6 @@ tests_require = [
     _extra_genshi + \
     _extra_mako + \
     _extra_jinja + \
-    _extra_kajiki + \
     _extra_chameleon
 
 if sys.version_info[0] == 2:
@@ -75,9 +69,13 @@ else:
 
 setup(
     name='tw2.core',
-    version='2.2.0.1',
-    description="Web widget creation toolkit based on TurboGears widgets",
+    version='2.2.0.2',
+    description='The runtime components for ToscaWidgets 2, a web widget toolkit.',
     long_description = get_description(),
+    author='Paul Johnston, Christopher Perkins, Alberto Valverde Gonzalez & contributors',
+    author_email='toscawidgets-discuss@googlegroups.com',
+    url = "http://toscawidgets.org/",
+    download_url = "https://pypi.python.org/pypi/tw2.core/",
     install_requires=requires,
     tests_require=tests_require,
     test_suite = 'nose.collector',
@@ -85,13 +83,8 @@ setup(
         'genshi': _extra_genshi,
         'mako': _extra_mako,
         'jinja': _extra_jinja,
-        'kajiki': _extra_kajiki,
         'chameleon': _extra_chameleon,
         },
-    url = "http://toscawidgets.org/",
-    download_url = "http://toscawidgets.org/download/",
-    author='Paul Johnston, Christopher Perkins, Alberto Valverde & contributors',
-    author_email='paj@pajhome.org.uk',
     license='MIT',
     packages = ['tw2', 'tw2.core'],
     namespace_packages = ['tw2'],

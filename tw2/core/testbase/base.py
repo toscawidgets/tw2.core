@@ -1,7 +1,6 @@
 import os
 import re
 import copy
-import unittest
 
 import pkg_resources as pk
 
@@ -91,7 +90,18 @@ def TW2WidgetBuilder(widget, **attrs):
     return MyTestWidget
 
 
-class WidgetTest(unittest.TestCase):
+class Base(object):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def skipTest(self, msg):
+        raise SkipTest(msg)
+
+
+class WidgetTest(Base):
     """
     This class provides a basis for testing all widget classes.  It's setup
     will automatically create a request, and a widget of the type specified.
@@ -189,8 +199,8 @@ class WidgetTest(unittest.TestCase):
             return
 
         for engine in self._get_all_possible_engines():
-            self._check_rendering_vs_expected(engine,
-                    self.attrs, self.params, self.expected)
+            yield self._check_rendering_vs_expected, \
+                    engine, self.attrs, self.params, self.expected
 
     def _check_validation(self, attrs, params, expected, raises=None):
         if raises is not None:
@@ -209,11 +219,11 @@ class WidgetTest(unittest.TestCase):
                     params[0] = self.attrs
                 if len(params) < 4:
                     params.append(None)
-                self._check_validation(params[0],
-                        params[1], params[2], params[3])
+                yield self._check_validation, \
+                    params[0], params[1], params[2], params[3]
 
 
-class ValidatorTest(unittest.TestCase):
+class ValidatorTest(Base):
     """
     This test provides a basis for testing all validator classes. On
     initialization, this class will make a request and a middleware
@@ -315,7 +325,8 @@ class ValidatorTest(unittest.TestCase):
         if self.expected:
             triples = six.moves.zip(self.attrs, self.params, self.expected)
             for attrs, params, expected in triples:
-                self._check_validation(attrs, params, expected)
+                yield self._check_validation, \
+                    attrs, params, expected
 
     def test_from_python(self):
         if self.from_python_expected:
@@ -325,8 +336,8 @@ class ValidatorTest(unittest.TestCase):
                 self.from_python_expected,
             )
             for attrs, params, expected in triples:
-                self._check_validation(attrs, params,
-                        expected, 'from_python')
+                yield self._check_validation, \
+                    attrs, params, expected, 'from_python'
 
     def test_to_python(self):
         name = self.__class__.__name__
@@ -338,8 +349,8 @@ class ValidatorTest(unittest.TestCase):
                 self.to_python_expected,
             )
             for attrs, params, expected in triples:
-                self._check_validation(attrs, params,
-                       expected, 'to_python')
+                yield self._check_validation, \
+                    attrs, params, expected, 'to_python'
 
 import webob as wo
 import webtest as wt
@@ -347,7 +358,7 @@ import tw2.core as twc
 import os
 
 
-class TestInPage(unittest.TestCase):
+class TestInPage(Base):
     content_type = 'text/html'
     charset = 'UTF8'
 
