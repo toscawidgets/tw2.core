@@ -483,6 +483,9 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
                 if hasattr(self, p):
                     kwargs[p] = getattr(self, p)
 
+        if self.template is None:
+            raise ValueError("A template must be provided.")
+
         return templating.render(
             self.template,
             displays_on,

@@ -124,7 +124,7 @@ When a value like ``{'title': 'my title'}`` is passed to MyForm, this will propa
 Template
 ========
 
-Every widget can have a template.  Toscawidgets has some template-language hooks which currently support Genshi, Mako, Jinja2, Kajiki, and Chameleon.
+Every widget can have a template.  Toscawidgets has some template-language hooks which currently support Genshi, Mako, Jinja2, and Chameleon.
 
 At one point, ToscaWidgets2 aimed to support any templating engine that supported the ``buffet`` interface, (an initiative by the TurboGears project to create a standard interface for template libraries). In practice though, there are more differences between template engines than the buffet interface standardises so this approach has been dropped.
 
