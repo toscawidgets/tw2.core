@@ -12,6 +12,7 @@ from tw2.core.validation import *
 import six
 from six.moves import map
 from six.moves import zip
+import uuid
 
 HAS_SKIP = sys.version_info[0] == 2 and sys.version_info[1] == 7
 
@@ -509,6 +510,12 @@ class TestIPAddressValidator(tb.ValidatorTest):
     attrs =    [{}, {}]
     params =   ['123.123.123.123', 'asdf']
     expected = ['123.123.123.123', ValidationError]
+
+class TestUUIDValidator(tb.ValidatorTest):
+    validator = UUIDValidator
+    attrs =    [{}, {}]
+    params =   ['34a9c4dd-1562-4413-bb27-a439292a5e61', 'asdf']
+    expected = [uuid.UUID('34a9c4dd-1562-4413-bb27-a439292a5e61'), ValidationError]
 
 
 class TestValidatorMisc(TestCase):
