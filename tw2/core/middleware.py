@@ -213,9 +213,15 @@ class TwMiddleware(object):
                 and not isinstance(resp.app_iter, types.GeneratorType)
             )
             if should_inject:
-                body = self._resources_module.inject_resources(
-                    resp.body.decode(resp.charset),
-                ).encode(resp.charset)
+                if resp.charset:
+                    body = self._resources_module.inject_resources(
+                        resp.body.decode(resp.charset),
+                    ).encode(resp.charset)
+                else:
+                    body = self._resources_module.inject_resources(
+                        resp.body,
+                    )
+
                 if isinstance(body, six.text_type):
                     resp.unicode_body = body
                 else:
