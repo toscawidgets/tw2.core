@@ -69,27 +69,27 @@ else:
 
 setup(
     name='tw2.core',
-    version='2.2.0.2',
+    version='2.2.0.3',
     description='The runtime components for ToscaWidgets 2, a web widget toolkit.',
-    long_description = get_description(),
+    long_description=get_description(),
     author='Paul Johnston, Christopher Perkins, Alberto Valverde Gonzalez & contributors',
     author_email='toscawidgets-discuss@googlegroups.com',
-    url = "http://toscawidgets.org/",
-    download_url = "https://pypi.python.org/pypi/tw2.core/",
+    url="http://toscawidgets.org/",
+    download_url="https://pypi.python.org/pypi/tw2.core/",
+    license='MIT',
     install_requires=requires,
     tests_require=tests_require,
-    test_suite = 'nose.collector',
-    extras_require = {
+    test_suite='nose.collector',
+    extras_require={
         'genshi': _extra_genshi,
         'mako': _extra_mako,
         'jinja': _extra_jinja,
         'chameleon': _extra_chameleon,
         },
-    license='MIT',
-    packages = ['tw2', 'tw2.core'],
-    namespace_packages = ['tw2'],
+    packages=['tw2', 'tw2.core'],
+    namespace_packages=['tw2'],
     include_package_data=True,
-    exclude_package_data={"thirdparty" : ["*"]},
+    exclude_package_data={"thirdparty": ["*"]},
     entry_points="""
     [tw2.widgets]
     widgets = tw2.core
@@ -106,7 +106,7 @@ setup(
 
     """,
     zip_safe=False,
-    classifiers = [
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Environment :: Web Environment :: ToscaWidgets',
