@@ -162,6 +162,24 @@ class WidgetTest(Base):
     wrap = False
     engines = templating._default_rendering_extension_lookup.keys()
 
+
+    def setUp(self):
+        global _request_id, _request_local
+        _request_local = {}
+        _request_id = None
+
+        super(WidgetTest, self).setUp()
+
+        self.mw = tmw.make_middleware(
+            None,
+            default_engine=self.template_engine
+        )
+        if self.declarative:
+            self.widget = TW2WidgetBuilder(self.widget, **self.attrs)
+
+        return self.request(1)
+
+
     def request(self, requestid, mw=None):
         if mw is None:
             mw = self.mw
