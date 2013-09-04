@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.2.0.4
+-------
+
+- Restore an old setUp method for tw2.core.testbase.WidgetTest `da2d9bab2 <https://github.com/toscawidgets/tw2.core/commit/da2d9bab2db86f2378525ad0930af3b1e48e3622>`_
+
 2.2.0.3
 -------
 
