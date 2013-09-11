@@ -382,6 +382,21 @@ class TestInPage(Base):
 
     html = "<html><head><title>TITLE</title></head><body>%s</body></html>"
 
+    def setUp(self):
+        global _request_local
+        _request_local = {}
+        self.mw = twc.make_middleware(self)
+        self.app = wt.TestApp(self.mw)
+
+        js = twc.JSLink(link='paj')
+        css = twc.CSSLink(link='joe')
+        TestWidget = twc.Widget(
+            template='genshi:tw2.core.test_templates.inner_genshi',
+            test='test',
+        )
+        self.inject_widget = TestWidget(id='a', resources=[js, css])
+
+
     def __call__(self, environ, start_response):
         req = wo.Request(environ)
         resp = wo.Response(
