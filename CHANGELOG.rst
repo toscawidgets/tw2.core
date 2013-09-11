@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.2.0.5
+-------
+
+- Add a setUp method back to another base test thats missing it. `55b6061ed <https://github.com/toscawidgets/tw2.core/commit/55b6061edf0264426910d1a19f5641ff0c3cf7a0>`_
+
 2.2.0.4
 -------
 
