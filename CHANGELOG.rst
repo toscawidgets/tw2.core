@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.2.0.7
+-------
+
+- * Clean up cache * Hack to fix the tests with empty value attributes for genshi `cd5febe2b <https://github.com/toscawidgets/tw2.core/commit/cd5febe2bc6c675fa8c7320731d4fe98c603c42d>`_
+- Merge pull request #95 from LeResKP/develop `9f54d72be <https://github.com/toscawidgets/tw2.core/commit/9f54d72be754c6087a0a780c6d89e4761924af23>`_
+- Merge branch 'develop' of github.com:toscawidgets/tw2.core into develop `9142fe165 <https://github.com/toscawidgets/tw2.core/commit/9142fe165139db87c761ca4ed17f673244e5a9b7>`_
+
 2.2.0.6
 -------
 

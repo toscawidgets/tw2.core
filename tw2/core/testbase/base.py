@@ -168,6 +168,9 @@ class WidgetTest(Base):
         _request_local = {}
         _request_id = None
 
+        # Clean up the cache
+        templating.engine_name_cache = {}
+
         super(WidgetTest, self).setUp()
 
         self.mw = tmw.make_middleware(
@@ -197,6 +200,12 @@ class WidgetTest(Base):
     def _check_rendering_vs_expected(self, engine, attrs, params, expected):
         if self.engines and engine not in self.engines:
             raise SkipTest("%r not in engines %r" % (engine, self.engines))
+
+        if engine == 'genshi':
+            # Since version 0.7.x genshi doesn't add empty attributes like in
+            # the other templating systems we remove the empty value
+            expected = expected.replace(' value=""', '')
+
         _request_id = None
         templating.engine_name_cache = {}
         mw = tmw.make_middleware(None, preferred_rendering_engines=[engine])
