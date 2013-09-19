@@ -1,5 +1,6 @@
 <div {{w.attrs | xmlattr }}>
     {% for c in w.children %}
      {{c.display()}}
+     {% if w.separator and not loop.last %}{{w.separator|safe}}{% endif %}
     {% endfor %}
 </div>
