@@ -1,6 +1,6 @@
 <div tal:define="compile import: tw2.core.mako_util" tal:omit-tag=""></div>
-<div tal:attributes="id w.attrs.get('id')"><span
-    tal:repeat="c w.children"
-    tal:content="structure c.display()"
-    tal:omit-tag=""
-    ></span></div>
+<div tal:attributes="id w.attrs.get('id')">
+  <loop tal:repeat="c w.children" tal:omit-tag="">
+    <span tal:replace="c.display()"></span>
+    <span tal:condition="w.separator and not repeat.c.end" tal:replace="structure w.separator"></span>
+</loop></div>

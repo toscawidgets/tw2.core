@@ -320,6 +320,23 @@ class TestRepeatingTestWidget(tb.WidgetTest):
             children=[DummyWidget()]
         w = DummyRepeatingTestWidget()
 
+    def test_separator(self):
+        widget = RepeatingTestWidget
+        attrs = {
+            'id': "rw",
+            'repetitions': 3,
+            'validator': AlwaysValidateFalseValidator,
+            'separator': '<hr />'}
+        params = {'separator': '<hr />'}
+        expected = ('<div id="rw">'
+                    '<p>Test Widget</p><hr />'
+                    '<p>Test Widget</p><hr />'
+                    '<p>Test Widget</p>'
+                    '</div>')
+        for engine in self._get_all_possible_engines():
+            yield (self._check_rendering_vs_expected,
+                engine, attrs, params, expected)
+
 class DisplayOnlyTestWidget(wd.DisplayOnlyWidget):
     child = twc.Variable(default=AlwaysValidateFalseWidget)
     template = "tw2.core.test_templates.display_only_test_widget"
