@@ -295,7 +295,7 @@ class TestCompoundWidget(tb.WidgetTest):
 class RepeatingTestWidget(wd.RepeatingWidget):
     child = AlwaysValidateFalseWidget
 
-class TestRepeatingWidget(tb.WidgetTest):
+class TestRepeatingTestWidget(tb.WidgetTest):
     widget = RepeatingTestWidget
     attrs = {'id':"rw", 'repetitions':1, 'validator':AlwaysValidateFalseValidator}
     expected = """<div id="rw"><p>Test Widget</p></div>"""
@@ -324,7 +324,7 @@ class DisplayOnlyTestWidget(wd.DisplayOnlyWidget):
     child = twc.Variable(default=AlwaysValidateFalseWidget)
     template = "tw2.core.test_templates.display_only_test_widget"
 
-class TestDisplayOnlyWidget(tb.WidgetTest):
+class TestDisplayOnlyTestWidget(tb.WidgetTest):
     widget = DisplayOnlyTestWidget
     attrs = {'id':"dotw"}
     expected = """<p>Test Widget</p>"""
