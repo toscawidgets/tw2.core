@@ -15,6 +15,7 @@ from . import validation as vd
 from . import params as pm
 import six
 from six.moves import filter
+from markupsafe import Markup
 
 try:
     import formencode
@@ -577,6 +578,8 @@ class CompoundWidget(Widget):
         "CompoundWidgets that have no id",
     )
     template = 'tw2.core.templates.display_children'
+    separator = pm.Param('HTML snippet which will be inserted '
+                         'between each repeated child', default=None)
 
     @classmethod
     def post_define(cls):
@@ -617,6 +620,8 @@ class CompoundWidget(Widget):
         Propagate the value for this widget to the children, based on their id.
         """
         super(CompoundWidget, self).prepare()
+        if self.separator:
+            self.separator = Markup(self.separator)
         v = self.value or {}
         if not hasattr(self, '_validated'):
             if hasattr(v, '__getitem__'):
@@ -788,6 +793,8 @@ class RepeatingWidget(Widget):
     repetition = pm.ChildVariable('The repetition of a child widget.')
 
     template = 'tw2.core.templates.display_children'
+    separator = pm.Param('HTML snippet which will be inserted '
+                         'between each repeated child', default=None)
 
     @classmethod
     def post_define(cls):
@@ -821,6 +828,8 @@ class RepeatingWidget(Widget):
         index.
         """
         super(RepeatingWidget, self).prepare()
+        if self.separator:
+            self.separator = Markup(self.separator)
         value = self.value or []
         if self.repetitions is None:
             reps = len(value) + self.extra_reps
