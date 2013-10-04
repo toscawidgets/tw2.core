@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.2.0.8
+-------
+
+- Fix duplicate class name `1c133c907 <https://github.com/toscawidgets/tw2.core/commit/1c133c9074aaded7823d99e3f31aaf4eab8f26d8>`_
+- Be able to put an HTML separator between the children of a RepeatingWidget. We also need to support it for the CompoundWidget since it uses the same template `db717642d <https://github.com/toscawidgets/tw2.core/commit/db717642dff0b5b3cb69e7e3929a0ceaf08a2a54>`_
+- Merge pull request #96 from LeResKP/develop `41229bf01 <https://github.com/toscawidgets/tw2.core/commit/41229bf01b079f49d4ba8747d2f530f4d0eddf99>`_
+- Re-enable archive_tw2_resources on Python 2 `56215397a <https://github.com/toscawidgets/tw2.core/commit/56215397a2e5e373ca5dd44c28fedc4fc66c5d19>`_
+
 2.2.0.7
 -------
 

@@ -69,7 +69,7 @@ else:
 
 setup(
     name='tw2.core',
-    version='2.2.0.7',
+    version='2.2.0.8',
     description='The runtime components for ToscaWidgets 2, a web widget toolkit.',
     long_description=get_description(),
     author='Paul Johnston, Christopher Perkins, Alberto Valverde Gonzalez & contributors',
