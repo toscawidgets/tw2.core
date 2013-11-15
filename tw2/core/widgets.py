@@ -950,22 +950,22 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
             cls.child = cls.child(id=cls_id, key=cls.key, parent=cls)
 
     @classmethod
-    def _gen_compound_id(cls, for_url):
+    def _gen_compound_name(cls, attr, for_url):
         elems = [
-            Widget._gen_compound_id.__func__(cls, for_url),
-            getattr(cls, 'id', None)
+            Widget._gen_compound_name.__func__(cls, attr, for_url),
+            getattr(cls, attr, None)
         ]
         elems = list(filter(None, elems))
         if not elems:
             return None
-        if not for_url and getattr(cls, 'id_suffix', None):
+        if not for_url and attr=='id' and getattr(cls, 'id_suffix', None):
             elems.append(cls.id_suffix)
         return ':'.join(elems)
 
     @classmethod
-    def _compound_id_elem(cls, for_url):
+    def _compound_name_elem(cls, attr, for_url):
         if cls.parent and issubclass(cls.parent, RepeatingWidget):
-            Widget._compound_id_elem.__func__(cls, for_url)
+            Widget._compound_name_elem.__func__(cls, attr, for_url)
         else:
             return None
 
