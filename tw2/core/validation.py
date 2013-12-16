@@ -656,7 +656,7 @@ class All(CompoundValidator):
             try:
                 validator._validate_python(value, state)
             except ValidationError as e:
-                msg.append((str(e)))
+                msg.append(six.text_type(e))
         if msg:
             msgset = set()
             msg = ', '.join(m for m in msg
@@ -675,7 +675,7 @@ class Any(CompoundValidator):
             try:
                 validator._validate_python(value, state)
             except ValidationError as e:
-                msg.append(str(e))
+                msg.append(six.text_type(e))
         if len(msg) == len(self.validators):
             msgset = set()
             msg = ', '.join(m for m in msg

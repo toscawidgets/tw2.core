@@ -1,6 +1,15 @@
 Changelog
 =========
 
+2.2.1
+-----
+
+- Merge branch 'hotfix/2.1.6' `a699822e5 <https://github.com/toscawidgets/tw2.core/commit/a699822e56031a1a0aa351f7bae19ff58401af18>`_
+- compound_key was ignoring key for RepeatingWidget `ed0946146 <https://github.com/toscawidgets/tw2.core/commit/ed09461460775b9d8034ecfcb8cb8680a43c9fee>`_
+- Fix for DisplayOnlyWidget in compound_id regression `11570e42e <https://github.com/toscawidgets/tw2.core/commit/11570e42e4dde2b03145bec36b949ad282cce845>`_
+- All and Any validators didn't work with unicode error messages `3c177ad8d <https://github.com/toscawidgets/tw2.core/commit/3c177ad8d5a04d2913b8f62418b9a2b0e2dbfc7b>`_
+- Merge branch 'master' of @amol-/tw2.core into develop `5254065c0 <https://github.com/toscawidgets/tw2.core/commit/5254065c01a362617956ce0adb08851884ee0596>`_
+
 2.2.0.8
 -------
 
