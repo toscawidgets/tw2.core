@@ -257,7 +257,7 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
                     setattr(cls, p.name, p.default)
 
     @classmethod
-    def _gen_compound_id(cls, for_url):
+    def _gen_compound_name(cls, attr, for_url):
         ancestors = []
         cur = cls
         while cur:
@@ -266,34 +266,35 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
             ancestors.append(cur)
             cur = cur.parent
         elems = reversed(list(filter(None, [
-            a._compound_id_elem(for_url) for a in ancestors
+            a._compound_name_elem(attr, for_url) for a in ancestors
         ])))
-        if getattr(cls, 'id', None) or \
+        if getattr(cls, attr, None) or \
            (cls.parent and issubclass(cls.parent, RepeatingWidget)):
             return ':'.join(elems)
         else:
             return None
 
     @classmethod
-    def _compound_id_elem(cls, for_url):
+    def _compound_name_elem(cls, attr, for_url):
         if cls.parent and issubclass(cls.parent, RepeatingWidget):
             if for_url:
                 return None
             else:
                 return str(getattr(cls, 'repetition', None))
         else:
-            return getattr(cls, 'id', None)
+            return getattr(cls, attr, None)
+
+    @classmethod
+    def _compound_id_elem(cls, for_url):
+        return cls._compound_name_elem('id', for_url)
+
+    @classmethod
+    def _gen_compound_id(cls, for_url):
+        return cls._gen_compound_name('id', for_url)
 
     @classmethod
     def _gen_compound_key(cls):
-        if not cls.key:
-            return cls.compound_id
-
-        parent_key = getattr(cls.parent, 'compound_key', None)
-        if parent_key:
-            return ':'.join([parent_key, cls.key])
-        else:
-            return cls.key
+        return cls._gen_compound_name('key', False)
 
     @classmethod
     def get_link(cls):
@@ -949,22 +950,22 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
             cls.child = cls.child(id=cls_id, key=cls.key, parent=cls)
 
     @classmethod
-    def _gen_compound_id(cls, for_url):
+    def _gen_compound_name(cls, attr, for_url):
         elems = [
-            Widget._gen_compound_id.__func__(cls, for_url),
-            getattr(cls, 'id', None)
+            Widget._gen_compound_name.__func__(cls, attr, for_url),
+            getattr(cls, attr, None)
         ]
         elems = list(filter(None, elems))
         if not elems:
             return None
-        if not for_url and getattr(cls, 'id_suffix', None):
+        if not for_url and attr=='id' and getattr(cls, 'id_suffix', None):
             elems.append(cls.id_suffix)
         return ':'.join(elems)
 
     @classmethod
-    def _compound_id_elem(cls, for_url):
+    def _compound_name_elem(cls, attr, for_url):
         if cls.parent and issubclass(cls.parent, RepeatingWidget):
-            Widget._compound_id_elem.__func__(cls, for_url)
+            Widget._compound_name_elem.__func__(cls, attr, for_url)
         else:
             return None
 
