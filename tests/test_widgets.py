@@ -589,6 +589,15 @@ class TestRepeatingWidget(TestCase):
             children = [wd.Widget(id="foo")]
         self.assert_(len(T().req().child.children) == 1)
 
+    def testRepeatingWithKeyDifferentFromId(self):
+        class T(wd.RepeatingWidget):
+            id = 'foo'
+            key = 'bar'
+            child = wd.Widget
+
+        w = T().req(value=['1', '2', '3'])
+        self.assertEquals(w.children[0].compound_key, 'bar:0')
+
     def testNonWidgetChild(self):
         """
         should throw an error if child is not a widget
