@@ -668,7 +668,7 @@ class CompoundWidget(Widget):
         # Validate compound children
         for c in (child for child in self.children if child._sub_compound):
             try:
-                data.update(c._validate(value, data))
+                data.update(c._validate(value, state))
             except vd.catch as e:
                 if hasattr(e, 'msg'):
                     c.error_msg = e.msg
@@ -678,7 +678,7 @@ class CompoundWidget(Widget):
         for c in (child for child in self.children if not child._sub_compound):
             d = value.get(c.key, '')
             try:
-                val = c._validate(d, data)
+                val = c._validate(d, state)
                 if val is not vd.EmptyField:
                     data[c.key] = val
             except vd.catch as e:
@@ -692,7 +692,7 @@ class CompoundWidget(Widget):
         exception_validator = self.validator
         if self.validator:
             try:
-                data = self.validator.to_python(data)
+                data = self.validator.to_python(data, state)
             except vd.catch as e:
                 # If it failed to validate, check if the error_dict has any
                 # messages pertaining specifically to this widget's children.
