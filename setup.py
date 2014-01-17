@@ -85,6 +85,8 @@ setup(
         'mako': _extra_mako,
         'jinja': _extra_jinja,
         'chameleon': _extra_chameleon,
+        'test': tests_require,
+        'tests': tests_require,
         },
     packages=['tw2', 'tw2.core'],
     namespace_packages=['tw2'],
