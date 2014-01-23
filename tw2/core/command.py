@@ -195,7 +195,7 @@ class archive_tw2_resources(Command):
             dist = pkg_resources.get_distribution(distribution)
             requires = [r.project_name for r in dist.requires()]
 
-            map(self._load_widget_entry_points, requires)
+            list(map(self._load_widget_entry_points, requires))
 
             #Here we only look for a [tw2.widgets] entry point listing and we
             #don't care what data is listed in it.  We do this, because many of
@@ -229,7 +229,7 @@ class archive_tw2_resources(Command):
         core.request_local()['middleware'] = middleware.make_middleware()
 
         # Load widgets and have them prepare their resources
-        map(self._load_widget_entry_points, self.distributions)
+        list(map(self._load_widget_entry_points, self.distributions))
 
         rl_resources = core.request_local().setdefault('resources', [])
 
@@ -333,7 +333,7 @@ class CompressingWriter(FileWriter):
         else:
             count = len(stdout), len(data)
             ratio = reduce(operator.truediv, count)
-            self.counters = map(sum, zip(self.counters, count))
+            self.counters = list(map(sum, zip(self.counters, count)))
             msg = "Compressed %s (New size: %.2f%%)" % (path, ratio * 100)
             self.announce(msg)
             stream = StringIO(stdout)
