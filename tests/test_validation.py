@@ -197,6 +197,30 @@ class TestValidation(TestCase):
             assert 'Enter a value' not in ve.widget.error_msg
             assert 'childerror' not in ve.widget.error_msg
 
+    def test_compound_validation_formencode_custom_translation(self):
+        if not formencode:
+            if HAS_SKIP:
+                self.skipTest('formencode is not available')
+            else:
+                return  # Just pretend like we passed
+
+        class CompWidget(twc.CompoundWidget):
+            one = twc.Widget(validator=formencode.validators.NotEmpty())
+            two = twc.Widget(validator=formencode.validators.NotEmpty())
+            three = twc.Widget(validator=twc.Validator(required=True))
+
+        class ValidationState(object):
+            def _(s, *args, **kwargs):
+                return 'TRANSLATION'
+
+        try:
+            CompWidget.validate({}, state=ValidationState())
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            assert 'TRANSLATION' in ve.widget.children[0].error_msg
+            assert 'TRANSLATION' in ve.widget.children[1].error_msg
+            assert 'Enter a value' in ve.widget.children[2].error_msg
+
     def test_auto_unflatten(self):
         test = twc.CompoundWidget(id='a', children=[
             twc.Widget(id='b', validator=twc.Validator(required=True)),
