@@ -616,7 +616,13 @@ class MatchValidator(Validator):
         return capitalize(util.name2label(self.other_field).lower())
 
     def _validate_python(self, value, state):
-        if self.other_field not in state or value != state[self.other_field]:
+        if isinstance(state, dict):
+            # Backward compatibility
+            values = state
+        else:
+            values = state.full_dict
+
+        if self.other_field not in values or value != values[self.other_field]:
             raise ValidationError('mismatch', self)
 
     def _is_empty(self, value):

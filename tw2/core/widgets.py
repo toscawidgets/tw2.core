@@ -665,6 +665,8 @@ class CompoundWidget(Widget):
         any_errors = False
         data = {}
 
+        state = util.clone_object(state, full_dict=value, validated_values=data)
+
         # Validate compound children
         for c in (child for child in self.children if child._sub_compound):
             try:
