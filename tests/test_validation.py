@@ -141,6 +141,24 @@ class TestValidation(TestCase):
         except ValidationError as ve:
             assert(ve.widget.error_msg == NeverValid.msgs['never'])
 
+    def test_compound_MatchValidator(self):
+        """Test that compound widgets validate with MatchValidator"""
+        class MatchyWidget(twc.CompoundWidget):
+            one = twc.Widget(validator=MatchValidator('two'))
+            two = twc.Widget
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'foo'})
+        except ValidationError as ve:
+            assert False, "Widget should have validated correctly."
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            pass
+
+
     def test_compound_validation_formencode(self):
         """Test that compound widgets validate with formencode."""
 
