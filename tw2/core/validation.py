@@ -441,7 +441,7 @@ class DateTimeValidator(RangeValidator):
         'toosmall': ('date_toosmall', _('Cannot be earlier than $min_str')),
         'toobig': ('date_toobig', _('Cannot be later than $max_str')),
     }
-    format = '%d/%m/%Y %H:%M'
+    format = '%Y-%m-%d %H:%M'
 
     format_tbl = {
         'd': 'day',
@@ -494,7 +494,7 @@ class DateValidator(DateTimeValidator):
         'baddatetime': (
             'baddate', _('Must follow date format $format_str')),
     }
-    format = '%d/%m/%Y'
+    format = '%Y-%m-%d'
 
     def _convert_to_python(self, value, state=None):
         value = super(DateValidator, self)._convert_to_python(value)
