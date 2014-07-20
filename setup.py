@@ -51,6 +51,7 @@ if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
 tests_require = [
     'nose',
     'sieve',
+    'coverage',
 ] + \
     _extra_genshi + \
     _extra_mako + \
@@ -87,7 +88,7 @@ setup(
         'chameleon': _extra_chameleon,
         'test': tests_require,
         'tests': tests_require,
-        },
+    },
     packages=['tw2', 'tw2.core'],
     namespace_packages=['tw2'],
     include_package_data=True,
