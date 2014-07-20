@@ -3,9 +3,14 @@ python:
  - "2.6"
  - "2.7"
  - "3.3"
+cache:
+  directories:
+  - $HOME/.pip-cache
 install:
-- python setup.py install
+- travis_retry pip install --download-cache=$HOME/.pip-cache .
 - travis_retry pip install python-coveralls
+before_script:
+- pip freeze
 script: python setup.py nosetests
 after_success: coveralls
 notifications:
