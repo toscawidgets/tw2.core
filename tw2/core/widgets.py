@@ -865,9 +865,12 @@ class RepeatingWidget(Widget):
         self.value = value
         any_errors = False
         data = []
+
+        state = util.clone_object(state, full_dict=value, validated_values=data)
+
         for i, v in enumerate(value):
             try:
-                data.append(self.children[i]._validate(v, data))
+                data.append(self.children[i]._validate(v, state))
             except vd.catch:
                 data.append(vd.Invalid)
                 any_errors = True
