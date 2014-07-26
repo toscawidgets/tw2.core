@@ -55,10 +55,10 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
  * IRC channel: ``#toscawidgets`` on ``irc.freenode.net``
  * Bug tracker:  `The toscawidgets github account
    <https://github.com/toscawidgets/tw2.core/issues>`_.
-
    * (All ToscaWidgets 2 issues should go here, regardless of which
      component the issue exists in. However, ToscaWidgets 0.9 bugs
      must not go on this tracker.)
+ * :doc:`Changelog </changelog>`
 
 ----
 
@@ -71,6 +71,7 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
    design
    devtools
    history
+   changelog
 
 
 Indices and tables
