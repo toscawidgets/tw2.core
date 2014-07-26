@@ -129,6 +129,18 @@ def flush_memoization():
         cb()
 
 
+def clone_object(obj, **values):
+    if obj is None:
+        obj = type('_TemporaryObject', (object,), {})()
+    else:
+        obj = copy.copy(obj)
+
+    for k,v in values.items():
+        setattr(obj, k, v)
+
+    return obj
+
+
 # relpath support for python-2.5
 # Taken from https://github.com/nipy/nipype/issues/62
 # Related to https://github.com/toscawidgets/tw2.core/issues/30

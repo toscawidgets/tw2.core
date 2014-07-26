@@ -49,16 +49,16 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
      <http://threebean.org/blog/2011/04/30/tutorial-melting-your-face-off-with-tw2-and-turbogears2-1>`_.
    * `Bubble charts with tw2.protovis
      <http://threebean.org/blog/2010/10/24/python-wsgi-protovis-barcamproc-fall-2010/>`_.
- * Nightly run `test results <http://tw2-tests.threebean.org/>`_.
+ * Nightly run `test <https://travis-ci.org/toscawidgets/tw2.core/>`_ `results <https://travis-ci.org/toscawidgets/tw2.forms/>`_.
  * Email list:  `toscawidgets-discuss
    <http://groups.google.com/group/toscawidgets-discuss/>`_.
  * IRC channel: ``#toscawidgets`` on ``irc.freenode.net``
  * Bug tracker:  `The toscawidgets github account
    <https://github.com/toscawidgets/tw2.core/issues>`_.
-
    * (All ToscaWidgets 2 issues should go here, regardless of which
      component the issue exists in. However, ToscaWidgets 0.9 bugs
      must not go on this tracker.)
+ * :doc:`Changelog </changelog>`
 
 ----
 
@@ -71,6 +71,7 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
    design
    devtools
    history
+   changelog
 
 
 Indices and tables

@@ -141,6 +141,24 @@ class TestValidation(TestCase):
         except ValidationError as ve:
             assert(ve.widget.error_msg == NeverValid.msgs['never'])
 
+    def test_compound_MatchValidator(self):
+        """Test that compound widgets validate with MatchValidator"""
+        class MatchyWidget(twc.CompoundWidget):
+            one = twc.Widget(validator=MatchValidator('two'))
+            two = twc.Widget
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'foo'})
+        except ValidationError as ve:
+            assert False, "Widget should have validated correctly."
+
+        try:
+            MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
+            assert False, "Widget should not have validated."
+        except ValidationError as ve:
+            pass
+
+
     def test_compound_validation_formencode(self):
         """Test that compound widgets validate with formencode."""
 
@@ -476,7 +494,7 @@ class TestOneOfValidator(tb.ValidatorTest):
 class TestDateValidator(tb.ValidatorTest):
     validator = DateValidator
     to_python_attrs =    [{}, {}]
-    to_python_params =   ['01/01/2009', 'asdf']
+    to_python_params =   ['2009-01-01', 'asdf']
     to_python_expected = [datetime.date(2009, 1, 1), ValidationError]
 
     attrs = [{'required': False}, {'required': True}]
@@ -485,22 +503,22 @@ class TestDateValidator(tb.ValidatorTest):
 
     from_python_attrs = [{}, {}]
     from_python_params = [datetime.date(2009, 1, 1)]
-    from_python_expected = ['01/01/2009']
+    from_python_expected = ['2009-01-01']
 
     def test_max_str(self):
-        expected = '31/12/2009'
+        expected = '2009-12-31'
         r = DateValidator(max=datetime.date(2009, 12, 31)).max_str
         eq_(r, expected)
 
     def test_min_str(self):
-        expected = '31/12/2009'
+        expected = '2009-12-31'
         r = DateValidator(min=datetime.date(2009, 12, 31)).min_str
         eq_(r, expected)
 
 class TestDatetimeValidator(tb.ValidatorTest):
     validator = DateTimeValidator
     to_python_attrs =    [{}, {}]
-    to_python_params =   ['01/01/2009 01:00', 'asdf']
+    to_python_params =   ['2009-01-01 01:00', 'asdf']
     to_python_expected = [datetime.datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M'), ValidationError]
 
     attrs = [{'required': False}, {'required': True}]
@@ -509,7 +527,7 @@ class TestDatetimeValidator(tb.ValidatorTest):
 
     from_python_attrs = [{}, {}]
     from_python_params = [datetime.datetime.strptime('1/1/2009 1:00', '%d/%m/%Y %H:%M')]
-    from_python_expected = ['01/01/2009 01:00']
+    from_python_expected = ['2009-01-01 01:00']
 
 class TestRegexValidator(tb.ValidatorTest):
     validator = RegexValidator
@@ -617,6 +635,33 @@ class TestValidatorMisc(TestCase):
             self.assert_(False)
         except ValidationError as ve:
             self.assert_(ve.message.startswith(v.msgs["mismatch"][:5]))
+
+    def testMatchValidatorNotFound(self):
+        v = MatchValidator(other_field="foo")
+
+        try:
+            v.to_python("bar", {"fuu": "foo"})
+            self.assert_(False)
+        except ValidationError as ve:
+            self.assert_(ve.message.endswith(v.msgs["notfound"][-5:]))
+
+    def testMatchValidatorInvalid(self):
+        v = MatchValidator(other_field="foo")
+
+        try:
+            v.to_python("bar", {v.other_field: twc.Invalid})
+            self.assert_(False)
+        except ValidationError as ve:
+            self.assert_(ve.message.endswith(v.msgs["invalid"][-5:]))
+
+    def testMatchValidatorPassOnInvalid(self):
+        v = MatchValidator(other_field="foo", pass_on_invalid=True)
+
+        try:
+            v.to_python("bar", {v.other_field: twc.Invalid})
+            self.assert_(True)
+        except ValidationError as ve:
+            self.assert_(False)
 
     def testInValidatorRequired(self):
         v = IntValidator(required=True)

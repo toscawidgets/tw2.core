@@ -184,7 +184,7 @@ class CompoundTestWidget(wd.CompoundWidget):
     children = [AlwaysValidateFalseWidget(id="something"),]
 
 class TWidget(wd.Widget):
-    template = "tw2.core.test_templates.display_only_test_widget"
+    template = "mako:tw2.core.test_templates.display_only_test_widget"
 
 class TestWidget(tb.WidgetTest):
     widget = TWidget
@@ -339,7 +339,7 @@ class TestRepeatingTestWidget(tb.WidgetTest):
 
 class DisplayOnlyTestWidget(wd.DisplayOnlyWidget):
     child = twc.Variable(default=AlwaysValidateFalseWidget)
-    template = "tw2.core.test_templates.display_only_test_widget"
+    template = "mako:tw2.core.test_templates.display_only_test_widget"
 
 class TestDisplayOnlyTestWidget(tb.WidgetTest):
     widget = DisplayOnlyTestWidget
@@ -351,7 +351,7 @@ class TestDisplayOnlyTestWidget(tb.WidgetTest):
     def test_post_init_fail(self):
         class DummyWidget(wd.Widget): pass
         class DummyDOTestWidget(wd.DisplayOnlyWidget):
-            template = "tw2.core.test_templates.display_only_test_widget"
+            template = "mako:tw2.core.test_templates.display_only_test_widget"
             child=DummyWidget(id="lala")
         w = DummyDOTestWidget(id="something")
 
@@ -359,14 +359,14 @@ class TestDisplayOnlyTestWidget(tb.WidgetTest):
     def test_childclass_not_widget_fail(self):
         class DummyWidget(wd.Widget): pass
         class DummyDOTestWidget(wd.DisplayOnlyWidget):
-            template = "tw2.core.test_templates.display_only_test_widget"
+            template = "mako:tw2.core.test_templates.display_only_test_widget"
             child="something"
         w = DummyDOTestWidget(id="something")
 
     def test_class_with_children(self):
         class DummyWidget(wd.Widget): pass
         class DummyDOTestWidget(wd.DisplayOnlyWidget):
-            template = "tw2.core.test_templates.display_only_test_widget"
+            template = "mako:tw2.core.test_templates.display_only_test_widget"
             child=DummyWidget(id="something")
             children=[DummyWidget(id="something_else")]
         w = DummyDOTestWidget(id="something")

@@ -51,6 +51,7 @@ if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
 tests_require = [
     'nose',
     'sieve',
+    'coverage',
 ] + \
     _extra_genshi + \
     _extra_mako + \
@@ -69,7 +70,7 @@ else:
 
 setup(
     name='tw2.core',
-    version='2.2.1.1',
+    version='2.2.2',
     description='The runtime components for ToscaWidgets 2, a web widget toolkit.',
     long_description=get_description(),
     author='Paul Johnston, Christopher Perkins, Alberto Valverde Gonzalez & contributors',
@@ -85,7 +86,9 @@ setup(
         'mako': _extra_mako,
         'jinja': _extra_jinja,
         'chameleon': _extra_chameleon,
-        },
+        'test': tests_require,
+        'tests': tests_require,
+    },
     packages=['tw2', 'tw2.core'],
     namespace_packages=['tw2'],
     include_package_data=True,

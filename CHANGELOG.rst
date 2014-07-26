@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.2.2
+-----
+
+- Fix CompoundWidget and MatchValidator
+- Fix archive_tw2_resources `8956e83 <https://github.com/toscawidgets/tw2.core/commit/8956e832ea3944f9f6ebd0f28d1f514644c68bcd>`_
+- Fix DateValidator and DateTimeValidator to be in sync with tw2.forms `06da5b9 <https://github.com/toscawidgets/tw2.core/commit/06da5b9023c576b4efb73187d53d6c9a9f691f4d>`_
+
 2.2.1
 -----
 
