@@ -636,6 +636,33 @@ class TestValidatorMisc(TestCase):
         except ValidationError as ve:
             self.assert_(ve.message.startswith(v.msgs["mismatch"][:5]))
 
+    def testMatchValidatorNotFound(self):
+        v = MatchValidator(other_field="foo")
+
+        try:
+            v.to_python("bar", {"fuu": "foo"})
+            self.assert_(False)
+        except ValidationError as ve:
+            self.assert_(ve.message.endswith(v.msgs["notfound"][-5:]))
+
+    def testMatchValidatorInvalid(self):
+        v = MatchValidator(other_field="foo")
+
+        try:
+            v.to_python("bar", {v.other_field: twc.Invalid})
+            self.assert_(False)
+        except ValidationError as ve:
+            self.assert_(ve.message.endswith(v.msgs["invalid"][-5:]))
+
+    def testMatchValidatorPassOnInvalid(self):
+        v = MatchValidator(other_field="foo", pass_on_invalid=True)
+
+        try:
+            v.to_python("bar", {v.other_field: twc.Invalid})
+            self.assert_(True)
+        except ValidationError as ve:
+            self.assert_(False)
+
     def testInValidatorRequired(self):
         v = IntValidator(required=True)
         self.assert_(v.required)

@@ -602,14 +602,19 @@ class MatchValidator(Validator):
 
     `other_field`
         Name of the sibling field this must match
+    `pass_on_invalid`
+        Pass validation if sibling field is Invalid
     """
     msgs = {
         'mismatch': _("Must match $other_field_str"),
+        'notfound': _("$other_field_str field is not found"),
+        'invalid': _("$other_field_str field is invalid"),
     }
 
-    def __init__(self, other_field, **kw):
+    def __init__(self, other_field, pass_on_invalid=False, **kw):
         super(MatchValidator, self).__init__(**kw)
         self.other_field = other_field
+        self.pass_on_invalid = pass_on_invalid
 
     @property
     def other_field_str(self):
@@ -622,11 +627,19 @@ class MatchValidator(Validator):
         else:
             values = state.full_dict
 
-        if self.other_field not in values or value != values[self.other_field]:
+        if self.other_field not in values:
+            raise ValidationError('notfound', self)
+
+        other_value = values[self.other_field]
+
+        if other_value is Invalid:
+            if not self.pass_on_invalid:
+                raise ValidationError('invalid', self)
+        elif value != other_value:
             raise ValidationError('mismatch', self)
 
     def _is_empty(self, value):
-        return self.required and super(MatchValidator, self)._is_empty
+        return self.required and super(MatchValidator, self)._is_empty(value)
 
 
 class CompoundValidator(Validator):
