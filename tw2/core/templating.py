@@ -4,6 +4,7 @@ from . import core
 from .util import memoize, relpath
 
 from markupsafe import Markup
+from pkg_resources import resource_exists, resource_string
 import six
 from six.moves import map
 from six.moves import zip
@@ -15,7 +16,7 @@ engine_name_cache = {}
 
 _default_rendering_extension_lookup = {
     'mako': ['mak', 'mako'],
-    'genshi': ['genshi', 'html'],
+    'genshi': ['html', 'genshi'],
     # just for backwards compatibility with tw2 2.0.0
     'genshi_abs': ['genshi', 'html'],
     'jinja': ['jinja', 'html'],
@@ -77,13 +78,10 @@ def _get_dotted_filename(engine_name, template, mw=None):
     rendering_extension_lookup = get_rendering_extensions_lookup(mw)
     template = _strip_engine_name(template, mw)
     location, filename = template.rsplit('.', 1)
-    module = __import__(location, globals(), locals(), ['*'])
-    parent_dir = SEP.join(module.__file__.split(SEP)[:-1])
-
     for extension in rendering_extension_lookup[engine_name]:
-        abs_filename = parent_dir + SEP + filename + EXTSEP + extension
-        if os.path.exists(abs_filename):
-            return abs_filename
+        abs_filename = filename + EXTSEP + extension
+        if resource_exists(location, abs_filename):
+            return location, abs_filename
 
     raise IOError("Couldn't find source for %r" % template)
 
@@ -106,7 +104,9 @@ def get_source(engine_name, template, inline=False, mw=None):
         filename = _strip_engine_name(template, mw=mw)
     else:
         filename = _get_dotted_filename(engine_name, template, mw=mw)
-
+    
+    if isinstance(filename, tuple):
+        return resource_string(filename[0], filename[1])
     # TODO -- use a context manager here once we drop support for py2.5.
     f = open(filename, 'r')
 
@@ -128,8 +128,8 @@ def get_render_callable(engine_name, displays_on, src, filename=None, inline=Fal
     if filename and not inline:
         if SEP not in filename and (not ALTSEP or ALTSEP not in filename):
             filename = _get_dotted_filename(engine_name, filename)
-
-        directory = os.path.dirname(filename)
+        if not isinstance(filename, tuple):
+            directory = os.path.dirname(filename)
 
     if engine_name == 'mako':
         import mako.template
