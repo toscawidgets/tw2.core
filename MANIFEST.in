@@ -10,12 +10,14 @@ recursive-include tw2/core/test_templates *.py
 recursive-include tw2/core/test_templates *.html
 recursive-include tw2/core/test_templates *.tmpl
 recursive-include tw2/core/test_templates *.jinja
+recursive-include tw2/core/test_templates *.kajiki
 recursive-include tw2/core/test_templates *.pt
 recursive-include tw2/core/test_templates *.mak
 recursive-include tw2/core/templates *.py
 recursive-include tw2/core/templates *.html
 recursive-include tw2/core/templates *.tmpl
 recursive-include tw2/core/templates *.jinja
+recursive-include tw2/core/templates *.kajiki
 recursive-include tw2/core/templates *.pt
 recursive-include tw2/core/templates *.mak
 prune *.pyc

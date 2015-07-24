@@ -36,6 +36,11 @@ _extra_mako = ["Mako >= 0.1.1"]
 _extra_jinja = ["jinja2"]
 _extra_chameleon = ["chameleon"]
 
+if sys.version_info[0] == 3:
+    _extra_kajiki = []
+else:
+    _extra_kajiki = ["kajiki"]  # Broken for py3.3
+
 requires = [
     'WebOb>=0.9.7',
     'PasteDeploy',
@@ -56,6 +61,7 @@ tests_require = [
     _extra_genshi + \
     _extra_mako + \
     _extra_jinja + \
+    _extra_kajiki + \
     _extra_chameleon
 
 if sys.version_info[0] == 2:
@@ -85,6 +91,7 @@ setup(
         'genshi': _extra_genshi,
         'mako': _extra_mako,
         'jinja': _extra_jinja,
+        'kajiki': _extra_kajiki,
         'chameleon': _extra_chameleon,
         'test': tests_require,
         'tests': tests_require,
