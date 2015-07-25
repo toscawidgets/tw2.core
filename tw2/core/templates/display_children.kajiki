@@ -1,7 +1,4 @@
-<?python
-  num = len(w.children)
-?>
-<div xmlns:py="http://genshi.edgewall.org/" py:attrs="w.attrs">
+<div py:attrs="w.attrs" py:with="num=len(w.children)">
     <py:for each="i,c in enumerate(w.children)">${c.display()}
         <py:if test="w.separator and i != (num-1)">${w.separator}</py:if>
     </py:for>
