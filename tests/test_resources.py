@@ -279,10 +279,6 @@ class TestJsSource(tb.WidgetTest):
     attrs = {'src':'something'}
     expected = '<script type="text/javascript">something</script>'
 
-    def _check_rendering_vs_expected(self, engine, *args, **kw):
-        base = super(TestJsSource, self)
-        return base._check_rendering_vs_expected(engine, *args, **kw)
-
     def _test_repr_(self):
         #not sure how to test resources.py:79
         r = repr(self.widget(**self.attrs))
@@ -295,13 +291,10 @@ class TestJsFuncall(tb.WidgetTest):
     expected = None
 
     def test_display(self):
-        for engine in self._get_all_possible_engines():
-            yield self._check_equal, engine
-
-    def _check_equal(self, engine):
-        r = self.widget(**self.attrs).display(
-            template='%s:%s' % (engine, twr._JSFuncCall.template))
-        eq_(r, '<script type="text/javascript">foo("a", "b")</script>')
+        for t in self._get_all_possible_engines():
+            r = self.widget(**self.attrs).display(
+                template='%s:%s' % (t, twr._JSFuncCall.template))
+            eq_(r, '<script type="text/javascript">foo("a", "b")</script>')
 
 class TestJSSourceEscaping(tb.WidgetTest):
     widget = twr.JSSource

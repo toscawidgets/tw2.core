@@ -16,6 +16,9 @@ import unittest
 # TBD: only test engines that are installed
 engines = ['genshi', 'mako', 'jinja', 'chameleon']
 
+if not six.PY3:
+    engines.append('kajiki')
+
 
 # Python 2.5 support shim.  TODO -- remove this in the future.
 if not hasattr(itertools, 'product'):
@@ -160,7 +163,7 @@ class TestTemplate(unittest.TestCase):
         twc.core.request_local()['middleware'] = twc.make_middleware(None)
 
         # These aren't yet supported in the tests yet.
-        ignored_engines = ['jinja', 'chameleon']
+        ignored_engines = ['jinja', 'kajiki', 'chameleon']
 
         for engine in engines:
             if engine in ignored_engines:

@@ -40,7 +40,7 @@ msgstr "Il valore è troppo lungo"
 
 #: tw2/core/validation.py:262
 msgid "Must be at least $min characters"
-msgstr "Deve essere di almeno 3 caratteri"
+msgstr "Deve essere di almeno $min caratteri"
 
 #: tw2/core/validation.py:264
 msgid "Cannot be longer than $max characters"

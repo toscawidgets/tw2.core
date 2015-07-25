@@ -203,7 +203,7 @@ class TestValidation(TestCase):
             MatchyWidget.validate({'one': 'foo', 'two': 'bar'})
             assert False, "Widget should not have validated."
         except ValidationError as ve:
-            assert 'do not match' in ve.widget.children[0].error_msg
+            assert 'do not match' in ve.widget.children.two.error_msg
             assert 'do not match' not in ve.widget.error_msg
             assert 'childerror' not in ve.widget.error_msg
 
@@ -211,7 +211,7 @@ class TestValidation(TestCase):
             MatchyWidget.validate({'one': 'foo', 'two': 'foo', 'three':''})
             assert False, "Widget should not have validated."
         except ValidationError as ve:
-            assert 'Enter a value' in ve.widget.children[2].error_msg
+            assert 'Enter a value' in ve.widget.children.three.error_msg
             assert 'Enter a value' not in ve.widget.error_msg
             assert 'childerror' not in ve.widget.error_msg
 
