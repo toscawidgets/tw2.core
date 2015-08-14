@@ -815,6 +815,9 @@ class RepeatingWidget(Widget):
            not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a Widget")
 
+        if issubclass(cls.child, DisplayOnlyWidget):
+            raise pm.ParameterError('Child cannot be a DisplayOnlyWidget')
+
         if getattr(cls.child, 'id', None):
             raise pm.ParameterError("Child must have no id")
 
