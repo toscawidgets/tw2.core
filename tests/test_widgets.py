@@ -661,6 +661,13 @@ class TestRepeatingWidget(TestCase):
         i.validate({})
         self.assert_(i.validator._called)
 
+    @raises(pm.ParameterError)
+    def testDisplayOnlyBlocked(self):
+        class Parent(wd.RepeatingWidget):
+            child = wd.DisplayOnlyWidget
+        Parent(id="goo").req()
+
+
 class TestDisplayOnlyWidget(TestCase):
 
     def testInvalidChildError(self):
@@ -683,9 +690,8 @@ class TestDisplayOnlyWidget(TestCase):
         except pm.ParameterError as pe:
             self.assert_(" id" in str(pe))
 
-
     def testCompoundIDElem(self):
-        class Parent(wd.RepeatingWidget):
+        class Parent(wd.Widget):
             child = wd.DisplayOnlyWidget
         self.assert_(Parent(id="goo").req()._compound_id_elem("url"))
 
