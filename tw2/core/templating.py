@@ -199,7 +199,7 @@ def render(template_name, displays_on, kwargs, inline=False, mw=None):
     else:
         engine_name = inline
 
-    if mw.config.auto_reload_templates:
+    if mw is not None and mw.config.auto_reload_templates:
         get_source._flush()
         get_render_callable._flush()
 
