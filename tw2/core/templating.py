@@ -98,6 +98,8 @@ def _strip_engine_name(template, mw=None):
     return template
 
 
+
+
 @memoize
 def get_source(engine_name, template, inline=False, mw=None):
     if inline:
@@ -196,6 +198,10 @@ def render(template_name, displays_on, kwargs, inline=False, mw=None):
         engine_name = get_engine_name(template_name, mw)
     else:
         engine_name = inline
+
+    if mw.config.auto_reload_templates:
+        get_source._flush()
+        get_render_callable._flush()
 
     # Load the template source
     source = get_source(engine_name, template_name, inline, mw)
