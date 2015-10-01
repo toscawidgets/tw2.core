@@ -87,16 +87,16 @@ class ValidationError(BaseValidationError):
         return self.msg
 
 
-def safe_validate(validator, value, state=None):
-    try:
-        return validator.to_python(value, state=state)
-    except ValidationError:
-        return Invalid
-
-
 catch = ValidationError
 if formencode:
     catch = (catch, formencode.Invalid)
+
+
+def safe_validate(validator, value, state=None):
+    try:
+        return validator.to_python(value, state=state)
+    except catch:
+        return Invalid
 
 
 def catch_errors(fn):
