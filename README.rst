@@ -18,13 +18,13 @@ Build Status
    :alt: Build Status - develop branch
    :target: http://travis-ci.org/#!/toscawidgets/tw2.core
 
-.. |coveralls-master| image:: https://coveralls.io/repos/toscawidgets/tw2.core/badge.png?branch=master
+.. |coveralls-master| image:: https://coveralls.io/repos/toscawidgets/tw2.core/badge.svg?branch=master&service=github
    :alt: Test Coverage - master branch
-   :target: https://coveralls.io/r/toscawidgets/tw2.core?branch=master
+   :target: https://coveralls.io/github/toscawidgets/tw2.core?branch=master
 
-.. |coveralls-develop| image:: https://coveralls.io/repos/toscawidgets/tw2.core/badge.png?branch=develop
+.. |coveralls-develop| image:: https://coveralls.io/repos/toscawidgets/tw2.core/badge.svg?branch=develop&service=github
    :alt: Test Coverage - develop branch
-   :target: https://coveralls.io/r/toscawidgets/tw2.core?branch=develop
+   :target: https://coveralls.io/github/toscawidgets/tw2.core?branch=develop
 
 +--------------+------------------+---------------------+
 | Branch       | Build Status     | Test Coverage       |
