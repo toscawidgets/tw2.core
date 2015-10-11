@@ -21,9 +21,9 @@ ToscaWidgets 2 library packages follow the same naming convention, for example:
    Yahoo User Interface widgets
  * `tw2.jquery <http://github.com/toscawidgets/tw2.jquery>`_ -- tw2
    wrappers around jQuery core functionality.
- * `tw2.jqplugins.ui <http://github.com/ralphbean/tw2.jqplugins.ui>`_ -- tw2
+ * `tw2.jqplugins.ui <http://github.com/toscawidgets/tw2.jqplugins.ui>`_ -- tw2
    wrappers around jQuery-UI widgets.
- * `tw2.jit <http://github.com/ralphbean/tw2.jit>`_ -- tw2 wrappers around the
+ * `tw2.jit <http://github.com/toscawidgets/tw2.jit>`_ -- tw2 wrappers around the
    Javascript Infovis Toolkit.
  * ... and `many more
    <http://pypi.python.org/pypi?%3Aaction=search&term=tw2.&submit=search>`_.

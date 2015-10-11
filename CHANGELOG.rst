@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.2.3
+-------
+
+- Kajiki Template Engine Support
+- Disallow DisplayOnlyWidget as child of RepeatingWidget as it doesn't work anyways `4c15c5a <https://github.com/toscawidgets/tw2.core/commit/4c15c5ae02db1956d51685b3f444cfc76fdf1e55>`_
+- Flush memozation cache when auto_reload_templates in the middleware is enabled
+- Fix safe_validate with FormEncode validators `3fa88ac <https://github.com/toscawidgets/tw2.core/commit/3fa88ace7d2028612d37b854a52d40ff9a654b17>`_
+
 2.2.2
 -----
 

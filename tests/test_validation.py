@@ -74,6 +74,17 @@ def test_safe_validate_invalid():
     r = safe_validate(v, 'x')
     assert(r is twc.Invalid)
 
+def test_safe_validate_invalid_formencode():
+    if not formencode:
+        if HAS_SKIP:
+            self.skipTest('formencode is not available')
+        else:
+            return  # Just pretend like we passed.
+
+    v = formencode.validators.Int()
+    r = safe_validate(v, 'x')
+    assert(r is twc.Invalid)
+
 def test_unflatten_params_multi_dict():
     params = unflatten_params(MultiDict((('asdf:f1', 's1'), ('asdf:f2', 's2'))))
     eq_(params, {'asdf': {'f1': 's1', 'f2': 's2'}})
