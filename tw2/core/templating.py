@@ -146,7 +146,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None, inline=Fal
                 directories=[directory])
 
         tmpl = mako.template.Template(**args)
-        return lambda kwargs: Markup(tmpl.render(**kwargs))
+        return lambda kwargs: Markup(tmpl.render_unicode(**kwargs))
 
     elif engine_name in ('genshi', 'genshi_abs'):
         import genshi.template
