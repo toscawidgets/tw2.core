@@ -170,11 +170,16 @@ class ValidatorMeta(type):
                 except AttributeError:
                     pass
             msgs.update(dct['msgs'])
+            add_to_msgs = {}
+            del_from_msgs = []
             for m, d in msgs.items():
                 if isinstance(d, tuple):
-                    msgs[d[0]] = d[1]
+                    add_to_msgs[d[0]] = d[1]
                     rewrites[m] = d[0]
-                    del msgs[m]
+                    del_from_msgs.append(m)
+            msgs.update(add_to_msgs)
+            for m in del_from_msgs:
+                del msgs[m]
             dct['msgs'] = msgs
             dct['msg_rewrites'] = rewrites
         if 'validate_python' in dct and '_validate_python' not in dct:
