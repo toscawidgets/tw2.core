@@ -183,14 +183,24 @@ class TestTemplate(unittest.TestCase):
         fname = os.path.sep.join([test_dir, 'test.html'])
         twc.Widget(template='genshi_abs:%s' % fname).display()
 
+    @property
+    def _tests_rel_dir(self):
+        test_dir = os.path.sep.join(__file__.split(os.path.sep)[:-1])
+        if os.getcwd() == test_dir:
+            # nosetests doesn't run in the top directory
+            return "."
+        else:
+            return "./tests"
+
     def test_genshi_relative_filename(self):
         """ Issue #30 take 1 -- http://bit.ly/LT4rBP """
-        twc.Widget(template='genshi:./tests/test.html').display()
+        twc.Widget(
+                template='genshi:%s/test.html' % self._tests_rel_dir).display()
 
     def test_genshi_relative_filename_cwd(self):
         """ Issue #30 take 2 -- http://bit.ly/LT4rBP """
 
-        with directory('./tests'):
+        with directory(self._tests_rel_dir):
             twc.Widget(template='genshi:./test.html').display()
 
     def test_rendering_extension_propagation(self):
