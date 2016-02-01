@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.2.4
+------
+
+- Templating now uses render_unicode to render mako templates and avoid unicode dance `ecc33fc <https://github.com/toscawidgets/tw2.core/commit/ecc33fc211b904c5aa0c88647245d37fe8cd7338>`_
+- Avoid modifying validation messages dict while iterating on it `66c7e3d <https://github.com/toscawidgets/tw2.core/commit/66c7e3d8d0bcae6fe6d55bd5144c7991e02fe654>`_
+- Fix Genshi relative imports when running test suite on top directory
+
 2.2.3
 -------
 
