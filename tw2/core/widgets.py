@@ -568,7 +568,8 @@ class CompoundWidget(Widget):
     """
     children = pm.Param(
         'Children for this widget. This must be an iterable, ' +
-        'each item of which is a Widget'
+        'each item of which is a Widget',
+        default = []
     )
     c = pm.Variable(
         "Alias for children",
