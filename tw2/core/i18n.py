@@ -2,6 +2,8 @@
 import gettext
 import os
 
+import six
+
 try:
     from pkg_resources import resource_filename
 except ImportError:
@@ -34,8 +36,12 @@ def get_localedir():
 
 
 def get_translator(lang=None, domain='tw2core', localedir=get_localedir()):
-    return gettext.translation(domain=domain, languages=lang,
-            localedir=localedir, fallback=True).ugettext
+    if six.PY3:
+        return gettext.translation(domain=domain, languages=lang,
+                localedir=localedir, fallback=True).gettext
+    else:
+        return gettext.translation(domain=domain, languages=lang,
+                localedir=localedir, fallback=True).ugettext
 
 
 def tw2_translation_string(sval):
