@@ -61,7 +61,7 @@ tests_require = [
     _extra_kajiki + \
     _extra_chameleon
 
-if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
+if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     tests_require.append('WebTest<2.0.0')
 else:
     tests_require.append('WebTest')
