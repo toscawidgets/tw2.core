@@ -1,4 +1,5 @@
 language: python
+sudo: false
 python:
  - "2.6"
  - "2.7"
@@ -7,7 +8,7 @@ cache:
   directories:
   - $HOME/.pip-cache
 install:
-- travis_retry pip install --download-cache=$HOME/.pip-cache .
+- travis_retry pip install -e .
 - travis_retry pip install python-coveralls
 before_script:
 - pip freeze
