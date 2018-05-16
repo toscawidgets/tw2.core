@@ -61,7 +61,7 @@ tests_require = [
     _extra_kajiki + \
     _extra_chameleon
 
-if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
+if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     tests_require.append('WebTest<2.0.0')
 else:
     tests_require.append('WebTest')
@@ -102,10 +102,10 @@ setup(
 
     [paste.filter_app_factory]
     middleware = tw2.core.middleware:make_middleware
-    """ +  """ # Is this broken for py3?
+    """ +  (""" # Is this broken for py3?
     [distutils.commands]
     archive_tw2_resources = tw2.core.command:archive_tw2_resources
-    """ if sys.version_info[0] == 2 else "",
+    """ if sys.version_info[0] == 2 else ""),
     zip_safe=False,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
