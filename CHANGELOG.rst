@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.2.5
+-----
+
+- Added english transation, so that the gettext translator finds it and prefers english when multiple languages are involved and english is the favourite one.
+- Fixed an issue with i18n translator on Python3
+
 2.2.4
 ------
 
