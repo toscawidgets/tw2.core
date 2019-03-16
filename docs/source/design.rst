@@ -48,10 +48,13 @@ A parameter definition looks like this::
 In this case, :class:`TextField` gets all the parameters of its base class, :class:`tw2.core.widget` and defines a new parameter - :attr:`size`. A widget can also override parameter in its base class, either with another :class:`tw2.core.Param` instance, or a new default value.
 
 .. autoclass:: tw2.core.Param
+    :noindex:
 .. autoclass:: tw2.core.Variable
+    :noindex:
 .. autoclass:: tw2.core.ChildParam
+    :noindex:
 .. autoclass:: tw2.core.ChildVariable
-
+    :noindex:
 
 Code Hooks
 ~~~~~~~~~~
@@ -59,8 +62,11 @@ Code Hooks
 Subclasses of Widget can override the following methods. It is not recommended to override any other methods, e.g. display, validate, __init__.
 
 .. automethod:: tw2.core.widgets.Widget.post_define
+    :noindex:
 .. automethod:: tw2.core.widgets.Widget.prepare
+    :noindex:
 .. automethod:: tw2.core.widgets.Widget.generate_output
+    :noindex:
 
 **Mutable Members**
 
@@ -73,9 +79,13 @@ Widget Hierarchy
 Widgets can be arranged in a hierarchy. This is useful for applications like layouts, where the layout will be a parent widget and fields will be children of this. There are four roles a widget can take in the hierarchy, depending on the base class used:
 
 .. autoclass:: tw2.core.Widget
+    :noindex:
 .. autoclass:: tw2.core.CompoundWidget
+    :noindex:
 .. autoclass:: tw2.core.RepeatingWidget
+    :noindex:
 .. autoclass:: tw2.core.DisplayOnlyWidget
+    :noindex:
 
 **Value Propagation**
 
@@ -134,10 +144,6 @@ It is also possible to allow your widget to utilize multiple templates, or to ha
 
 For instance, you might have a form.mak and a form.html template (mako and genshi). TW2 will render the mako template if mako is listed ahead of genshi in the middleware config's ``preferred_rendering_engines``.  See the documentation regarding :ref:`middleware` for more information on how to set up your middleware for desired output.
 
-.. autoclass:: tw2.core.template.EngineManager
-   :members: render, _get_adaptor_renderer
-
-
 Non-template Output
 ===================
 
@@ -162,11 +168,7 @@ Widgets often need to access resources, such as JavaScript or CSS files. A key f
 
 To define a resource, just add a :class:`tw2.core.Resource` subclass to the widget's :attr:`resources` parameter. It is also possible to append to :attr:`resources` from within the :meth:`prepare` method. The following resource types are available:
 
-.. autoclass:: tw2.core.CSSLink
-.. autoclass:: tw2.core.CSSSource
-.. autoclass:: tw2.core.JSLink
-.. autoclass:: tw2.core.JSSource
-.. autoclass:: tw2.core.DirLink
+See :ref:`resources`
 
 Resources are widgets, but follow a slightly different lifecycle. Resource subclasses are passed into the :attr:`resources` parameter. An instance is created for each request, but this is only done at the time of the parent Widget's :meth:`display` method. This gives widgets a chance to add dynamic resources in their :meth:`prepare` method.
 
@@ -197,67 +199,6 @@ Toscawidgets2 provides an ``archive_tw2_resources`` distutils command::
     $ python setup.py archive_tw2_resources \
         --distributions=myapplication \
         --output=/var/www/myapplication
-
-.. _middleware:
-
-
-Constructing Javascript from Python
-===================================
-
-.. https://github.com/toscawidgets/tw2.core/issues/58
-
-.. autoclass:: tw2.core.js_function
-.. autoclass:: tw2.core.js_callback
-.. autoclass:: tw2.core.js_symbol
-
-**All together now**
-
-Consider the following prepare method::
-
-    def prepare(self):
-        super(MyWidget, self).prepare()
-
-        # Create a js object for "$(document).ready(.."
-        when_ready = lambda f: twc.js_function('jQuery')(
-            twc.js_symbol('document')
-        ).ready(twc.js_callback(f))
-
-        # Dicts and other primitives get translated to js properly.
-        my_js_object = dict(foo="bar", hello="world")
-
-        # This is the main function we want to execute
-        payload = twc.js_function('console.log')(my_js_object)
-
-        # Register it all with tw2's middleware for later injection
-        self.add_call(when_ready(payload))
-
-The above will add the following output to the bottom of the response::
-
-    <script type="text/javascript">
-        jQuery(document).ready(function(){
-            console.log({"foo": "bar", "hello": "world"})
-        })
-    </script>
-
-
-Middleware
-==========
-
-
-The WSGI middleware has three functions:
-
- * Request-local storage
- * Configuration
- * Resource injection
-
-**Configuration**
-
-In general, ToscaWidgets configuration is done on the middleware instance. At the beginning of each request, the middleware stores a reference to itself in request-local storage. So, during a request, a widget can consult request-local storage, and get the configuration for the middleware active in that request. This allows multiple applications to use ToscaWidgets, with different configurations, in a single Python environment.
-
-Configuration is passed as keyword arguments to the middleware constructor. The available parameters are:
-
-.. autoclass:: tw2.core.middleware.Config
-
 
 Declarative Instantiation
 =========================
@@ -495,14 +436,18 @@ Implementation
 A two-pass approach is used internally, although this is generally hidden from the developer. When :meth:`Widget.validate` is called it first calls:
 
 .. autofunction:: tw2.core.validation.unflatten_params
+    :noindex:
 
 If this fails, there is no attempt to determine which parameter failed; the whole submission is considered corrupt. If the root widget has an ``id``, this is stripped from the dictionary, e.g. ``{'myid': {'param':'value', ...}}`` is converted to ``{'param':'value', ...}``. A widget instance is created, and stored in request local storage. This allows compatibility with existing frameworks, e.g. the ``@validate`` decorator in TurboGears. There is a hook in :meth:`display` that detects the request local instance. After creating the instance, validate works recursively, using the :meth:`_validate`.
 
 .. automethod:: tw2.core.Widget._validate
+    :noindex:
 
 .. automethod:: tw2.core.RepeatingWidget._validate
+    :noindex:
 
 .. automethod:: tw2.core.CompoundWidget._validate
+    :noindex:
 
 Both :meth:`_validate` and :meth:`to_python` take an optional state argument. :class:`CompoundWidget` and :class:`RepeatingWidget` pass the partially built dict/list to their child widgets as state. This is useful for creating validators like :class:`MatchValidator` that reference sibling values. If one of the child widgets fails validation, the slot is filled with an :class:`Invalid` instance.
 

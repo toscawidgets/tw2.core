@@ -205,8 +205,8 @@ class Validator(six.with_metaclass(ValidatorMeta, object)):
 
     To create your own validators, sublass this class, and override any of
     :meth:`_validate_python`, :meth:`_convert_to_python`,
-     or :meth:`_convert_from_python`. Note that these methods are not
-     meant to be used externally. All of them may raise ValidationErrors.
+    or :meth:`_convert_from_python`. Note that these methods are not
+    meant to be used externally. All of them may raise ValidationErrors.
 
     """
 
@@ -650,7 +650,7 @@ class MatchValidator(Validator):
 class CompoundValidator(Validator):
     """ Base class for compound validators.
 
-    Child classes :class:`Any` and :class`All` take validators as arguments
+    Child classes :class:`Any` and :class:`All` take validators as arguments
     and use them to validate "value".  In case the validation fails, they
     raise a ValidationError with a compound message.
 
