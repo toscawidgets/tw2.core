@@ -1,9 +1,16 @@
 language: python
-sudo: false
-python:
- - "2.6"
- - "2.7"
- - "3.3"
+matrix:
+  include:
+    - { python: "2.7" }
+    - { python: "3.4" }
+    - { python: "3.5" }
+    - { python: "3.6" }
+    - { python: "3.7", dist: xenial }  # Python 3.7+ requires Xenial
+    - { python: "3.8-dev", dist: xenial }  # Python 3.8+ requires Xenial
+    - { python: "pypy" }
+    - { python: "pypy3" }
+  allow_failures:
+    - python: "3.8-dev"
 cache:
   directories:
   - $HOME/.pip-cache
@@ -14,9 +21,3 @@ before_script:
 - pip freeze
 script: python setup.py nosetests
 after_success: coveralls
-notifications:
-    email: false
-    irc:
-        - "irc.freenode.net#toscawidgets"
-    on_success: change
-    on_failure: always
