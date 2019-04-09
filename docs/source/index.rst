@@ -36,14 +36,6 @@ Widgets have support for:
 ToscaWidgets2 also provides a ``tw2.forms`` package with ready to use
 widgets to display Forms with input validation.
 
-Online Resources
-----------------
-
- * Bug tracker:  `GitHub <https://github.com/toscawidgets/tw2.core/issues>`_.
- * :doc:`Changelog </changelog>`
- * Gitter Channel: `TurboGears Channel <https://gitter.im/turbogears/Lobby>`_
- * Mailing List: `TurboGears Users <http://groups.google.com/group/turbogears>`_
-
 Content
 -------
 
@@ -57,6 +49,17 @@ Content
   javascript
   design
   changelog
+
+Online Resources
+----------------
+
+ToscaWidgets, as it was originall born from TurboGears Widgets,
+shares many online resources with TurboGears. If you have questions
+on how to use TW2 feel free to ask them in TurboGears channel or Mailing List.
+
+ * Bug tracker:  `GitHub <https://github.com/toscawidgets/tw2.core/issues>`_.
+ * Gitter Channel: `TurboGears Channel <https://gitter.im/turbogears/Lobby>`_
+ * Mailing List: `TurboGears Users <http://groups.google.com/group/turbogears>`_
 
 Indices and tables
 ==================
