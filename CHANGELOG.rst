@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.2.6
+-----
+
+- New Documentation
+
 2.2.5
 -----
 
