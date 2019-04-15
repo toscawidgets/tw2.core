@@ -2,10 +2,21 @@ ToscaWidgets
 ============
 
 ToscaWidgets is a web widget toolkit for Python to aid in the creation,
-packaging and distribution of common view elements normally used in the web.
+packaging and distribution of common view elements normally used in the web::
 
-The tw2.core package is lightweight and intended for run-time use only;
-development tools are in tw2.devtools.
+  class HelloWidget(twc.Widget):
+      inline_engine_name = "kajiki"
+      template = """
+          <i>Hello ${w.name}</i>
+      """
+
+      name = twc.Param(description="Name of the greeted entity")
+
+  >>> HelloWidget(name="World").display()
+  <i>Hello World</i>
+
+The tw2.core package is lightweight and provides the runtime of
+ToscaWidgets, all machinery related to forms is provided by tw2.forms
 
 Build Status
 ------------
