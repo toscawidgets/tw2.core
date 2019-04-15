@@ -4,6 +4,8 @@ ToscaWidgets
 ToscaWidgets is a web widget toolkit for Python to aid in the creation,
 packaging and distribution of common view elements normally used in the web::
 
+  import tw2.core as twc
+
   class HelloWidget(twc.Widget):
       inline_engine_name = "kajiki"
       template = """
@@ -16,7 +18,18 @@ packaging and distribution of common view elements normally used in the web::
   <i>Hello World</i>
 
 The tw2.core package is lightweight and provides the runtime of
-ToscaWidgets, all machinery related to forms is provided by tw2.forms
+ToscaWidgets, all machinery related to forms is provided by tw2.forms::
+
+    import tw2.core as twc
+    import tw2.forms as twf
+
+    class MovieForm(twf.Form):
+        class child(twf.TableLayout):
+            title = twf.TextField()
+            director = twf.TextField(value='Default Director')
+            genres = twf.SingleSelectField(options=['Action', 'Comedy', 'Romance', 'Sci-fi'])
+
+        action = '/save_movie'
 
 Build Status
 ------------
