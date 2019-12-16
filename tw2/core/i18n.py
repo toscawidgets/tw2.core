@@ -22,7 +22,7 @@ def get_localedir():
     locale_dir = ''
     if resource_filename is not None:
         try:
-            locale_dir = resource_filename(__name__, "/i18n")
+            locale_dir = resource_filename(__name__, "i18n")
         except NotImplementedError:
             pass
     if not hasattr(os, 'access'):
