@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.2.7
+-----
+
+- Fix support for Python3.8 removing `cgi.escape`
+- Fix deprecated support for absolute paths in `resource_filename`
+
 2.2.6
 -----
 
