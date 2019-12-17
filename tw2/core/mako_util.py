@@ -3,7 +3,10 @@ from mako.runtime import Undefined
 from copy import copy
 
 from markupsafe import Markup
-from cgi import escape
+try:
+    from html import escape
+except ImportError:
+    from cgi import escape
 import six
 #from mako.filters import xml_escape
 
