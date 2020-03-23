@@ -36,12 +36,10 @@ _extra_mako = ["Mako >= 0.1.1"]
 _extra_chameleon = ["chameleon"]
 _extra_kajiki = ["kajiki >= 0.5.0"]
 
-if sys.version_info[0] == 2:
+if sys.version_info[0:2] < (3, 6):
     _extra_jinja = ["jinja2 < 3.0"]
 else:
     _extra_jinja = ["jinja2"]
-
-
 
 requires = [
     'WebOb>=0.9.7',
