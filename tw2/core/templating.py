@@ -111,7 +111,10 @@ def get_source(engine_name, template, inline=False, mw=None):
         filename = _get_dotted_filename(engine_name, template, mw=mw)
 
     with open(filename, 'rb') as f:
-        return f.read()
+        if six.PY2:
+            return f.read()
+        else:
+            return f.read().decode('utf-8')
 
 
 @memoize
