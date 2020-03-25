@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.2.8
+2.2.9
 -----
 
 - Fix loading of templates on some systems where system encoding is not UTF8 (templates are always loaded as utf8)
