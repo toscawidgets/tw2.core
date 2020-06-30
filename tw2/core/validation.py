@@ -663,7 +663,7 @@ class CompoundValidator(Validator):
         for arg in args:
             if isinstance(arg, (Validator, formencode.Validator)):
                 self.validators.append(arg)
-            elif issubclass(arg, (Validator, formencode.Validator):
+            elif issubclass(arg, (Validator, formencode.Validator)):
                 self.validators.append(arg())
             if getattr(arg, 'required', False):
                 self.required = True
