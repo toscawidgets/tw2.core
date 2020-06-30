@@ -661,9 +661,9 @@ class CompoundValidator(Validator):
         super(CompoundValidator, self).__init__(**kw)
         self.validators = []
         for arg in args:
-            if isinstance(arg, Validator):
+            if isinstance(arg, (Validator, formencode.Validator)):
                 self.validators.append(arg)
-            elif issubclass(arg, Validator):
+            elif issubclass(arg, (Validator, formencode.Validator):
                 self.validators.append(arg())
             if getattr(arg, 'required', False):
                 self.required = True
