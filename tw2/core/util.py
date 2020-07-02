@@ -135,6 +135,9 @@ def clone_object(obj, **values):
     else:
         obj = copy.copy(obj)
 
+    if isinstance(obj, dict):
+        return obj
+
     for k,v in values.items():
         setattr(obj, k, v)
 
