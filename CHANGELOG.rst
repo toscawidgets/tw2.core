@@ -1,6 +1,28 @@
 Changelog
 =========
 
+2.2.9
+-----
+
+- Fix loading of templates on some systems where system encoding is not UTF8 (templates are always loaded as utf8)
+
+2.2.7
+-----
+
+- Fix support for Python3.8 removing `cgi.escape`
+- Fix deprecated support for absolute paths in `resource_filename`
+
+2.2.6
+-----
+
+- New Documentation
+
+2.2.5
+-----
+
+- Added english transation, so that the gettext translator finds it and prefers english when multiple languages are involved and english is the favourite one.
+- Fixed an issue with i18n translator on Python3
+
 2.2.4
 ------
 
@@ -206,7 +228,7 @@ Changelog
 - 2.0.2 release with py2.5 bugfixes for TG. `bd8304957 <https://github.com/toscawidgets/tw2.core/commit/bd830495770f95f4d0bfdfb21a98662d15f7ab30>`_
 - Specfile update for 2.0.2. `d9aeb76b3 <https://github.com/toscawidgets/tw2.core/commit/d9aeb76b31687b516a2f4871a52bc70bb8500e27>`_
 - Changed executable bit for files that should/shouldn\'t have it. `4d77e3043 <https://github.com/toscawidgets/tw2.core/commit/4d77e30437be3d66aa5af9f1671d802b51e85654>`_
-- Exclude *.pyc files from template directories. `4d281c684 <https://github.com/toscawidgets/tw2.core/commit/4d281c6840edee64a58bfd4b3d17ba3f8ab92a7d>`_
+- Exclude ``.pyc`` files from template directories. `4d281c684 <https://github.com/toscawidgets/tw2.core/commit/4d281c6840edee64a58bfd4b3d17ba3f8ab92a7d>`_
 - Version bump for rpm fixes. `a76db4c94 <https://github.com/toscawidgets/tw2.core/commit/a76db4c942c7eeb353d02086f3b0489f64ade1bb>`_
 - Remove pyc files from the sdist package.  Weird. `da3ddaea1 <https://github.com/toscawidgets/tw2.core/commit/da3ddaea1a0049168a673739a87711e0c3e4fceb>`_
 - Switched links in the doc from old blog to new blog. `8f7332fd1 <https://github.com/toscawidgets/tw2.core/commit/8f7332fd150d330ef9040fe7bf1309560ebfe23f>`_
@@ -286,7 +308,7 @@ Changelog
 - Whoops.  Forgot to use the new relpath.  #30. `f308bef92 <https://github.com/toscawidgets/tw2.core/commit/f308bef9232817c1edf072c8370ef823e5a481da>`_
 - Use util.relpath instead of os.path.relpath. `3c302eaac <https://github.com/toscawidgets/tw2.core/commit/3c302eaac3c4eac565138be652d5be3e60c64421>`_
 - .req() returns the validated widget is one exists. `be8f39404 <https://github.com/toscawidgets/tw2.core/commit/be8f39404c585f44ffb9333e1aa0f2e82ee951e5>`_
-- Use **kw even when pulling in the validated widget. `f78492be9 <https://github.com/toscawidgets/tw2.core/commit/f78492be9406335cead45da79e429ffbf48efdce>`_
+- Use ``**kw`` even when pulling in the validated widget. `f78492be9 <https://github.com/toscawidgets/tw2.core/commit/f78492be9406335cead45da79e429ffbf48efdce>`_
 - Trying to duplicate an issue with Deferred. `cefbbfd73 <https://github.com/toscawidgets/tw2.core/commit/cefbbfd739c1b803039a9dded72098db8fc540b3>`_
 - Tests for #41. `7c61047b9 <https://github.com/toscawidgets/tw2.core/commit/7c61047b9585e0f4a584a4c7389d213f2f3a24d4>`_
 - Handle arguments to display() called as instance method. `86894492d <https://github.com/toscawidgets/tw2.core/commit/86894492d5c1565c7d49747bde8f5c848dbc9b61>`_

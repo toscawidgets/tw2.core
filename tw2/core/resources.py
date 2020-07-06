@@ -77,6 +77,12 @@ class ResourceBundle(Widget):
 
 
 class Resource(ResourceBundle):
+    """A resource required by a widget being displayed.
+
+    ``location`` states where the resource should be injected
+    into the page. Can be any of ``head``, ``headbottom``,
+    ``bodytop`` or ``bodybottom`` or ``None``.
+    """
     location = Param(
         'Location on the page where the resource should be placed.' \
         'This can be one of: head, headbottom, bodytop or bodybottom. '\
@@ -102,6 +108,13 @@ class Resource(ResourceBundle):
 class Link(Resource):
     '''
     A link to a file.
+
+    The ``link`` parameter can be used to specify the explicit
+    link to a URL.
+
+    If omitted, the link will be built to serve ``filename``
+    from ``modname`` as a resource coming from a python
+    distribution.
     '''
     id = None
     link = Param(
@@ -216,6 +229,9 @@ class DirLink(Link):
 class JSLink(Link):
     '''
     A JavaScript source file.
+
+    By default is injected in whatever default place
+    is specified by the middleware.
     '''
     location = '__use_middleware'
     template = 'tw2.core.templates.jslink'
@@ -224,6 +240,8 @@ class JSLink(Link):
 class CSSLink(Link):
     '''
     A CSS style sheet.
+
+    By default it's injected at the top of the head node.
     '''
     media = Param('Media tag', default='all')
     location = 'head'
@@ -233,6 +251,8 @@ class CSSLink(Link):
 class JSSource(Resource):
     """
     Inline JavaScript source code.
+
+    By default is injected before the </body> is closed
     """
     src = Param('Source code', default=None)
     location = 'bodybottom'
@@ -254,6 +274,8 @@ class JSSource(Resource):
 class CSSSource(Resource):
     """
     Inline Cascading Style-Sheet code.
+
+    By default it's injected at the top of the head node.
     """
     src = Param('CSS code', default=None)
     location = 'head'

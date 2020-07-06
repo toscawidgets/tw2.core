@@ -110,15 +110,8 @@ def get_source(engine_name, template, inline=False, mw=None):
     else:
         filename = _get_dotted_filename(engine_name, template, mw=mw)
 
-    # TODO -- use a context manager here once we drop support for py2.5.
-    f = open(filename, 'r')
-
-    try:
-        source = f.read()
-    finally:
-        f.close()
-
-    return source
+    with open(filename, 'rb') as f:
+        return f.read().decode('utf-8')
 
 
 @memoize
@@ -175,7 +168,7 @@ def get_render_callable(engine_name, displays_on, src, filename=None, inline=Fal
 
     elif engine_name == 'kajiki':
         import kajiki
-        tmpl = kajiki.XMLTemplate(six.u(src), filename=filename,
+        tmpl = kajiki.XMLTemplate(src, filename=filename,
                                   cdata_scripts=False)
         return lambda kwargs: Markup(tmpl(kwargs).render())
 

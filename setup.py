@@ -33,9 +33,13 @@ def get_description(fname='README.rst'):
 # Requirements to install buffet plugins and engines
 _extra_genshi = ["Genshi >= 0.3.5"]
 _extra_mako = ["Mako >= 0.1.1"]
-_extra_jinja = ["jinja2"]
 _extra_chameleon = ["chameleon"]
 _extra_kajiki = ["kajiki >= 0.5.0"]
+
+if sys.version_info[0:2] < (3, 6):
+    _extra_jinja = ["jinja2 < 3.0"]
+else:
+    _extra_jinja = ["jinja2"]
 
 requires = [
     'WebOb>=0.9.7',
@@ -61,7 +65,7 @@ tests_require = [
     _extra_kajiki + \
     _extra_chameleon
 
-if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
+if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     tests_require.append('WebTest<2.0.0')
 else:
     tests_require.append('WebTest')
@@ -69,7 +73,7 @@ else:
 
 setup(
     name='tw2.core',
-    version='2.2.4',
+    version='2.2.9',
     description='The runtime components for ToscaWidgets 2, a web widget toolkit.',
     long_description=get_description(),
     author='Paul Johnston, Christopher Perkins, Alberto Valverde Gonzalez & contributors',
@@ -102,10 +106,10 @@ setup(
 
     [paste.filter_app_factory]
     middleware = tw2.core.middleware:make_middleware
-    """ +  """ # Is this broken for py3?
+    """ +  (""" # Is this broken for py3?
     [distutils.commands]
     archive_tw2_resources = tw2.core.command:archive_tw2_resources
-    """ if sys.version_info[0] == 2 else "",
+    """ if sys.version_info[0] == 2 else ""),
     zip_safe=False,
     classifiers=[
         'Development Status :: 5 - Production/Stable',

@@ -2,6 +2,7 @@
 *.pyo
 *.egg*
 Thumbs.db
+docs/build
 docs/.output/
 .coverage
 .noseids

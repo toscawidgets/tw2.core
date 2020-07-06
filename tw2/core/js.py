@@ -15,7 +15,7 @@ import logging
 from six.moves import map
 import json.encoder
 
-__all__ = ["js_callback", "js_function", "js_symbol", "encode"]
+__all__ = ["js_callback", "js_function", "js_symbol", "encoder"]
 
 log = logging.getLogger(__name__)
 
@@ -174,33 +174,33 @@ class js_function(object):
     programatically. Calls can be chained and parameters are automatically
     json-encoded into something JavaScript undersrtands. Example::
 
-    >>> jQuery = js_function('jQuery')
-    >>> call = jQuery('#foo').datePicker({'option1': 'value1'})
-    >>> str(call)
-    'jQuery("#foo").datePicker({"option1": "value1"})'
+        >>> jQuery = js_function('jQuery')
+        >>> call = jQuery('#foo').datePicker({'option1': 'value1'})
+        >>> str(call)
+        'jQuery("#foo").datePicker({"option1": "value1"})'
 
     Calls are added to the widget call stack with the ``add_call`` method.
 
     If made at Widget initialization those calls will be placed in
-    the template for every request that renders the widget.
+    the template for every request that renders the widget::
 
-    >>> import tw2.core as twc
-    >>> class SomeWidget(twc.Widget):
-    ...     pickerOptions = twc.Param(default={})
-    >>> SomeWidget.add_call(
-    ...     jQuery('#%s' % SomeWidget.id).datePicker(SomeWidget.pickerOptions)
-    ... )
+        >>> import tw2.core as twc 
+        >>> class SomeWidget(twc.Widget): ...
+        pickerOptions = twc.Param(default={}) 
+        >>> SomeWidget.add_call( ...
+                jQuery('#%s' % SomeWidget.id).datePicker(SomeWidget.pickerOptions)
+                ... )
 
     More likely, we will want to dynamically make calls on every
-    request.  Here we will call add_calls inside the ``prepare`` method.
+    request.  Here we will call add_calls inside the ``prepare`` method::
 
-    >>> class SomeWidget(Widget):
-    ...     pickerOptions = twc.Param(default={})
-    ...     def prepare(self):
-    ...         super(SomeWidget, self).prepare()
-    ...         self.add_call(
-    ...             jQuery('#%s' % d.id).datePicker(d.pickerOptions)
-    ...         )
+        >>> class SomeWidget(Widget):
+        ...     pickerOptions = twc.Param(default={})
+        ...     def prepare(self):
+        ...         super(SomeWidget, self).prepare()
+        ...         self.add_call(
+        ...             jQuery('#%s' % d.id).datePicker(d.pickerOptions)
+        ...         )
 
     This would allow to pass different options to the datePicker on every
     display.

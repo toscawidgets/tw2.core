@@ -84,18 +84,20 @@ class Config(object):
 
     `rendering_engine_lookup`
         A dictionary of file extensions you expect to use for each type of
-        template engine.
-        (default: {
-            'mako':['mak', 'mako'],
-            'genshi':['genshi', 'html'],
-            'jinja':['jinja', 'html'],
-            'kajiki':['kajiki', 'html'],
-        })
+        template engine. Default::
+       
+         {
+                'mako':['mak', 'mako'],
+                'genshi':['genshi', 'html'],
+                'jinja':['jinja', 'html'],
+                'kajiki':['kajiki', 'html'],
+         }
 
     `script_name`
         A name to prepend to the url for all resource links (different from
         res_prefix, as it may be shared across and entire wsgi app.
         (default: '')
+    
     '''
 
     translator = lambda self, s: s

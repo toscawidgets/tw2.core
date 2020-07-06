@@ -680,7 +680,7 @@ class CompoundWidget(Widget):
         for c in (child for child in self.children if not child._sub_compound):
             d = value.get(c.key, '')
             try:
-                val = c._validate(d, state)
+                val = c._validate(d, data)
                 if val is not vd.EmptyField:
                     data[c.key] = val
             except vd.catch as e:
@@ -815,8 +815,11 @@ class RepeatingWidget(Widget):
            not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a Widget")
 
-        if issubclass(cls.child, DisplayOnlyWidget):
-            raise pm.ParameterError('Child cannot be a DisplayOnlyWidget')
+        # NOTE: the upstream change was breaking backward compatibility;
+        # we are fine with DisplayOnlyWidget in RepeatingWidget
+
+        # if issubclass(cls.child, DisplayOnlyWidget):
+        #     raise pm.ParameterError('Child cannot be a DisplayOnlyWidget')
 
         if getattr(cls.child, 'id', None):
             raise pm.ParameterError("Child must have no id")
@@ -873,7 +876,10 @@ class RepeatingWidget(Widget):
 
         for i, v in enumerate(value):
             try:
-                data.append(self.children[i]._validate(v, state))
+                if i==0 and v is None:
+                    data.append(v)
+                else:
+                    data.append(self.children[i]._validate(v, state))
             except vd.catch:
                 data.append(vd.Invalid)
                 any_errors = True
