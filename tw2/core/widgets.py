@@ -815,6 +815,9 @@ class RepeatingWidget(Widget):
            not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a Widget")
 
+        # NOTE: the upstream change was breaking backward compatibility;
+        # we are fine with DisplayOnlyWidget in RepeatingWidget
+
         # if issubclass(cls.child, DisplayOnlyWidget):
         #     raise pm.ParameterError('Child cannot be a DisplayOnlyWidget')
 
