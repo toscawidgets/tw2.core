@@ -55,7 +55,7 @@ if sys.version_info[0] == 2 and sys.version_info[1] <= 5:
 
 tests_require = [
     'nose',
-    'sieve==2.0',  # on pypy2.7, version 2.0.1 failed to install
+    'sieve < 2.0',  # on pypy2.7, version 2.0 failed to install
     'coverage',
     'Formencode >= 1.3.0 '
 ] + \
