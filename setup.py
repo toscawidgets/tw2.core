@@ -65,10 +65,11 @@ tests_require = [
     _extra_kajiki + \
     _extra_chameleon
 
+if sys.version_info[0] == 2 and sys.version_info[1] == 7:
+    tests_require.append('soupsieve<2.0')
+
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     tests_require.append('WebTest<2.0.0')
-if sys.version_info[0] == 2 and sys.version_info[1] == 7:
-    tests_require.append('WebTest<=2.0.34')  # due to soupsieve not installing on pypy
 else:
     tests_require.append('WebTest')
 
