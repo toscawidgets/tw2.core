@@ -32,6 +32,7 @@ reserved_names = (
     'edit',
 )
 _widget_seq = itertools.count(0)
+_omitted = object()
 
 
 class WidgetMeta(pm.ParamMeta):
@@ -56,6 +57,8 @@ class WidgetMeta(pm.ParamMeta):
 
     def __new__(meta, name, bases, dct):
         if name != 'Widget' and 'children' not in dct:
+            # Children not provided, 
+            # build them from class attributes.
             new_children = []
             for d, v in list(dct.items()):
                 if isinstance(v, type) and \
@@ -65,13 +68,16 @@ class WidgetMeta(pm.ParamMeta):
                     new_children.append((v, d))
                     del dct[d]
 
-            children = meta._collect_base_children(bases)
+            base_children = meta._collect_base_children(bases)
             new_children = sorted(new_children, key=lambda t: t[0]._seq)
-            children.extend(
+            direct_children = [
                 hasattr(v, 'id') and v or v(id=d) for v, d in new_children
-            )
-            if children:
-                dct['children'] = children
+            ]
+            direct_children_ids = set([c.id for c in direct_children])
+            dct['children'] = [
+                # Do not include children that have been overwritten in a subclass.
+                c for c in base_children if getattr(c, "id", _omitted) not in direct_children_ids
+            ] + direct_children
 
         widget = super(WidgetMeta, meta).__new__(meta, name, bases, dct)
 
@@ -590,11 +596,7 @@ class CompoundWidget(Widget):
         cls._sub_compound = not getattr(cls, 'id', None)
         if not hasattr(cls, 'children'):
             return
-
-        super_children_ids = []
-        if hasattr(super(cls, cls), 'children'):
-            super_children_ids = [c.id for c in super(cls, cls).children if hasattr(c, 'id')]
-
+            
         joined_cld = []
         for c in cls.children:
             if not isinstance(c, type) or not issubclass(c, Widget):
@@ -605,10 +607,9 @@ class CompoundWidget(Widget):
         for c in cls.children_deep():
             if getattr(c, 'id', None):
                 if c.id in ids:
-                    if c.id not in super_children_ids:
-                        raise core.WidgetError("Duplicate id '%s'" % c.id)
-                    joined_cld.pop([x.id for x in joined_cld].index(c.id))
+                    raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)
+        
         cls.children = WidgetBunch(joined_cld)
         cls.keyed_children = [
             c.id for c in joined_cld
@@ -733,7 +734,7 @@ class CompoundWidget(Widget):
             for c in getattr(cls, 'children', []):
                 for cc in c.children_deep():
                     yield cc
-
+    
 
 class RepeatingWidgetBunchCls(object):
 
