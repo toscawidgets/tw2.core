@@ -590,8 +590,12 @@ class CompoundWidget(Widget):
         cls._sub_compound = not getattr(cls, 'id', None)
         if not hasattr(cls, 'children'):
             return
-        joined_cld = []
 
+        super_children_ids = []
+        if hasattr(super(cls, cls), 'children'):
+            super_children_ids = [c.id for c in super(cls, cls).children if hasattr(c, 'id')]
+
+        joined_cld = []
         for c in cls.children:
             if not isinstance(c, type) or not issubclass(c, Widget):
                 raise pm.ParameterError("All children must be widgets")
@@ -601,7 +605,9 @@ class CompoundWidget(Widget):
         for c in cls.children_deep():
             if getattr(c, 'id', None):
                 if c.id in ids:
-                    raise core.WidgetError("Duplicate id '%s'" % c.id)
+                    if c.id not in super_children_ids:
+                        raise core.WidgetError("Duplicate id '%s'" % c.id)
+                    joined_cld.pop([x.id for x in joined_cld].index(c.id))
                 ids.add(c.id)
         cls.children = WidgetBunch(joined_cld)
         cls.keyed_children = [

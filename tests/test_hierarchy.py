@@ -88,7 +88,32 @@ class TestHierarchy(object):
         assert(test.children.b.value == 10)
         assert(test.children.c.value == 20)
 
+    def test_cw_duplicate(self):
+        try:
+            class Parent(twc.CompoundWidget):
+                class Left(twc.CompoundWidget):
+                    id = None
+                    c = twc.Widget()
 
+                class Right(twc.CompoundWidget):
+                    id = None
+                    c = twc.Widget()
+            assert False, 'Must raise'
+        except twc.WidgetError as ex:
+            assert "Duplicate id 'c'" in str(ex)
+
+    def test_cw_override(self):
+        class Grandpa(twc.CompoundWidget):
+            class Parent(twc.CompoundWidget):
+                a = twc.Widget(id='a', name='override_me')
+
+            class Child(Parent):
+                a = twc.Widget(id='a', name='A')
+                b = twc.Widget(id='b', name='B')
+        assert len(Grandpa.children.Child.children) == 2
+        assert Grandpa.children.Child.children[0].name == 'A'
+        assert Grandpa.children.Child.children[1].name == 'B'
+            
     #--
     # Repeating Widget Bunch
     #--
