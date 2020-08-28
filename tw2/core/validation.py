@@ -659,11 +659,15 @@ class CompoundValidator(Validator):
 
     def __init__(self, *args, **kw):
         super(CompoundValidator, self).__init__(**kw)
+        validator_classes = [Validator, ]
+        if formencode is not None:
+            validator_classes.append(formencode.Validator)
+        validator_classes = tuple(validator_classes)
         self.validators = []
         for arg in args:
-            if isinstance(arg, Validator):
+            if isinstance(arg, validator_classes):
                 self.validators.append(arg)
-            elif issubclass(arg, Validator):
+            elif issubclass(arg, validator_classes):
                 self.validators.append(arg())
             if getattr(arg, 'required', False):
                 self.required = True
