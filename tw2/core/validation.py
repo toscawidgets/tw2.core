@@ -287,6 +287,11 @@ class Validator(six.with_metaclass(ValidatorMeta, object)):
             setattr(nself, k, kw[k])
         return nself
 
+if formencode:
+    validator_classes = (Validator, formencode.Validator)
+else:
+    validator_classes = (Validator, )
+
 
 class BlankValidator(Validator):
     """
@@ -659,10 +664,7 @@ class CompoundValidator(Validator):
 
     def __init__(self, *args, **kw):
         super(CompoundValidator, self).__init__(**kw)
-        validator_classes = [Validator, ]
-        if formencode is not None:
-            validator_classes.append(formencode.Validator)
-        validator_classes = tuple(validator_classes)
+
         self.validators = []
         for arg in args:
             if isinstance(arg, validator_classes):
