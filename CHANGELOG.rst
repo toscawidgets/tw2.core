@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.3.0
+-----
+
+- Support overriding fields in subclasses of a `Form`
+- Support for formencode validators in `CompoundValidator`
+
+
 2.2.9
 -----
 
