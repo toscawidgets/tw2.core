@@ -60,7 +60,7 @@ def ampfix(value):
             except KeyError:
                 pass
         return '&#38;' + text[1:]
-    return re.sub("&#?\w+;|&", fixup, value)
+    return re.sub(r"&#?\w+;|&", fixup, value)
 
 
 def fix_attrs(attrs):

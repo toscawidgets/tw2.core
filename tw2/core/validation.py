@@ -77,7 +77,7 @@ class ValidationError(BaseValidationError):
         if msg == 'childerror':
             msg = ''
 
-        msg = re.sub('\$(\w+)',
+        msg = re.sub(r'\$(\w+)',
                 lambda m: str(getattr(validator, m.group(1))), six.text_type(msg))
         super(ValidationError, self).__init__(msg)
 
@@ -143,7 +143,7 @@ def unflatten_params(params):
     numdict_to_list(out)
     return out
 
-number_re = re.compile('^\d+$')
+number_re = re.compile(r'^\d+$')
 
 
 def numdict_to_list(dct):
@@ -507,7 +507,7 @@ class DateValidator(DateTimeValidator):
 
 
 class RegexValidator(Validator):
-    """
+    r"""
     Confirm the value matches a regular expression.
 
     `regex`
@@ -531,7 +531,7 @@ class EmailValidator(RegexValidator):
     msgs = {
         'badregex': ('bademail', _('Must be a valid email address')),
     }
-    regex = re.compile('^[\w\-.]+@[\w\-.]+$')
+    regex = re.compile(r'^[\w\-.]+@[\w\-.]+$')
 
 
 class UrlValidator(RegexValidator):
@@ -561,7 +561,7 @@ class IpAddressValidator(Validator):
         'badipaddress': _('Must be a valid IP address'),
         'badnetblock': _('Must be a valid IP network block'),
     }
-    regex = re.compile('^(\d+)\.(\d+)\.(\d+)\.(\d+)(/(\d+))?$')
+    regex = re.compile(r'^(\d+)\.(\d+)\.(\d+)\.(\d+)(/(\d+))?$')
 
     def _validate_python(self, value, state=None):
         m = self.regex.search(value)
