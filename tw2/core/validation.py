@@ -226,22 +226,22 @@ class Validator(six.with_metaclass(ValidatorMeta, object)):
 
     def to_python(self, value, state=None):
         """Convert an external value to Python and validate it."""
+        if self.strip and isinstance(value, six.string_types):
+            value = value.strip()
         if self._is_empty(value):
             if self.required:
                 raise ValidationError('required', self)
             return self.if_empty
-        if self.strip and isinstance(value, six.string_types):
-            value = value.strip()
         value = self._convert_to_python(value, state)
         self._validate_python(value, state)
         return value
 
     def from_python(self, value, state=None):
         """Convert from a Python object to an external value."""
-        if self._is_empty(value):
-            return ''
         if isinstance(value, six.string_types) and self.strip:
             value = value.strip()
+        if self._is_empty(value):
+            return ''
         value = self._convert_from_python(value, state)
         return value
 
