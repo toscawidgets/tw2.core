@@ -99,7 +99,7 @@ class Resource(ResourceBundle):
         rl_location = rl['middleware'].config.inject_resources_location
 
         if self not in rl_resources:
-            if self.location is '__use_middleware':
+            if self.location == '__use_middleware':
                 self.location = rl_location
 
             rl_resources.append(self)
