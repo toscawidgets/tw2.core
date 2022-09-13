@@ -1,21 +1,21 @@
 from __future__ import absolute_import
 
 import copy
-import weakref
-import re
-import itertools
 import inspect
-import webob
+import itertools
+import re
 import uuid
+import weakref
 
-from . import templating
-from . import core
-from . import util
-from . import validation as vd
-from . import params as pm
 import six
-from six.moves import filter
+import webob
 from markupsafe import Markup
+from six.moves import filter
+
+from . import core
+from . import params as pm
+from . import templating, util
+from . import validation as vd
 
 try:
     import formencode
@@ -23,13 +23,13 @@ except ImportError:
     formencode = None
 
 reserved_names = (
-    'parent',
-    'demo_for',
-    'child',
-    'submit',
-    'datasrc',
-    'newlink',
-    'edit',
+    "parent",
+    "demo_for",
+    "child",
+    "submit",
+    "datasrc",
+    "newlink",
+    "edit",
 )
 _widget_seq = itertools.count(0)
 
@@ -44,40 +44,37 @@ class WidgetMeta(pm.ParamMeta):
      * Calls post_define for the widget class and base classes. This
        is needed as it's not possible to call super() in post_define.
     """
+
     @classmethod
     def _collect_base_children(meta, bases):
-        ''' Collect the children from the base classes '''
+        """Collect the children from the base classes"""
         children = []
         for b in bases:
-            bcld = getattr(b, 'children', None)
+            bcld = getattr(b, "children", None)
             if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
                 children.extend(bcld)
         return children
 
     def __new__(meta, name, bases, dct):
-        if name != 'Widget' and 'children' not in dct:
+        if name != "Widget" and "children" not in dct:
             new_children = []
             for d, v in list(dct.items()):
-                if isinstance(v, type) and \
-                   issubclass(v, Widget) and \
-                   d not in reserved_names:
+                if isinstance(v, type) and issubclass(v, Widget) and d not in reserved_names:
 
                     new_children.append((v, d))
                     del dct[d]
 
             children = meta._collect_base_children(bases)
             new_children = sorted(new_children, key=lambda t: t[0]._seq)
-            children.extend(
-                hasattr(v, 'id') and v or v(id=d) for v, d in new_children
-            )
+            children.extend(hasattr(v, "id") and v or v(id=d) for v, d in new_children)
             if children:
-                dct['children'] = children
+                dct["children"] = children
 
         widget = super(WidgetMeta, meta).__new__(meta, name, bases, dct)
 
         widget._seq = six.advance_iterator(_widget_seq)
         for w in reversed(widget.__mro__):
-            if 'post_define' in w.__dict__:
+            if "post_define" in w.__dict__:
                 w.post_define.__func__(widget)
         return widget
 
@@ -87,21 +84,19 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
     Base class for all widgets.
     """
 
-    id = pm.Param('Widget identifier', request_local=False)
-    key = pm.Param('Widget data key; None just uses id',
-                   default=None, request_local=False)
+    id = pm.Param("Widget identifier", request_local=False)
+    key = pm.Param("Widget data key; None just uses id", default=None, request_local=False)
     template = pm.Param(
-        'Template file for the widget, in the format ' +
-        'engine_name:template_path.  If `engine_name` is specified, this ' +
-        'is interepreted not as a path, but as an *inline template*',
+        "Template file for the widget, in the format "
+        + "engine_name:template_path.  If `engine_name` is specified, this "
+        + "is interepreted not as a path, but as an *inline template*",
     )
     inline_engine_name = pm.Param(
-        'Name of an engine.  If specified, `template` is interpreted as ' +
-        'an *inline template* and not a path.',
+        "Name of an engine.  If specified, `template` is interpreted as " + "an *inline template* and not a path.",
         default=None,
     )
     validator = pm.Param(
-        'Validator for the widget.',
+        "Validator for the widget.",
         default=None,
         request_local=False,
     )
@@ -110,26 +105,24 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         default={},
     )
     css_class = pm.Param(
-        'CSS class name',
+        "CSS class name",
         default=None,
         attribute=True,
-        view_name='class',
+        view_name="class",
     )
     value = pm.Param("The value for the widget.", default=None)
     resources = pm.Param(
-        "Resources used by the widget. This must be an iterable, each " + \
-        "item of which is a :class:`Resource` subclass.",
+        "Resources used by the widget. This must be an iterable, each "
+        + "item of which is a :class:`Resource` subclass.",
         default=[],
         request_local=False,
     )
 
     error_msg = pm.Variable("Validation error message.")
-    parent = pm.Variable(
-        "The parent of this widget, or None if this is a root widget."
-    )
+    parent = pm.Variable("The parent of this widget, or None if this is a root widget.")
 
     _sub_compound = False
-    _valid_id_re = re.compile(r'^[a-zA-Z][\w\-\_\.]*$')
+    _valid_id_re = re.compile(r"^[a-zA-Z][\w\-\_\.]*$")
 
     @classmethod
     def req(cls, **kw):
@@ -142,11 +135,11 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         ins = None
 
         # Create an instance.  First check for the validated widget.
-        vw = vw_class = core.request_local().get('validated_widget')
+        vw = vw_class = core.request_local().get("validated_widget")
         if vw:
             # Pull out actual class instances to compare to see if this
             # is really the widget that was actually validated
-            if not getattr(vw_class, '__bases__', None):
+            if not getattr(vw_class, "__bases__", None):
                 vw_class = vw.__class__
 
             if vw_class is not cls:
@@ -172,11 +165,11 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         """
 
         # Support backwards compatibility with tw1-style calling
-        if id and 'id' not in kw:
-            kw['id'] = id
+        if id and "id" not in kw:
+            kw["id"] = id
 
         newname = calc_name(cls, kw)
-        return type(cls.__name__ + '_s', (cls, ), kw)
+        return type(cls.__name__ + "_s", (cls,), kw)
 
     def __init__(self, **kw):
         for k, v in six.iteritems(kw):
@@ -201,58 +194,50 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         this automatically.
         """
 
-        if getattr(cls, 'id', None):
+        if getattr(cls, "id", None):
             if not cls._valid_id_re.match(cls.id):
                 # http://www.w3schools.com/tags/att_standard_id.asp
-                raise pm.ParameterError(
-                    "Not a valid W3C id: '%s'" % cls.id)
+                raise pm.ParameterError("Not a valid W3C id: '%s'" % cls.id)
 
-        if hasattr(cls, 'id') and not getattr(cls, 'key', None):
+        if hasattr(cls, "id") and not getattr(cls, "key", None):
             cls.key = cls.id
 
         cls.compound_id = cls._gen_compound_id(for_url=False)
         if cls.compound_id:
             cls.attrs = cls.attrs.copy()
-            cls.attrs['id'] = cls.compound_id
+            cls.attrs["id"] = cls.compound_id
 
         cls.compound_key = cls._gen_compound_key()
 
-        if hasattr(cls, 'request') and getattr(cls, 'id', None):
+        if hasattr(cls, "request") and getattr(cls, "id", None):
             from . import middleware
+
             path = cls._gen_compound_id(for_url=True)
             middleware.register_controller(cls, path)
 
         if cls.validator:
             if cls.validator is pm.Required:
                 vld = cls.__mro__[1].validator
-                cls.validator = vld and vld.clone(required=True) or \
-                        vd.Validator(required=True)
+                cls.validator = vld and vld.clone(required=True) or vd.Validator(required=True)
 
-            if isinstance(cls.validator, type) and \
-               issubclass(cls.validator, vd.Validator):
+            if isinstance(cls.validator, type) and issubclass(cls.validator, vd.Validator):
                 cls.validator = cls.validator()
 
-            if formencode and isinstance(cls.validator, type) and \
-               issubclass(cls.validator, formencode.Validator):
+            if formencode and isinstance(cls.validator, type) and issubclass(cls.validator, formencode.Validator):
                 cls.validator = cls.validator()
 
-            if not isinstance(cls.validator, vd.Validator) and \
-               not (formencode and
-                    isinstance(cls.validator, formencode.Validator)):
-                raise pm.ParameterError(
-                    "Validator must be either a tw2 or FormEncode validator"
-                )
+            if not isinstance(cls.validator, vd.Validator) and not (
+                formencode and isinstance(cls.validator, formencode.Validator)
+            ):
+                raise pm.ParameterError("Validator must be either a tw2 or FormEncode validator")
 
         cls.resources = [r(parent=cls) for r in cls.resources]
-        cls._deferred = [k for k, v in inspect.getmembers(cls)
-                         if isinstance(v, pm.Deferred)]
+        cls._deferred = [k for k, v in inspect.getmembers(cls) if isinstance(v, pm.Deferred)]
         cls._attr = [p.name for p in cls._params.values() if p.attribute]
 
         if cls.parent:
             for p in cls.parent._all_params.values():
-                if p.child_param and \
-                   not hasattr(cls, p.name) and \
-                   p.default is not pm.Required:
+                if p.child_param and not hasattr(cls, p.name) and p.default is not pm.Required:
 
                     setattr(cls, p.name, p.default)
 
@@ -262,15 +247,12 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         cur = cls
         while cur:
             if cur in ancestors:
-                raise core.WidgetError('Parent loop')
+                raise core.WidgetError("Parent loop")
             ancestors.append(cur)
             cur = cur.parent
-        elems = reversed(list(filter(None, [
-            a._compound_name_elem(attr, for_url) for a in ancestors
-        ])))
-        if getattr(cls, attr, None) or \
-           (cls.parent and issubclass(cls.parent, RepeatingWidget)):
-            return ':'.join(elems)
+        elems = reversed(list(filter(None, [a._compound_name_elem(attr, for_url) for a in ancestors])))
+        if getattr(cls, attr, None) or (cls.parent and issubclass(cls.parent, RepeatingWidget)):
+            return ":".join(elems)
         else:
             return None
 
@@ -280,21 +262,21 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
             if for_url:
                 return None
             else:
-                return str(getattr(cls, 'repetition', None))
+                return str(getattr(cls, "repetition", None))
         else:
             return getattr(cls, attr, None)
 
     @classmethod
     def _compound_id_elem(cls, for_url):
-        return cls._compound_name_elem('id', for_url)
+        return cls._compound_name_elem("id", for_url)
 
     @classmethod
     def _gen_compound_id(cls, for_url):
-        return cls._gen_compound_name('id', for_url)
+        return cls._gen_compound_name("id", for_url)
 
     @classmethod
     def _gen_compound_key(cls):
-        return cls._gen_compound_name('key', False)
+        return cls._gen_compound_name("key", False)
 
     @classmethod
     def get_link(cls):
@@ -304,9 +286,9 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         Note: this function is a temporary measure, a cleaner API for this is
         planned.
         """
-        if not hasattr(cls, 'request') or not getattr(cls, 'id', None):
-            raise core.WidgetError('Not a controller widget')
-        mw = core.request_local()['middleware']
+        if not hasattr(cls, "request") or not getattr(cls, "id", None):
+            raise core.WidgetError("Not a controller widget")
+        mw = core.request_local()["middleware"]
         return mw.config.controller_prefix + cls._gen_compound_id(for_url=True)
 
     def prepare(self):
@@ -323,28 +305,25 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         """
 
         # First, if we don't already have an id, then pick a random one.
-        if not hasattr(self, 'id'):
-            self.id = 'id_' + str(uuid.uuid4()).replace('-', '')
+        if not hasattr(self, "id"):
+            self.id = "id_" + str(uuid.uuid4()).replace("-", "")
 
         # Then, enforce any params marked with twc.Required.
         for k, v in self._params.items():
             if v.default is pm.Required and not hasattr(self, k):
-                raise ValueError(
-                    "%r is a required Parameter for %r" % (k, self))
+                raise ValueError("%r is a required Parameter for %r" % (k, self))
 
         for a in self._deferred:
             dfr = getattr(self, a)
             if isinstance(dfr, pm.Deferred):
                 setattr(self, a, dfr.fn())
 
-        if self.validator and not hasattr(self, '_validated'):
+        if self.validator and not hasattr(self, "_validated"):
             value = self.value
 
             # Handles the case where FE expects dict-like object, but
             # you have None at your disposal.
-            if formencode and \
-               isinstance(self.validator, formencode.Validator) and \
-               self.value is None:
+            if formencode and isinstance(self.validator, formencode.Validator) and self.value is None:
                 value = {}
 
             try:
@@ -358,17 +337,15 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
 
             self.value = value
 
-        if self._attr or 'attrs' in self.__dict__:
+        if self._attr or "attrs" in self.__dict__:
             self.attrs = self.attrs.copy()
             if self.compound_id:
-                self.attrs['id'] = self.compound_id
+                self.attrs["id"] = self.compound_id
 
             for a in self._attr:
                 view_name = self._params[a].view_name
                 if self.attrs.get(view_name):
-                    raise pm.ParameterError(
-                        "Attr param clashes with user-supplied attr: '%s'" % a
-                    )
+                    raise pm.ParameterError("Attr param clashes with user-supplied attr: '%s'" % a)
                 self.attrs[view_name] = getattr(self, a)
 
     def iteritems(self):
@@ -382,11 +359,11 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
 
     @util.class_or_instance
     def controller_path(self, cls):
-        """ Return the URL path against which this widget's controller is
+        """Return the URL path against which this widget's controller is
         mounted or None if it is not registered with the ControllerApp.
         """
 
-        mw = core.request_local().get('middleware')
+        mw = core.request_local().get("middleware")
         return mw.controllers.controller_path(cls)
 
     @util.class_or_instance
@@ -398,7 +375,7 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         Adds a :func:`tw.api.js_function` call that will be made when the
         widget is rendered.
         """
-        #log.debug("Adding call <%s> for %r statically.", call, self)
+        # log.debug("Adding call <%s> for %r statically.", call, self)
         self._js_calls.append([call, location])
 
     @util.class_or_instance
@@ -416,8 +393,8 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         """
 
         # Support backwards compatibility with tw1-style calling
-        if value is not None and 'value' not in kw:
-            kw['value'] = value
+        if value is not None and "value" not in kw:
+            kw["value"] = value
 
         # Support arguments to .display on either instance or class
         # https://github.com/toscawidgets/tw2.core/issues/41
@@ -436,17 +413,20 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
             self.prepare()
 
         if self._js_calls:
-            self.safe_modify('resources')
-            #avoids circular reference
+            self.safe_modify("resources")
+            # avoids circular reference
             from . import resources as rs
+
             for item in self._js_calls:
-                if 'JSFuncCall' in repr(item[0]):
+                if "JSFuncCall" in repr(item[0]):
                     self.resources.append(item[0])
                 else:
-                    self.resources.append(rs._JSFuncCall(
-                        src=str(item[0]),
-                        location=item[1],
-                    ))
+                    self.resources.append(
+                        rs._JSFuncCall(
+                            src=str(item[0]),
+                            location=item[1],
+                        )
+                    )
 
         if self.resources:
             self.resources = WidgetBunch([r.req() for r in self.resources])
@@ -473,13 +453,13 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
                     return "<span {0}>{1}</span>".format(self.attrs, self.text)
         """
 
-        mw = core.request_local().get('middleware')
+        mw = core.request_local().get("middleware")
 
         if not displays_on:
             displays_on = self._get_default_displays_on(mw)
 
         # Build the arguments used while rendering the template
-        kwargs = {'w': self}
+        kwargs = {"w": self}
         if mw and mw.config.params_as_vars:
             for p in self._params:
                 if hasattr(self, p):
@@ -500,7 +480,7 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         if not self.parent:
             if mw:
                 return mw.config.default_engine
-            return 'string'
+            return "string"
         else:
             return templating.get_engine_name(self.parent.template, mw)
 
@@ -512,14 +492,14 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         :class:`ValidationError` exception.
         """
         if cls.parent:
-            raise core.WidgetError('Only call validate on root widgets')
+            raise core.WidgetError("Only call validate on root widgets")
         value = vd.unflatten_params(params)
-        if hasattr(cls, 'id') and cls.id:
+        if hasattr(cls, "id") and cls.id:
             value = value.get(cls.id, {})
         ins = cls.req()
 
         # Key the validated widget by class id
-        core.request_local()['validated_widget'] = ins
+        core.request_local()["validated_widget"] = ins
         return ins._validate(value, state)
 
     @vd.catch_errors
@@ -537,8 +517,7 @@ class Widget(six.with_metaclass(WidgetMeta, pm.Parametered)):
         return value
 
     def safe_modify(self, attr):
-        if (attr not in self.__dict__ and
-                isinstance(getattr(self, attr, None), (dict, list))):
+        if attr not in self.__dict__ and isinstance(getattr(self, attr, None), (dict, list)):
             setattr(self, attr, copy.copy(getattr(self, attr)))
 
     @classmethod
@@ -566,29 +545,25 @@ class CompoundWidget(Widget):
     A widget that has an arbitrary number of children, this is common for
     layout components, such as :class:`tw2.forms.TableLayout`.
     """
-    children = pm.Param(
-        'Children for this widget. This must be an iterable, ' +
-        'each item of which is a Widget'
-    )
+
+    children = pm.Param("Children for this widget. This must be an iterable, " + "each item of which is a Widget")
     c = pm.Variable(
         "Alias for children",
         default=property(lambda s: s.children),
     )
     children_deep = pm.Variable(
-        "Children, including any children from child " +
-        "CompoundWidgets that have no id",
+        "Children, including any children from child " + "CompoundWidgets that have no id",
     )
-    template = 'tw2.core.templates.display_children'
-    separator = pm.Param('HTML snippet which will be inserted '
-                         'between each repeated child', default=None)
+    template = "tw2.core.templates.display_children"
+    separator = pm.Param("HTML snippet which will be inserted " "between each repeated child", default=None)
 
     @classmethod
     def post_define(cls):
         """
         Check children are valid; update them to have a link to the parent.
         """
-        cls._sub_compound = not getattr(cls, 'id', None)
-        if not hasattr(cls, 'children'):
+        cls._sub_compound = not getattr(cls, "id", None)
+        if not hasattr(cls, "children"):
             return
         joined_cld = []
 
@@ -599,22 +574,16 @@ class CompoundWidget(Widget):
 
         ids = set()
         for c in cls.children_deep():
-            if getattr(c, 'id', None):
+            if getattr(c, "id", None):
                 if c.id in ids:
                     raise core.WidgetError("Duplicate id '%s'" % c.id)
                 ids.add(c.id)
         cls.children = WidgetBunch(joined_cld)
-        cls.keyed_children = [
-            c.id for c in joined_cld
-            if hasattr(c, 'key') and hasattr(c, 'id') and c.key != c.id
-        ]
+        cls.keyed_children = [c.id for c in joined_cld if hasattr(c, "key") and hasattr(c, "id") and c.key != c.id]
 
     def __init__(self, **kw):
         super(CompoundWidget, self).__init__(**kw)
-        self.children = WidgetBunch(
-            c.req(parent=weakref.proxy(self))
-            for c in self.children
-        )
+        self.children = WidgetBunch(c.req(parent=weakref.proxy(self)) for c in self.children)
 
     def prepare(self):
         """
@@ -624,8 +593,8 @@ class CompoundWidget(Widget):
         if self.separator:
             self.separator = Markup(self.separator)
         v = self.value or {}
-        if not hasattr(self, '_validated'):
-            if hasattr(v, '__getitem__'):
+        if not hasattr(self, "_validated"):
+            if hasattr(v, "__getitem__"):
                 for c in self.children:
                     if c._sub_compound:
                         c.value = v
@@ -636,14 +605,14 @@ class CompoundWidget(Widget):
                     if c._sub_compound:
                         c.value = self.value
                     else:
-                        c.value = getattr(self.value, c.key or '', None)
+                        c.value = getattr(self.value, c.key or "", None)
         for c in self.children:
             c.prepare()
 
     def get_child_error_message(self, name):
         if isinstance(self.error_msg, six.string_types):
-            if self.error_msg.startswith(name + ':'):
-                return self.error_msg.split(':')[1]
+            if self.error_msg.startswith(name + ":"):
+                return self.error_msg.split(":")[1]
 
     @vd.catch_errors
     def _validate(self, value, state=None):
@@ -660,7 +629,7 @@ class CompoundWidget(Widget):
         self._validated = True
         value = value or {}
         if not isinstance(value, dict):
-            raise vd.ValidationError('corrupt', self.validator)
+            raise vd.ValidationError("corrupt", self.validator)
         self.value = value
         any_errors = False
         data = {}
@@ -672,19 +641,19 @@ class CompoundWidget(Widget):
             try:
                 data.update(c._validate(value, state))
             except vd.catch as e:
-                if hasattr(e, 'msg'):
+                if hasattr(e, "msg"):
                     c.error_msg = e.msg
                 any_errors = True
 
         # Validate non compound children
         for c in (child for child in self.children if not child._sub_compound):
-            d = value.get(c.key, '')
+            d = value.get(c.key, "")
             try:
                 val = c._validate(d, data)
                 if val is not vd.EmptyField:
                     data[c.key] = val
             except vd.catch as e:
-                if hasattr(e, 'msg'):
+                if hasattr(e, "msg"):
                     c.error_msg = e.msg
                 data[c.key] = vd.Invalid
                 any_errors = True
@@ -698,12 +667,12 @@ class CompoundWidget(Widget):
             except vd.catch as e:
                 # If it failed to validate, check if the error_dict has any
                 # messages pertaining specifically to this widget's children.
-                error_dict = getattr(e, 'error_dict', {})
+                error_dict = getattr(e, "error_dict", {})
                 if not error_dict:
                     raise
 
                 for c in self.children:
-                    if getattr(c, 'key', None) in error_dict:
+                    if getattr(c, "key", None) in error_dict:
                         c.error_msg = error_dict[c.key]
                         data[c.key] = vd.Invalid
                         exception_validator = None
@@ -715,22 +684,21 @@ class CompoundWidget(Widget):
                     raise
 
         if any_errors:
-            raise vd.ValidationError('childerror', exception_validator)
+            raise vd.ValidationError("childerror", exception_validator)
 
         return data
 
     @classmethod
     def children_deep(cls):
-        if getattr(cls, 'id', None):
+        if getattr(cls, "id", None):
             yield cls
         else:
-            for c in getattr(cls, 'children', []):
+            for c in getattr(cls, "children", []):
                 for cc in c.children_deep():
                     yield cc
 
 
 class RepeatingWidgetBunchCls(object):
-
     def __init__(self, parent):
         self.parent = parent
         self._repetition_cache = {}
@@ -775,44 +743,43 @@ class RepeatingWidget(Widget):
     A widget that has a single child, which is repeated an arbitrary number
     of times, such as :class:`tw2.forms.GridLayout`.
     """
-    child = pm.Param('Child for this widget. The child must have no id.')
+
+    child = pm.Param("Child for this widget. The child must have no id.")
     repetitions = pm.Param(
-        'Fixed number of repetitions. If this is None, it dynamically ' +
-        'determined, based on the length of the value list.',
+        "Fixed number of repetitions. If this is None, it dynamically "
+        + "determined, based on the length of the value list.",
         default=None,
     )
-    min_reps = pm.Param('Minimum number of repetitions', default=None)
-    max_reps = pm.Param('Maximum number of repetitions', default=None)
+    min_reps = pm.Param("Minimum number of repetitions", default=None)
+    max_reps = pm.Param("Maximum number of repetitions", default=None)
     extra_reps = pm.Param(
-        'Number of extra repeitions, beyond the length of the value list.',
+        "Number of extra repeitions, beyond the length of the value list.",
         default=0,
     )
     children = pm.Param(
-        'Children specified for this widget will be passed to the child.  ' +
-        'In the template, children gets the list of repeated childen.',
+        "Children specified for this widget will be passed to the child.  "
+        + "In the template, children gets the list of repeated childen.",
         default=[],
     )
 
-    repetition = pm.ChildVariable('The repetition of a child widget.')
+    repetition = pm.ChildVariable("The repetition of a child widget.")
 
-    template = 'tw2.core.templates.display_children'
-    separator = pm.Param('HTML snippet which will be inserted '
-                         'between each repeated child', default=None)
+    template = "tw2.core.templates.display_children"
+    separator = pm.Param("HTML snippet which will be inserted " "between each repeated child", default=None)
 
     @classmethod
     def post_define(cls):
         """
         Check child is valid; update with link to parent.
         """
-        if not hasattr(cls, 'child'):
+        if not hasattr(cls, "child"):
             return
 
-        if getattr(cls, 'children', None):
+        if getattr(cls, "children", None):
             cls.child = cls.child(children=cls.children)
             cls.children = []
 
-        if not isinstance(cls.child, type) or \
-           not issubclass(cls.child, Widget):
+        if not isinstance(cls.child, type) or not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a Widget")
 
         # NOTE: the upstream change was breaking backward compatibility;
@@ -821,7 +788,7 @@ class RepeatingWidget(Widget):
         # if issubclass(cls.child, DisplayOnlyWidget):
         #     raise pm.ParameterError('Child cannot be a DisplayOnlyWidget')
 
-        if getattr(cls.child, 'id', None):
+        if getattr(cls.child, "id", None):
             raise pm.ParameterError("Child must have no id")
 
         cls.child = cls.child(parent=cls)
@@ -867,7 +834,7 @@ class RepeatingWidget(Widget):
         self._validated = True
         value = value or []
         if not isinstance(value, list):
-            raise vd.ValidationError('corrupt', self.validator, self)
+            raise vd.ValidationError("corrupt", self.validator, self)
         self.value = value
         any_errors = False
         data = []
@@ -876,7 +843,7 @@ class RepeatingWidget(Widget):
 
         for i, v in enumerate(value):
             try:
-                if i==0 and v is None:
+                if i == 0 and v is None:
                     data.append(v)
                 else:
                     data.append(self.children[i]._validate(v, state))
@@ -886,7 +853,7 @@ class RepeatingWidget(Widget):
         if self.validator:
             data = self.validator.to_python(data, state)
         if any_errors:
-            raise vd.ValidationError('childerror', self.validator, self)
+            raise vd.ValidationError("childerror", self.validator, self)
         return data
 
 
@@ -895,20 +862,20 @@ class DisplayOnlyWidgetMeta(WidgetMeta):
     def _collect_base_children(meta, bases):
         children = []
         for b in bases:
-            bchild = getattr(b, 'child', None)
+            bchild = getattr(b, "child", None)
             if bchild:
                 b = b.child
-            bcld = getattr(b, 'children', None)
+            bcld = getattr(b, "children", None)
             if bcld and not isinstance(bcld, RepeatingWidgetBunchCls):
                 children.extend(bcld)
         return children
 
 
-def calc_name(cls, kw, char='s'):
-    if 'parent' in kw:
-        newname = kw['parent'].__name__ + '__' + cls.__name__
+def calc_name(cls, kw, char="s"):
+    if "parent" in kw:
+        newname = kw["parent"].__name__ + "__" + cls.__name__
     else:
-        newname = cls.__name__ + '_%s' % char
+        newname = cls.__name__ + "_%s" % char
     return newname
 
 
@@ -918,42 +885,42 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
     display purposes; it does not affect value propagation or validation.
     This is used by widgets like :class:`tw2.forms.FieldSet`.
     """
-    child = pm.Param('Child for this widget.')
+
+    child = pm.Param("Child for this widget.")
     children = pm.Param(
-        'Children specified for this widget will be passed to the child',
+        "Children specified for this widget will be passed to the child",
         default=[],
     )
-    id_suffix = pm.Variable('Suffix to append to compound IDs', default=None)
+    id_suffix = pm.Variable("Suffix to append to compound IDs", default=None)
 
     def __new__(cls, **kw):
-        newname = calc_name(cls, kw, 'd')
+        newname = calc_name(cls, kw, "d")
         return type(newname, (cls,), kw)
 
     @classmethod
     def post_define(cls):
-        if not getattr(cls, 'child', None):
+        if not getattr(cls, "child", None):
             return
 
-        if getattr(cls, 'children', None):
+        if getattr(cls, "children", None):
             cls.child = cls.child(children=cls.children)
             cls.children = []
 
-        if getattr(cls, 'validator', None):
+        if getattr(cls, "validator", None):
             cls.child.validator = cls.validator
             cls.validator = None
 
-        if not isinstance(cls.child, type) or \
-           not issubclass(cls.child, Widget):
+        if not isinstance(cls.child, type) or not issubclass(cls.child, Widget):
             raise pm.ParameterError("Child must be a widget")
 
         cls.compound_key = None
         cls._sub_compound = cls.child._sub_compound
-        cls_id = getattr(cls, 'id', None)
-        child_id = getattr(cls.child, 'id', None)
+        cls_id = getattr(cls, "id", None)
+        child_id = getattr(cls.child, "id", None)
         if cls_id and child_id and cls_id != child_id:
             raise pm.ParameterError(
-                "Can only specify id on either a DisplayOnlyWidget, or " +
-                "its child, not both: '%s' '%s'" % (cls_id, child_id)
+                "Can only specify id on either a DisplayOnlyWidget, or "
+                + "its child, not both: '%s' '%s'" % (cls_id, child_id)
             )
         if not cls_id and child_id:
             cls.id = child_id
@@ -965,16 +932,13 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
 
     @classmethod
     def _gen_compound_name(cls, attr, for_url):
-        elems = [
-            Widget._gen_compound_name.__func__(cls, attr, for_url),
-            getattr(cls, attr, None)
-        ]
+        elems = [Widget._gen_compound_name.__func__(cls, attr, for_url), getattr(cls, attr, None)]
         elems = list(filter(None, elems))
         if not elems:
             return None
-        if not for_url and attr=='id' and getattr(cls, 'id_suffix', None):
+        if not for_url and attr == "id" and getattr(cls, "id_suffix", None):
             elems.append(cls.id_suffix)
-        return ':'.join(elems)
+        return ":".join(elems)
 
     @classmethod
     def _compound_name_elem(cls, attr, for_url):
@@ -985,7 +949,7 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
 
     def __init__(self, **kw):
         super(DisplayOnlyWidget, self).__init__(**kw)
-        if hasattr(self, 'child'):
+        if hasattr(self, "child"):
             self.child = self.child.req(parent=weakref.proxy(self))
         else:
             self.child = None
@@ -993,17 +957,17 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
     def prepare(self):
         super(DisplayOnlyWidget, self).prepare()
         if self.child:
-            if not hasattr(self, '_validated'):
+            if not hasattr(self, "_validated"):
                 self.child.value = self.value
             self.child.prepare()
 
-    @vd.catch_errors
+    @vd.catch_errorsgit
     def _validate(self, value, state=None):
         self._validated = True
         try:
             return self.child._validate(value, state)
         except vd.ValidationError:
-            raise vd.ValidationError('childerror', self.validator, self)
+            raise vd.ValidationError("childerror", self.validator, self)
 
     @classmethod
     def children_deep(cls):
@@ -1013,9 +977,7 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
 
 def default_content_type():
     "default_content_type"
-    return "text/html; charset=%s" % (
-        core.request_local()['middleware'].config.encoding
-    )
+    return "text/html; charset=%s" % (core.request_local()["middleware"].config.encoding)
 
 
 class Page(DisplayOnlyWidget):
@@ -1023,19 +985,20 @@ class Page(DisplayOnlyWidget):
     An HTML page. This widget includes a :meth:`request` method that serves
     the page.
     """
-    title = pm.Param('Title for the page', default=None)
+
+    title = pm.Param("Title for the page", default=None)
     content_type = pm.Param(
-        'Content type header',
+        "Content type header",
         default=pm.Deferred(default_content_type),
         request_local=False,
     )
     template = "tw2.core.templates.page"
-    id_suffix = 'page'
+    id_suffix = "page"
     _no_autoid = True
 
     @classmethod
     def post_define(cls):
-        if not getattr(cls, 'id', None) and '_no_autoid' not in cls.__dict__:
+        if not getattr(cls, "id", None) and "_no_autoid" not in cls.__dict__:
             cls.id = cls.__name__.lower()
             DisplayOnlyWidget.post_define.__func__(cls)
             Widget.post_define.__func__(cls)
@@ -1048,9 +1011,7 @@ class Page(DisplayOnlyWidget):
         resp = webob.Response(request=req, content_type=ct)
         ins = cls.req()
         ins.fetch_data(req)
-        resp.body = ins.display().encode(
-            core.request_local()['middleware'].config.encoding
-        )
+        resp.body = ins.display().encode(core.request_local()["middleware"].config.encoding)
         return resp
 
     def fetch_data(self, req):
