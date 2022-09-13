@@ -965,6 +965,8 @@ class DisplayOnlyWidget(six.with_metaclass(DisplayOnlyWidgetMeta, Widget)):
     def _validate(self, value, state=None):
         self._validated = True
         try:
+            if hasattr(self, "override_hidden"):
+                self.child.override_hidden = self.override_hidden
             return self.child._validate(value, state)
         except vd.ValidationError:
             raise vd.ValidationError("childerror", self.validator, self)
